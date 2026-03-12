@@ -1,0 +1,22 @@
+.header-content {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    width: fit-content;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    margin-right: 1em;
+}
+
+.username {
+    margin-left: 8px;
+    font-weight: 500;
+}
+
+.ant-layout-header {
+    display: block !important;
+}

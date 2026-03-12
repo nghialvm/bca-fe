@@ -1,0 +1,65 @@
+{
+    "name": "bca",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "dependencies": {
+        "@ant-design/charts": "^2.6.5",
+        "@ant-design/icons": "^5.6.1",
+        "@emotion/core": "^11.0.0",
+        "@emotion/react": "^11.5.0",
+        "@reduxjs/toolkit": "^1.4.0",
+        "antd": "^5.27.1",
+        "antd-style": "^3.7.1",
+        "axios": "^1.7.7",
+        "dayjs": "^1.11.13",
+        "react": "^18.3.0",
+        "react-dom": "^18.3.0",
+        "react-draggable": "^4.4.6",
+        "react-redux": "^7.2.6",
+        "react-router-dom": "^6.0.0"
+    },
+    "scripts": {
+        "dev": "vite --host",
+        "build": "vite build",
+        "serve": "vite preview",
+        "lint": "eslint . --ext js,ts,tsx",
+        "format": "prettier --write **/*.{js,ts,tsx}",
+        "prepare": "husky"
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "devDependencies": {
+        "@emotion/babel-plugin": "^11.3.0",
+        "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+        "@types/node": "^20.19.1",
+        "@types/react": "^18.3.0",
+        "@types/react-dom": "^18.3.0",
+        "@types/react-redux": "^7.1.33",
+        "@typescript-eslint/eslint-plugin": "^8.10.0",
+        "@typescript-eslint/parser": "^8.10.0",
+        "@vitejs/plugin-react": "^4.0.0",
+        "babel-plugin-import": "^1.13.3",
+        "eslint": "^9.0.0",
+        "eslint-config-prettier": "^8.3.0",
+        "eslint-plugin-import": "^2.27.5",
+        "eslint-plugin-prettier": "^4.0.0",
+        "eslint-plugin-simple-import-sort": "^10.0.0",
+        "less": "^4.2.1",
+        "prettier": "^3.4.2",
+        "typescript": "^5.6.3",
+        "vite": "^4.5.14",
+        "vite-plugin-imp": "^2.4.0",
+        "vite-plugin-svgr": "^4.2.0"
+    }
+}

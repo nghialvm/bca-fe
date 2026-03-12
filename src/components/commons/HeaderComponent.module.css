@@ -1,0 +1,101 @@
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    height: 100%;
+}
+
+.leftSection {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.toggleButton {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(13, 47, 111, 0.08);
+}
+
+.search {
+    max-width: 520px;
+}
+
+.search :global(.ant-input-affix-wrapper) {
+    height: 48px;
+    border-radius: 16px;
+    border: 1px solid rgba(21, 52, 93, 0.08);
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: 0 14px 32px rgba(13, 47, 111, 0.06);
+}
+
+.rightSection {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.notificationButton {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(13, 47, 111, 0.08);
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 14px 32px rgba(13, 47, 111, 0.08);
+    cursor: pointer;
+}
+
+.profileMeta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.profileName {
+    color: #102543;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.profileRole {
+    color: #5f6f86;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.mobileSearchHidden {
+    display: none;
+}
+
+@media (max-width: 992px) {
+    .search {
+        display: none;
+    }
+
+    .profileMeta {
+        display: none;
+    }
+
+    .profile {
+        padding: 6px;
+        border-radius: 14px;
+    }
+}
