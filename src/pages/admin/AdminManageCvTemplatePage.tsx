@@ -1,4 +1,4 @@
-import { Button, Card, Space, Tag } from 'antd'
+import { Button, Card, Space, Tag, Typography } from 'antd'
 
 import {
     CalendarOutlined,
@@ -12,9 +12,9 @@ import {
     ProfileOutlined,
 } from '@ant-design/icons'
 
-import AdminPageHeader from './AdminPageHeader'
-import styles from './AdminUi.module.css'
-import { cvFieldTypes, cvTemplates } from './adminData'
+import { cvFieldTypes, cvTemplates } from '@/mock/adminData'
+
+import styles from '../styles/AdminUi.module.css'
 
 const fieldIcons = {
     text: <FileTextOutlined />,
@@ -28,16 +28,27 @@ const fieldIcons = {
 const AdminManageCvTemplatePage = () => {
     return (
         <div className={styles.page}>
-            <AdminPageHeader
-                title="Quản lý mẫu hồ sơ"
-                subtitle="Tạo mẫu hồ sơ chuẩn cho từng nhóm vị trí và quản lý danh sách trường thông tin bắt buộc."
-                extra={
+            <section className="portal-hero portal-hero--light">
+                <span className="portal-hero__eyebrow">Mẫu hồ sơ</span>
+                <Space
+                    style={{ width: '100%', justifyContent: 'space-between' }}
+                    align="start"
+                    wrap
+                >
+                    <div>
+                        <Typography.Title level={2}>
+                            Quản lý mẫu hồ sơ
+                        </Typography.Title>
+                        <Typography.Paragraph style={{ maxWidth: 720 }}>
+                            Tạo mẫu hồ sơ chuẩn cho từng nhóm vị trí và quản lý
+                            danh sách trường thông tin bắt buộc.
+                        </Typography.Paragraph>
+                    </div>
                     <Button type="primary" size="large" icon={<PlusOutlined />}>
                         Tạo mẫu mới
                     </Button>
-                }
-            />
-
+                </Space>
+            </section>
             <Card
                 variant="borderless"
                 className={styles.sectionCard}

@@ -1,6 +1,15 @@
 import { useMemo, useState } from 'react'
 
-import { Button, Card, Input, Select, Space, Table, Tag } from 'antd'
+import {
+    Button,
+    Card,
+    Input,
+    Select,
+    Space,
+    Table,
+    Tag,
+    Typography,
+} from 'antd'
 
 import {
     CheckCircleOutlined,
@@ -11,9 +20,9 @@ import {
     StopOutlined,
 } from '@ant-design/icons'
 
-import AdminPageHeader from './AdminPageHeader'
-import styles from './AdminUi.module.css'
-import { recruitmentStats, recruitments } from './adminData'
+import { recruitmentStats, recruitments } from '@/mock/adminData'
+
+import styles from '../styles/AdminUi.module.css'
 
 const statColors = ['#2f54eb', '#d48806', '#389e0d', '#cf1322']
 
@@ -35,10 +44,24 @@ const AdminManageJobPage = () => {
 
     return (
         <div className={styles.page}>
-            <AdminPageHeader
-                title="Quản lý tuyển dụng"
-                subtitle="Theo dõi chiến dịch, phê duyệt tin tuyển dụng và giám sát lượng hồ sơ theo từng đơn vị."
-            />
+            <section className="portal-hero portal-hero--light">
+                <span className="portal-hero__eyebrow">Tin tuyển dụng</span>
+                <Space
+                    style={{ width: '100%', justifyContent: 'space-between' }}
+                    align="start"
+                    wrap
+                >
+                    <div>
+                        <Typography.Title level={2}>
+                            Quản lý tin tuyển dụng
+                        </Typography.Title>
+                        <Typography.Paragraph style={{ maxWidth: 720 }}>
+                            Theo dõi chiến dịch, phê duyệt tin tuyển dụng và
+                            giám sát lượng hồ sơ theo từng đơn vị.
+                        </Typography.Paragraph>
+                    </div>
+                </Space>
+            </section>
 
             <div className={styles.statsGrid}>
                 {recruitmentStats.map((item, index) => (

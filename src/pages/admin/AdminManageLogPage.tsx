@@ -1,6 +1,15 @@
 import { useMemo, useState } from 'react'
 
-import { Button, Card, Input, Segmented, Table, Tag } from 'antd'
+import {
+    Button,
+    Card,
+    Input,
+    Segmented,
+    Space,
+    Table,
+    Tag,
+    Typography,
+} from 'antd'
 
 import {
     CheckCircleOutlined,
@@ -12,9 +21,9 @@ import {
     WarningOutlined,
 } from '@ant-design/icons'
 
-import AdminPageHeader from './AdminPageHeader'
-import styles from './AdminUi.module.css'
-import { systemLogs } from './adminData'
+import { systemLogs } from '@/mock/adminData'
+
+import styles from '../styles/AdminUi.module.css'
 
 const severityStyles = {
     info: { color: 'processing', icon: <InfoCircleOutlined /> },
@@ -43,10 +52,22 @@ const AdminManageLogPage = () => {
 
     return (
         <div className={styles.page}>
-            <AdminPageHeader
-                title="Nhật ký hệ thống"
-                subtitle="Theo dõi đăng nhập, thao tác nghiệp vụ và các cảnh báo bảo mật trên toàn hệ thống."
-                extra={
+            <section className="portal-hero portal-hero--light">
+                <span className="portal-hero__eyebrow">Nhật ký</span>
+                <Space
+                    style={{ width: '100%', justifyContent: 'space-between' }}
+                    align="start"
+                    wrap
+                >
+                    <div>
+                        <Typography.Title level={2}>
+                            Quản lý nhật ký hệ thống
+                        </Typography.Title>
+                        <Typography.Paragraph style={{ maxWidth: 720 }}>
+                            Theo dõi đăng nhập, thao tác nghiệp vụ và các cảnh
+                            báo bảo mật trên toàn hệ thống.
+                        </Typography.Paragraph>
+                    </div>
                     <Button
                         type="primary"
                         size="large"
@@ -54,8 +75,8 @@ const AdminManageLogPage = () => {
                     >
                         Xuất nhật ký
                     </Button>
-                }
-            />
+                </Space>
+            </section>
 
             <div className={styles.metricGrid}>
                 <div className={styles.metricBox}>

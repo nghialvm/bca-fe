@@ -12,6 +12,42 @@ function App() {
         <ConfigProvider
             theme={{
                 algorithm: defaultAlgorithm,
+                token: {
+                    colorPrimary: '#2F54EB',
+                    colorInfo: '#2F54EB',
+                    colorSuccess: '#166534',
+                    colorWarning: '#b7791f',
+                    colorBgLayout: '#f4f7fc',
+                    borderRadius: 18,
+                    fontFamily:
+                        "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                },
+                components: {
+                    Button: {
+                        controlHeightLG: 46,
+                    },
+                    Card: {
+                        borderRadiusLG: 24,
+                    },
+                    Input: {
+                        controlHeightLG: 46,
+                    },
+                    Layout: {
+                        bodyBg: '#f4f7fc',
+                        siderBg: '#0d2f6f',
+                        headerBg: '#ffffff',
+                    },
+                    Menu: {
+                        itemBorderRadius: 14,
+                        itemSelectedBg: 'rgba(47, 84, 235, 0.12)',
+                        itemSelectedColor: '#2F54EB',
+                        itemHoverColor: '#2F54EB',
+                        itemActiveBg: 'rgba(47, 84, 235, 0.08)',
+                    },
+                    Table: {
+                        headerBg: '#f4f8f5',
+                    },
+                },
             }}
         >
             <div>

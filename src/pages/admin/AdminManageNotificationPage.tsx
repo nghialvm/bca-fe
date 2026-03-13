@@ -11,6 +11,7 @@ import {
     Statistic,
     Table,
     Tag,
+    Typography,
 } from 'antd'
 
 import {
@@ -23,9 +24,9 @@ import {
     UserOutlined,
 } from '@ant-design/icons'
 
-import AdminPageHeader from './AdminPageHeader'
-import styles from './AdminUi.module.css'
-import { notificationRecipientOptions, notifications } from './adminData'
+import { notificationRecipientOptions, notifications } from '@/mock/adminData'
+
+import styles from '../styles/AdminUi.module.css'
 
 const AdminManageNotificationPage = () => {
     const [open, setOpen] = useState(false)
@@ -33,10 +34,22 @@ const AdminManageNotificationPage = () => {
 
     return (
         <div className={styles.page}>
-            <AdminPageHeader
-                title="Thông báo hệ thống"
-                subtitle="Tạo, lên lịch và theo dõi thông báo gửi tới đơn vị, ứng viên và người dùng nội bộ."
-                extra={
+            <section className="portal-hero portal-hero--light">
+                <span className="portal-hero__eyebrow">Thông báo</span>
+                <Space
+                    style={{ width: '100%', justifyContent: 'space-between' }}
+                    align="start"
+                    wrap
+                >
+                    <div>
+                        <Typography.Title level={2}>
+                            Quản lý thông báo hệ thống
+                        </Typography.Title>
+                        <Typography.Paragraph style={{ maxWidth: 720 }}>
+                            Tạo, lên lịch và theo dõi thông báo gửi tới đơn vị,
+                            ứng viên và người dùng nội bộ.
+                        </Typography.Paragraph>
+                    </div>
                     <Button
                         type="primary"
                         size="large"
@@ -45,8 +58,8 @@ const AdminManageNotificationPage = () => {
                     >
                         Tạo thông báo
                     </Button>
-                }
-            />
+                </Space>
+            </section>
 
             <div className={styles.metricGrid}>
                 <div className={styles.metricBox}>

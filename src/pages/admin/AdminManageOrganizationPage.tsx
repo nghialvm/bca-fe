@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import { Button, Card, Input, Select, Tag } from 'antd'
+import { Button, Card, Input, Select, Space, Tag, Typography } from 'antd'
 
 import {
     EnvironmentOutlined,
@@ -13,9 +13,9 @@ import {
     TeamOutlined,
 } from '@ant-design/icons'
 
-import AdminPageHeader from './AdminPageHeader'
-import styles from './AdminUi.module.css'
-import { organizations } from './adminData'
+import { organizations } from '@/mock/adminData'
+
+import styles from '../styles/AdminUi.module.css'
 
 const AdminManageOrganizationPage = () => {
     const [search, setSearch] = useState('')
@@ -41,15 +41,27 @@ const AdminManageOrganizationPage = () => {
 
     return (
         <div className={styles.page}>
-            <AdminPageHeader
-                title="Quản lý đơn vị"
-                subtitle="Quản trị danh mục đơn vị tham gia tuyển dụng và tài khoản đầu mối của từng đơn vị."
-                extra={
+            <section className="portal-hero portal-hero--light">
+                <span className="portal-hero__eyebrow">Đơn vị</span>
+                <Space
+                    style={{ width: '100%', justifyContent: 'space-between' }}
+                    align="start"
+                    wrap
+                >
+                    <div>
+                        <Typography.Title level={2}>
+                            Quản lý danh sách đơn vị
+                        </Typography.Title>
+                        <Typography.Paragraph style={{ maxWidth: 720 }}>
+                            Quản trị danh mục đơn vị tham gia tuyển dụng và tài
+                            khoản đầu mối của từng đơn vị.
+                        </Typography.Paragraph>
+                    </div>
                     <Button type="primary" size="large" icon={<PlusOutlined />}>
                         Thêm đơn vị
                     </Button>
-                }
-            />
+                </Space>
+            </section>
 
             <Card variant="borderless" className={styles.filterCard}>
                 <div className={styles.filterRow}>

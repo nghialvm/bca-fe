@@ -1,4 +1,4 @@
-import { Avatar, Button, Card, Space } from 'antd'
+import { Avatar, Button, Card, Space, Typography } from 'antd'
 
 import {
     LockOutlined,
@@ -9,14 +9,14 @@ import {
 } from '@ant-design/icons'
 import { useSelector } from 'react-redux'
 
-import AdminPageHeader from './AdminPageHeader'
-import styles from './AdminUi.module.css'
 import {
     profileActivities,
     profileHighlights,
     profilePermissions,
     profileSummary,
-} from './adminData'
+} from '@/mock/adminData'
+
+import styles from '../styles/AdminUi.module.css'
 
 const AdminProfilePage = () => {
     const user = useSelector((store: any) => store.auth.user)
@@ -24,18 +24,30 @@ const AdminProfilePage = () => {
 
     return (
         <div className={styles.page}>
-            <AdminPageHeader
-                title="Hồ sơ quản trị"
-                subtitle="Thông tin cá nhân, quyền truy cập và lịch sử hoạt động của quản trị viên hệ thống."
-                extra={
+            <section className="portal-hero portal-hero--light">
+                <span className="portal-hero__eyebrow">Hồ sơ</span>
+                <Space
+                    style={{ width: '100%', justifyContent: 'space-between' }}
+                    align="start"
+                    wrap
+                >
+                    <div>
+                        <Typography.Title level={2}>
+                            Tổng quan hồ sơ quản trị viên
+                        </Typography.Title>
+                        <Typography.Paragraph style={{ maxWidth: 720 }}>
+                            Thông tin cá nhân, quyền truy cập và lịch sử hoạt
+                            động của quản trị viên hệ thống.
+                        </Typography.Paragraph>
+                    </div>
                     <Space>
                         <Button size="large">Đổi mật khẩu</Button>
                         <Button type="primary" size="large">
                             Cập nhật hồ sơ
                         </Button>
                     </Space>
-                }
-            />
+                </Space>
+            </section>
 
             <div className={styles.profileGrid}>
                 <Card variant="borderless" className={styles.profileHero}>

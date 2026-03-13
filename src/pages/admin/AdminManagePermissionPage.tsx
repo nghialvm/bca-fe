@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 
-import { Button, Card, Space, Table } from 'antd'
+import { Button, Card, Space, Table, Typography } from 'antd'
 
 import {
     CheckOutlined,
@@ -12,9 +12,9 @@ import {
     SafetyOutlined,
 } from '@ant-design/icons'
 
-import AdminPageHeader from './AdminPageHeader'
-import styles from './AdminUi.module.css'
-import { permissionMatrix, roleSummaries } from './adminData'
+import { permissionMatrix, roleSummaries } from '@/mock/adminData'
+
+import styles from '../styles/AdminUi.module.css'
 
 const roleFieldMap = {
     1: 'admin',
@@ -48,15 +48,29 @@ const AdminManagePermissionPage = () => {
 
     return (
         <div className={styles.page}>
-            <AdminPageHeader
-                title="Vai trò & quyền hạn"
-                subtitle="Thiết lập mô hình phân quyền và kiểm soát truy cập cho từng nhóm người dùng."
-                extra={
+            <section className="portal-hero portal-hero--light">
+                <span className="portal-hero__eyebrow">
+                    Vai trò & Quyền hạn
+                </span>
+                <Space
+                    style={{ width: '100%', justifyContent: 'space-between' }}
+                    align="start"
+                    wrap
+                >
+                    <div>
+                        <Typography.Title level={2}>
+                            Quản lý vai trò và quyền hạn cho người dùng, đơn vị
+                        </Typography.Title>
+                        <Typography.Paragraph style={{ maxWidth: 720 }}>
+                            Thiết lập mô hình phân quyền và kiểm soát truy cập
+                            cho từng nhóm người dùng.
+                        </Typography.Paragraph>
+                    </div>
                     <Button type="primary" size="large" icon={<PlusOutlined />}>
                         Thêm vai trò
                     </Button>
-                }
-            />
+                </Space>
+            </section>
 
             <div className={styles.roleLayout}>
                 <div className={styles.roleList}>

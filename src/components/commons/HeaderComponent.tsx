@@ -18,7 +18,7 @@ import { PATHS } from '@/routers/path'
 import { logout } from '@/stores/auth/authSlice'
 import { getProfilePathByRole, getSiteRole } from '@/utils/role'
 
-import styles from './HeaderComponent.module.css'
+import styles from './styles/HeaderComponent.module.css'
 
 interface HeaderComponentProps {
     collapsed: boolean
@@ -33,12 +33,10 @@ const HeaderComponent = ({
 }: HeaderComponentProps) => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
-    const isAuthenticated = useSelector(
-        (store: any) => store.auth.isAuthenticated
-    )
+    const isAuthenticated = true
     const user = useSelector((store: any) => store.auth.user)
     const siteRole = getSiteRole(user)
-    const displayName = user?.full_name || 'Admin H05'
+    const displayName = user?.full_name || 'Admin'
     const profilePath = getProfilePathByRole(siteRole)
     const roleLabel =
         siteRole === SITE_ROLES.ADMIN
@@ -67,7 +65,7 @@ const HeaderComponent = ({
                         dispatch(logout())
                     }}
                 >
-                    Log out
+                    Đăng xuất
                 </div>
             ),
         },
@@ -94,7 +92,7 @@ const HeaderComponent = ({
                     <Input
                         size="large"
                         prefix={<SearchOutlined />}
-                        placeholder="Tìm kiếm tài khoản, đơn vị, báo cáo..."
+                        placeholder="Tìm kiếm..."
                     />
                 </div>
             </div>
@@ -112,7 +110,7 @@ const HeaderComponent = ({
                         <div className={styles.profile}>
                             <Avatar
                                 icon={<UserOutlined />}
-                                style={{ backgroundColor: '#2f54eb' }}
+                                style={{ backgroundColor: '#0B3D2E' }}
                             />
                             <div className={styles.profileMeta}>
                                 <span className={styles.profileName}>
@@ -127,7 +125,7 @@ const HeaderComponent = ({
                 </div>
             ) : (
                 <Button onClick={() => navigate(PATHS.LOGIN)} type="primary">
-                    Sign In
+                    Đăng nhập
                 </Button>
             )}
         </div>

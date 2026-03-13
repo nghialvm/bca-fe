@@ -12,7 +12,6 @@ import {
     NotificationOutlined,
     ProfileOutlined,
     SafetyOutlined,
-    SecurityScanOutlined,
     ShopOutlined,
     SolutionOutlined,
     TeamOutlined,
@@ -25,7 +24,7 @@ import { SITE_ROLES } from '@/constants/role'
 import { PATHS } from '@/routers/path'
 import { getSiteRole } from '@/utils/role'
 
-import styles from './NavBar.module.css'
+import styles from './styles/NavBar.module.css'
 
 interface NavBarProps {
     collapsed: boolean
@@ -49,59 +48,47 @@ const NavBar: React.FC<NavBarProps> = ({ collapsed, onNavigate }) => {
         {
             key: PATHS.ADMIN_DASHBOARD,
             icon: <HomeOutlined />,
-            label: 'Dashboard',
+            label: 'Tổng quan',
         },
         {
-            key: 'admin',
-            icon: <SafetyOutlined />,
-            label: collapsed ? undefined : 'Quản trị hệ thống',
-            children: [
-                {
-                    key: PATHS.ADMIN_PROFILE,
-                    icon: <UserOutlined />,
-                    label: 'Profile',
-                },
-                {
-                    key: PATHS.ADMIN_MANAGE_USERS,
-                    icon: <TeamOutlined />,
-                    label: 'Quản lý người dùng',
-                },
-                {
-                    key: PATHS.ADMIN_MANAGE_PERMISSIONS,
-                    icon: <SolutionOutlined />,
-                    label: 'Vai trò & quyền hạn',
-                },
-                {
-                    key: PATHS.ADMIN_MANAGE_ORGANIZATIONS,
-                    icon: <ShopOutlined />,
-                    label: 'Quản lý đơn vị',
-                },
-                {
-                    key: PATHS.ADMIN_MANAGE_JOBS,
-                    icon: <IdcardOutlined />,
-                    label: 'Quản lý tuyển dụng',
-                },
-                {
-                    key: PATHS.ADMIN_MANAGE_CV_TEMPLATES,
-                    icon: <FileTextOutlined />,
-                    label: 'Mẫu hồ sơ',
-                },
-                {
-                    key: PATHS.ADMIN_MANAGE_NOTIFICATIONS,
-                    icon: <NotificationOutlined />,
-                    label: 'Thông báo hệ thống',
-                },
-                {
-                    key: PATHS.ADMIN_MANAGE_LOGS,
-                    icon: <AuditOutlined />,
-                    label: 'Nhật ký hệ thống',
-                },
-                {
-                    key: PATHS.ADMIN_REPORT,
-                    icon: <BellOutlined />,
-                    label: 'Báo cáo & thống kê',
-                },
-            ],
+            key: PATHS.ADMIN_MANAGE_USERS,
+            icon: <TeamOutlined />,
+            label: 'Quản lý người dùng',
+        },
+        {
+            key: PATHS.ADMIN_MANAGE_PERMISSIONS,
+            icon: <SolutionOutlined />,
+            label: 'Vai trò & quyền hạn',
+        },
+        {
+            key: PATHS.ADMIN_MANAGE_ORGANIZATIONS,
+            icon: <ShopOutlined />,
+            label: 'Quản lý đơn vị',
+        },
+        {
+            key: PATHS.ADMIN_MANAGE_JOBS,
+            icon: <IdcardOutlined />,
+            label: 'Quản lý tuyển dụng',
+        },
+        {
+            key: PATHS.ADMIN_MANAGE_CV_TEMPLATES,
+            icon: <FileTextOutlined />,
+            label: 'Mẫu hồ sơ',
+        },
+        {
+            key: PATHS.ADMIN_MANAGE_NOTIFICATIONS,
+            icon: <NotificationOutlined />,
+            label: 'Thông báo hệ thống',
+        },
+        {
+            key: PATHS.ADMIN_MANAGE_LOGS,
+            icon: <AuditOutlined />,
+            label: 'Nhật ký hệ thống',
+        },
+        {
+            key: PATHS.ADMIN_REPORT,
+            icon: <BellOutlined />,
+            label: 'Báo cáo & thống kê',
         },
     ]
 
@@ -109,44 +96,32 @@ const NavBar: React.FC<NavBarProps> = ({ collapsed, onNavigate }) => {
         {
             key: PATHS.EMPLOYER_DASHBOARD,
             icon: <HomeOutlined />,
-            label: 'Dashboard',
+            label: 'Tổng quan',
         },
         {
-            key: 'employer',
-            icon: <ShopOutlined />,
-            label: collapsed ? undefined : 'Nhà tuyển dụng',
-            children: [
-                {
-                    key: PATHS.EMPLOYER_PROFILE,
-                    icon: <UserOutlined />,
-                    label: 'Profile',
-                },
-                {
-                    key: PATHS.EMPLOYER_MANAGE_JOBS,
-                    icon: <IdcardOutlined />,
-                    label: 'Tin tuyển dụng',
-                },
-                {
-                    key: PATHS.EMPLOYER_MANAGE_CANDIDATES,
-                    icon: <TeamOutlined />,
-                    label: 'Ứng viên',
-                },
-                {
-                    key: PATHS.EMPLOYER_MANAGE_INTERVIEWS,
-                    icon: <SolutionOutlined />,
-                    label: 'Lịch phỏng vấn',
-                },
-                {
-                    key: PATHS.EMPLOYER_MANAGE_COMMUNICATIONS,
-                    icon: <NotificationOutlined />,
-                    label: 'Trao đổi',
-                },
-                {
-                    key: PATHS.EMPLOYER_REPORT,
-                    icon: <FileTextOutlined />,
-                    label: 'Báo cáo',
-                },
-            ],
+            key: PATHS.EMPLOYER_MANAGE_JOBS,
+            icon: <IdcardOutlined />,
+            label: 'Tin tuyển dụng',
+        },
+        {
+            key: PATHS.EMPLOYER_MANAGE_CANDIDATES,
+            icon: <TeamOutlined />,
+            label: 'Ứng viên',
+        },
+        {
+            key: PATHS.EMPLOYER_MANAGE_INTERVIEWS,
+            icon: <SolutionOutlined />,
+            label: 'Lịch phỏng vấn',
+        },
+        {
+            key: PATHS.EMPLOYER_MANAGE_COMMUNICATIONS,
+            icon: <NotificationOutlined />,
+            label: 'Trao đổi',
+        },
+        {
+            key: PATHS.EMPLOYER_REPORT,
+            icon: <FileTextOutlined />,
+            label: 'Báo cáo',
         },
     ]
 
@@ -154,7 +129,7 @@ const NavBar: React.FC<NavBarProps> = ({ collapsed, onNavigate }) => {
         {
             key: PATHS.CANDIDATE_DASHBOARD,
             icon: <HomeOutlined />,
-            label: 'Dashboard',
+            label: 'Tổng quan',
         },
         {
             key: 'candidate',
@@ -164,7 +139,7 @@ const NavBar: React.FC<NavBarProps> = ({ collapsed, onNavigate }) => {
                 {
                     key: PATHS.CANDIDATE_JOBS,
                     icon: <FileSearchOutlined />,
-                    label: 'Việc phù hợp',
+                    label: 'Việc làm phù hợp',
                 },
                 {
                     key: PATHS.CANDIDATE_APPLICATIONS,
@@ -195,17 +170,17 @@ const NavBar: React.FC<NavBarProps> = ({ collapsed, onNavigate }) => {
                 }`}
             >
                 <div className={styles.brandMark}>
-                    <SecurityScanOutlined />
+                    <img src="/logo.png" alt="Logo" />
                 </div>
                 {!collapsed ? (
                     <div className={styles.brandText}>
                         <p className={styles.brandTitle}>Bộ Công an</p>
                         <div className={styles.brandSubtitle}>
                             {siteRole === SITE_ROLES.ADMIN
-                                ? 'Site quản trị H05'
+                                ? 'Không gian quản trị H05'
                                 : siteRole === SITE_ROLES.EMPLOYER
-                                  ? 'Site nhà tuyển dụng'
-                                  : 'Site ứng viên'}
+                                  ? 'Không gian nhà tuyển dụng'
+                                  : 'Không gian ứng viên'}
                         </div>
                     </div>
                 ) : null}
@@ -237,10 +212,10 @@ const NavBar: React.FC<NavBarProps> = ({ collapsed, onNavigate }) => {
                         <div className={styles.footerTitle}>Cổng truy cập</div>
                         <div>
                             {siteRole === SITE_ROLES.ADMIN
-                                ? 'Admin portal'
+                                ? 'Back-office quản trị'
                                 : siteRole === SITE_ROLES.EMPLOYER
-                                  ? 'Employer portal'
-                                  : 'Candidate portal'}
+                                  ? 'Back-office tuyển dụng'
+                                  : 'Cổng ứng viên'}
                         </div>
                     </>
                 ) : (

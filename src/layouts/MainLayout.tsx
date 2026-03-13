@@ -1,33 +1,190 @@
-import React, { useState } from 'react'
+import { useMemo, useState } from 'react'
 
-import { Drawer, Grid, Layout } from 'antd'
+import {
+    Avatar,
+    Badge,
+    Button,
+    ConfigProvider,
+    Drawer,
+    Dropdown,
+    Grid,
+    Layout,
+    Menu,
+    Space,
+    Typography,
+} from 'antd'
+import type { MenuProps, ThemeConfig } from 'antd'
 
-import { Outlet } from 'react-router-dom'
+import {
+    BellOutlined,
+    LogoutOutlined,
+    MenuOutlined,
+    SettingOutlined,
+    UserOutlined,
+} from '@ant-design/icons'
+import { useDispatch, useSelector } from 'react-redux'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 
 import HeaderComponent from '@/components/commons/HeaderComponent'
 import NavBar from '@/components/commons/NavBar'
+import { SITE_ROLES, SiteRole } from '@/constants/role'
+import { PATHS } from '@/routers/path'
+import { logout } from '@/stores/auth/authSlice'
+import { getProfilePathByRole, getSiteRole } from '@/utils/role'
 
 import styles from './MainLayout.module.css'
 
-const { Header, Sider, Content } = Layout
+const { Header, Sider, Content, Footer } = Layout
+const { Text, Title } = Typography
 
-const MainLayout: React.FC = () => {
+const portalTheme: ThemeConfig = {
+    token: {
+        colorPrimary: '#0B3D2E',
+        colorInfo: '#0B3D2E',
+        colorSuccess: '#166534',
+        colorWarning: '#B7791F',
+        colorBgLayout: '#f4f7f3',
+        colorLink: '#0B3D2E',
+        colorTextBase: '#102117',
+        borderRadius: 18,
+        fontFamily:
+            '"Segoe UI", "Helvetica Neue", Arial, "Noto Sans", sans-serif',
+    },
+    components: {
+        Layout: {
+            bodyBg: '#f4f7f3',
+            siderBg: '#09271d',
+            headerBg: 'rgba(244, 247, 243, 0.94)',
+        },
+        Button: {
+            borderRadius: 14,
+            controlHeightLG: 48,
+            primaryShadow: '0 16px 28px rgba(11, 61, 46, 0.18)',
+        },
+        Card: {
+            borderRadiusLG: 24,
+            headerBg: 'transparent',
+        },
+        Input: {
+            activeBorderColor: '#0B3D2E',
+            hoverBorderColor: '#0B3D2E',
+        },
+        Select: {
+            activeBorderColor: '#0B3D2E',
+            hoverBorderColor: '#0B3D2E',
+        },
+        Menu: {
+            itemSelectedBg: 'rgba(11, 61, 46, 0.12)',
+            itemSelectedColor: '#0B3D2E',
+            itemHoverColor: '#0B3D2E',
+            itemActiveBg: 'rgba(11, 61, 46, 0.08)',
+        },
+        Table: {
+            headerBg: '#edf4f0',
+            headerColor: '#102117',
+            rowHoverBg: '#f5faf7',
+        },
+        Tabs: {
+            itemSelectedColor: '#0B3D2E',
+            itemHoverColor: '#0B3D2E',
+            inkBarColor: '#0B3D2E',
+        },
+    },
+}
+
+type RootState = {
+    auth: {
+        user?: {
+            full_name?: string
+            access_level?: string
+            role_id?: number
+        } | null
+    }
+}
+
+const getUserInitials = (fullName?: string) => {
+    if (!fullName) {
+        return 'BC'
+    }
+
+    return fullName
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase() || '')
+        .join('')
+}
+
+const getCandidateMenuItems = (): MenuProps['items'] => [
+    {
+        key: PATHS.CANDIDATE_DASHBOARD,
+        label: <Link to={PATHS.CANDIDATE_DASHBOARD}>Tổng quan</Link>,
+    },
+    {
+        key: PATHS.CANDIDATE_JOBS,
+        label: <Link to={PATHS.CANDIDATE_JOBS}>Việc làm phù hợp</Link>,
+    },
+    {
+        key: PATHS.CANDIDATE_APPLICATIONS,
+        label: <Link to={PATHS.CANDIDATE_APPLICATIONS}>Hồ sơ đã nộp</Link>,
+    },
+    {
+        key: PATHS.CANDIDATE_PROFILE,
+        label: <Link to={PATHS.CANDIDATE_PROFILE}>Thông tin cá nhân</Link>,
+    },
+]
+
+const useProfileMenu = (role: SiteRole) => {
+    const dispatch = useDispatch()
+    const profilePath = getProfilePathByRole(role)
+
+    return useMemo<MenuProps['items']>(
+        () => [
+            {
+                key: 'profile',
+                icon: <UserOutlined />,
+                label: <Link to={profilePath}>Thông tin tài khoản</Link>,
+            },
+            {
+                key: 'settings',
+                icon: <SettingOutlined />,
+                label: 'Cài đặt cá nhân',
+            },
+            {
+                key: 'logout',
+                icon: <LogoutOutlined />,
+                label: (
+                    <span
+                        onClick={() => {
+                            dispatch(logout())
+                        }}
+                    >
+                        Đăng xuất
+                    </span>
+                ),
+            },
+        ],
+        [dispatch, profilePath]
+    )
+}
+
+const BackofficeShell = () => {
     const [collapsed, setCollapsed] = useState(false)
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const screens = Grid.useBreakpoint()
     const isMobile = !screens.lg
 
     const contentLayoutClassName = [
-        styles.contentLayout,
+        styles.adminContentLayout,
         isMobile
-            ? styles.contentMobile
+            ? styles.adminContentMobile
             : collapsed
-              ? styles.contentCollapsed
-              : styles.contentExpanded,
+              ? styles.adminContentCollapsed
+              : styles.adminContentExpanded,
     ].join(' ')
 
     return (
-        <Layout className={styles.shell}>
+        <Layout className={styles.adminShell}>
             {!isMobile ? (
                 <Sider
                     collapsible
@@ -35,7 +192,7 @@ const MainLayout: React.FC = () => {
                     trigger={null}
                     width={280}
                     collapsedWidth={96}
-                    className={styles.desktopSider}
+                    className={styles.adminDesktopSider}
                 >
                     <NavBar collapsed={collapsed} />
                 </Sider>
@@ -46,7 +203,7 @@ const MainLayout: React.FC = () => {
                     onClose={() => setMobileMenuOpen(false)}
                     width={280}
                     closable={false}
-                    className={styles.drawer}
+                    className={styles.adminDrawer}
                 >
                     <NavBar
                         collapsed={false}
@@ -56,7 +213,7 @@ const MainLayout: React.FC = () => {
             )}
 
             <Layout className={contentLayoutClassName}>
-                <Header className={styles.header}>
+                <Header className={styles.adminHeader}>
                     <HeaderComponent
                         collapsed={collapsed}
                         isMobile={isMobile}
@@ -70,11 +227,182 @@ const MainLayout: React.FC = () => {
                         }}
                     />
                 </Header>
-                <Content className={styles.content}>
+                <Content className={styles.adminContent}>
                     <Outlet />
                 </Content>
             </Layout>
         </Layout>
+    )
+}
+
+const CandidateShell = () => {
+    const user = useSelector((state: RootState) => state.auth.user)
+    const location = useLocation()
+    const screens = Grid.useBreakpoint()
+    const [drawerOpen, setDrawerOpen] = useState(false)
+    const profileItems = useProfileMenu(SITE_ROLES.CANDIDATE)
+    const menuItems = useMemo(() => getCandidateMenuItems(), [])
+    const selectedKey =
+        [...(menuItems || [])]
+            .sort(
+                (left, right) =>
+                    String(right?.key || '').length -
+                    String(left?.key || '').length
+            )
+            .find((item) =>
+                location.pathname.startsWith(String(item?.key || ''))
+            )?.key || PATHS.CANDIDATE_DASHBOARD
+
+    return (
+        <Layout className={styles.candidateShell}>
+            <div className={styles.candidateTopBand}>
+                <div className={styles.candidateTopBandInner}>
+                    <Space size={12}>
+                        <div className={styles.candidateBrandSeal}>
+                            <img src="/logo.png" alt="Logo" />
+                        </div>
+                        <div>
+                            <Text className={styles.candidateTopTitle}>
+                                BỘ CÔNG AN
+                            </Text>
+                            <Text className={styles.candidateTopSubtitle}>
+                                Cổng thông tin tuyển dụng
+                            </Text>
+                        </div>
+                    </Space>
+                    <Space size={16}>
+                        <Badge dot>
+                            <BellOutlined
+                                className={styles.candidateBandIcon}
+                            />
+                        </Badge>
+                        <Text className={styles.candidateBandText}>
+                            Hỗ trợ 24/7
+                        </Text>
+                    </Space>
+                </div>
+            </div>
+
+            <Header className={styles.candidateHeader}>
+                <div className={styles.candidateHeaderInner}>
+                    <Link
+                        to={PATHS.CANDIDATE_DASHBOARD}
+                        className={styles.candidateBrandLink}
+                    >
+                        <div className={styles.candidateBrandMark}>
+                            <img src="/logo.png" alt="Logo" />
+                        </div>
+                        <div>
+                            <Title level={5} className={styles.headerTitle}>
+                                Tuyển dụng Bộ Công an
+                            </Title>
+                            <Text className={styles.headerSubtitle}>
+                                Không gian ứng viên
+                            </Text>
+                        </div>
+                    </Link>
+
+                    {screens.md ? (
+                        <Menu
+                            mode="horizontal"
+                            selectedKeys={[String(selectedKey)]}
+                            items={menuItems}
+                            className={styles.candidateMenu}
+                        />
+                    ) : (
+                        <Button
+                            type="text"
+                            icon={<MenuOutlined />}
+                            onClick={() => setDrawerOpen(true)}
+                            className={styles.mobileMenuButton}
+                        />
+                    )}
+
+                    <Dropdown
+                        menu={{ items: profileItems }}
+                        trigger={['click']}
+                    >
+                        <Button type="text" className={styles.profileTrigger}>
+                            <Space size={12}>
+                                <Avatar className={styles.profileAvatar}>
+                                    {getUserInitials(user?.full_name)}
+                                </Avatar>
+                                {screens.lg ? (
+                                    <div className={styles.profileMeta}>
+                                        <Text className={styles.profileName}>
+                                            {user?.full_name ||
+                                                'Ứng viên hệ thống'}
+                                        </Text>
+                                        <Text className={styles.profileRole}>
+                                            Ứng viên
+                                        </Text>
+                                    </div>
+                                ) : null}
+                            </Space>
+                        </Button>
+                    </Dropdown>
+                </div>
+            </Header>
+
+            <Content className={styles.candidateContent}>
+                <div className={styles.candidateContentInner}>
+                    <Outlet />
+                </div>
+            </Content>
+
+            <Footer className={styles.candidateFooter}>
+                <div className={styles.candidateFooterInner}>
+                    <div>
+                        <Title level={5} className={styles.footerTitle}>
+                            Cổng tuyển dụng Bộ Công an
+                        </Title>
+                        <Text className={styles.footerText}>
+                            Kênh thông tin tuyển dụng chính thức cho các vị trí
+                            công chức, chuyên viên và nhân sự chuyên môn.
+                        </Text>
+                    </div>
+                    <div className={styles.footerMeta}>
+                        <Text className={styles.footerText}>
+                            44 Yết Kiêu, Hoàn Kiếm, Hà Nội
+                        </Text>
+                        <Text className={styles.footerText}>
+                            tuyendung@bca.gov.vn
+                        </Text>
+                        <Text className={styles.footerText}>024 3826 3333</Text>
+                    </div>
+                </div>
+            </Footer>
+
+            <Drawer
+                open={drawerOpen}
+                placement="right"
+                width={280}
+                onClose={() => setDrawerOpen(false)}
+                className={styles.candidateDrawer}
+            >
+                <Menu
+                    mode="inline"
+                    selectedKeys={[String(selectedKey)]}
+                    items={menuItems}
+                    onClick={() => setDrawerOpen(false)}
+                />
+            </Drawer>
+        </Layout>
+    )
+}
+
+const MainLayout = () => {
+    const user = useSelector((state: RootState) => state.auth.user)
+    const siteRole = getSiteRole(user || null)
+
+    return (
+        <ConfigProvider theme={portalTheme}>
+            {siteRole === SITE_ROLES.CANDIDATE ? (
+                <CandidateShell />
+            ) : (
+                <BackofficeShell />
+            )}
+        </ConfigProvider>
     )
 }
 

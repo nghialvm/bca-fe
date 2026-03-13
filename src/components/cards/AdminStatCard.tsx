@@ -2,7 +2,7 @@ import { CSSProperties, ReactNode } from 'react'
 
 import { Card } from 'antd'
 
-import styles from './AdminUi.module.css'
+import styles from '../../pages/styles/AdminUi.module.css'
 
 interface AdminStatCardProps {
     label: string

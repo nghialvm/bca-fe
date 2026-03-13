@@ -1,6 +1,15 @@
 import { useMemo, useState } from 'react'
 
-import { Button, Card, Input, Select, Space, Table, Tag } from 'antd'
+import {
+    Button,
+    Card,
+    Input,
+    Select,
+    Space,
+    Table,
+    Tag,
+    Typography,
+} from 'antd'
 
 import {
     EditOutlined,
@@ -11,9 +20,9 @@ import {
     StopOutlined,
 } from '@ant-design/icons'
 
-import AdminPageHeader from './AdminPageHeader'
-import styles from './AdminUi.module.css'
-import { adminUsers } from './adminData'
+import { adminUsers } from '@/mock/adminData'
+
+import styles from '../styles/AdminUi.module.css'
 
 const AdminManageUserPage = () => {
     const [search, setSearch] = useState('')
@@ -36,15 +45,27 @@ const AdminManageUserPage = () => {
 
     return (
         <div className={styles.page}>
-            <AdminPageHeader
-                title="Quản lý người dùng"
-                subtitle="Quản lý tài khoản, trạng thái hoạt động và phân quyền người dùng trong toàn hệ thống."
-                extra={
+            <section className="portal-hero portal-hero--light">
+                <span className="portal-hero__eyebrow">Người dùng</span>
+                <Space
+                    style={{ width: '100%', justifyContent: 'space-between' }}
+                    align="start"
+                    wrap
+                >
+                    <div>
+                        <Typography.Title level={2}>
+                            Quản lý danh sách người dùng
+                        </Typography.Title>
+                        <Typography.Paragraph style={{ maxWidth: 720 }}>
+                            Quản lý tài khoản, trạng thái hoạt động và phân
+                            quyền người dùng trong toàn hệ thống.
+                        </Typography.Paragraph>
+                    </div>
                     <Button type="primary" size="large" icon={<PlusOutlined />}>
                         Thêm người dùng
                     </Button>
-                }
-            />
+                </Space>
+            </section>
 
             <Card variant="borderless" className={styles.filterCard}>
                 <div className={styles.filterRow}>
@@ -86,7 +107,11 @@ const AdminManageUserPage = () => {
                         ]}
                         onChange={(value) => setStatusFilter(value)}
                     />
-                    <Button size="large" icon={<FilterOutlined />}>
+                    <Button
+                        style={{ height: 40 }}
+                        size="large"
+                        icon={<FilterOutlined />}
+                    >
                         Lọc nâng cao
                     </Button>
                 </div>

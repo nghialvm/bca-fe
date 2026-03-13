@@ -1,4 +1,6 @@
-import { Avatar, Card, Space, Table, Tag } from 'antd'
+import { useEffect, useState } from 'react'
+
+import { Avatar, Card, Skeleton, Space, Table, Tag, Typography } from 'antd'
 
 import { Column, Line } from '@ant-design/charts'
 import {
@@ -9,17 +11,19 @@ import {
     UserOutlined,
 } from '@ant-design/icons'
 
-import AdminPageHeader from './AdminPageHeader'
-import AdminStatCard from './AdminStatCard'
-import styles from './AdminUi.module.css'
+import AdminStatCard from '@/components/cards/AdminStatCard'
 import {
     activityTrend,
     dashboardStats,
     recentApplications,
     recruitmentStatus,
-} from './adminData'
+} from '@/mock/adminData'
 
-const accentColors = ['#2f54eb', '#389e0d', '#722ed1', '#d48806']
+import styles from '../styles/AdminUi.module.css'
+
+const { Paragraph, Title } = Typography
+
+const accentColors = ['#0B3D2E', '#166534', '#2E7D60', '#B7791F']
 const statIcons = [
     <FileTextOutlined />,
     <TeamOutlined />,
@@ -41,12 +45,36 @@ const activityData = activityTrend.flatMap((item) => [
 ])
 
 const AdminDashboardPage = () => {
+    const [chartsReady, setChartsReady] = useState(false)
+
+    useEffect(() => {
+        const frameId = window.requestAnimationFrame(() => {
+            setChartsReady(true)
+        })
+
+        return () => {
+            window.cancelAnimationFrame(frameId)
+        }
+    }, [])
+
     return (
         <div className={styles.page}>
-            <AdminPageHeader
-                title="Dashboard"
-                subtitle="Tổng quan hệ thống tuyển dụng toàn quốc dành cho quản trị viên H05."
-            />
+            <section className="portal-hero portal-hero--light">
+                <span className="portal-hero__eyebrow">Tổng quan hệ thống</span>
+                <Space
+                    style={{ width: '100%', justifyContent: 'space-between' }}
+                    align="start"
+                    wrap
+                >
+                    <div>
+                        <Title level={2}>Tổng quan hệ thống tuyển dụng</Title>
+                        <Paragraph style={{ maxWidth: 720 }}>
+                            Theo dõi toàn cảnh vận hành tuyển dụng trên toàn
+                            quốc dành cho quản trị viên H05.
+                        </Paragraph>
+                    </div>
+                </Space>
+            </section>
 
             <div className={styles.statsGrid}>
                 {dashboardStats.map((item, index) => (
@@ -75,23 +103,27 @@ const AdminDashboardPage = () => {
                         Theo dõi số lượng hồ sơ và tin tuyển dụng theo tháng.
                     </div>
                     <div className={styles.chart}>
-                        <Line
-                            data={activityData}
-                            xField="month"
-                            yField="value"
-                            colorField="type"
-                            seriesField="type"
-                            smooth
-                            point={{
-                                size: 4,
-                                shape: 'circle',
-                            }}
-                            axis={{
-                                y: {
-                                    labelFormatter: '~s',
-                                },
-                            }}
-                        />
+                        {chartsReady ? (
+                            <Line
+                                data={activityData}
+                                xField="month"
+                                yField="value"
+                                colorField="type"
+                                seriesField="type"
+                                smooth
+                                point={{
+                                    size: 4,
+                                    shape: 'circle',
+                                }}
+                                axis={{
+                                    y: {
+                                        labelFormatter: '~s',
+                                    },
+                                }}
+                            />
+                        ) : (
+                            <Skeleton active paragraph={{ rows: 8 }} />
+                        )}
                     </div>
                 </Card>
 
@@ -108,15 +140,25 @@ const AdminDashboardPage = () => {
                         Phân bổ trạng thái phê duyệt các chiến dịch và hồ sơ.
                     </div>
                     <div className={styles.chart}>
-                        <Column
-                            data={recruitmentStatus}
-                            xField="name"
-                            yField="value"
-                            color="#2f54eb"
-                            label={{
-                                position: 'top',
-                            }}
-                        />
+                        {chartsReady ? (
+                            <Column
+                                data={recruitmentStatus}
+                                xField="name"
+                                yField="value"
+                                color="#0B3D2E"
+                                label={{
+                                    position: 'top',
+                                }}
+                                axis={{
+                                    x: {
+                                        labelAutoHide: true,
+                                        labelAutoRotate: false,
+                                    },
+                                }}
+                            />
+                        ) : (
+                            <Skeleton active paragraph={{ rows: 8 }} />
+                        )}
                     </div>
                 </Card>
             </div>
@@ -146,8 +188,8 @@ const AdminDashboardPage = () => {
                                     <Avatar
                                         icon={<UserOutlined />}
                                         style={{
-                                            backgroundColor: '#e6f4ff',
-                                            color: '#1677ff',
+                                            backgroundColor: '#edf7f1',
+                                            color: '#0B3D2E',
                                         }}
                                     />
                                     <span className={styles.tableMainText}>

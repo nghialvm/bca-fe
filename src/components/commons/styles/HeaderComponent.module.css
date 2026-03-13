@@ -20,7 +20,7 @@
     border: none;
     border-radius: 14px;
     background: #ffffff;
-    box-shadow: 0 10px 24px rgba(13, 47, 111, 0.08);
+    box-shadow: 0 10px 24px rgba(9, 39, 29, 0.08);
 }
 
 .search {
@@ -30,9 +30,9 @@
 .search :global(.ant-input-affix-wrapper) {
     height: 48px;
     border-radius: 16px;
-    border: 1px solid rgba(21, 52, 93, 0.08);
+    border: 1px solid rgba(11, 61, 46, 0.08);
     background: rgba(255, 255, 255, 0.88);
-    box-shadow: 0 14px 32px rgba(13, 47, 111, 0.06);
+    box-shadow: 0 14px 32px rgba(9, 39, 29, 0.06);
 }
 
 .rightSection {
@@ -48,7 +48,7 @@
     border: none;
     border-radius: 14px;
     background: #ffffff;
-    box-shadow: 0 10px 24px rgba(13, 47, 111, 0.08);
+    box-shadow: 0 10px 24px rgba(9, 39, 29, 0.08);
 }
 
 .profile {
@@ -58,7 +58,7 @@
     padding: 8px 12px;
     border-radius: 18px;
     background: rgba(255, 255, 255, 0.92);
-    box-shadow: 0 14px 32px rgba(13, 47, 111, 0.08);
+    box-shadow: 0 14px 32px rgba(9, 39, 29, 0.08);
     cursor: pointer;
 }
 
@@ -69,14 +69,14 @@
 }
 
 .profileName {
-    color: #102543;
+    color: #102117;
     font-size: 14px;
     font-weight: 700;
     line-height: 1.2;
 }
 
 .profileRole {
-    color: #5f6f86;
+    color: #5f6f68;
     font-size: 12px;
     line-height: 1.2;
 }

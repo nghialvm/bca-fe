@@ -7,6 +7,7 @@ import '@/configs/dayjs.config'
 import App from './App'
 import './assets/css/base.css'
 import store from './stores'
+import './styles/portal.css'
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 
