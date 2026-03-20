@@ -10,17 +10,15 @@ const NotAuthenticatedLayout: React.FC = () => {
     return (
         <Layout
             style={{
-                height: '100vh',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                minHeight: '100vh',
+                background: 'transparent',
             }}
         >
             <Content
                 style={{
                     width: '100%',
-                    padding: '24px',
-                    borderRadius: '8px',
+                    minHeight: '100vh',
+                    background: 'transparent',
                 }}
             >
                 <Outlet />

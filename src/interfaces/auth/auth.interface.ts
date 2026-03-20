@@ -2,10 +2,9 @@
 export type Role = 'guest' | 'admin'
 
 export interface LoginDto {
-    email: string
+    userNameOrEmailAddress: string
     password: string
-    twoFactorCode: string
-    twoFactorRecoveryCode: string
+    rememberMe: boolean
 }
 
 export interface LoginResult {

@@ -1,13 +1,15 @@
-import { FC, useEffect, useState } from 'react'
+import {FC, useEffect, useState} from 'react'
 
-import { Button, Card, Flex, Form, Input, Typography, notification } from 'antd'
+import {Button, Checkbox, Form, Input, notification, Typography} from 'antd'
 
-import { LockOutlined, UserOutlined } from '@ant-design/icons'
-import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import {LockOutlined, UserOutlined} from '@ant-design/icons'
+import {useDispatch, useSelector} from 'react-redux'
+import {useNavigate} from 'react-router-dom'
 
-import { loginAction } from '@/stores/auth/authAction'
-import { getDefaultPathByRole, getSiteRole } from '@/utils/role'
+import {loginAction} from '@/stores/auth/authAction'
+import {getDefaultPathByRole, getSiteRole} from '@/utils/role'
+
+import styles from '../styles/LoginPage.module.css'
 
 const { Title } = Typography
 
@@ -31,10 +33,9 @@ const LoginPage: FC = () => {
         try {
             const loginResponse: any = await dispatch(
                 loginAction({
-                    email: values.email,
+                    userNameOrEmailAddress: values.username,
                     password: values.password,
-                    twoFactorCode: '',
-                    twoFactorRecoveryCode: '',
+                    rememberMe: values.remember,
                 })
             )
             if (loginResponse.type === '/auth/login/fulfilled') {
@@ -64,76 +65,115 @@ const LoginPage: FC = () => {
         }
     }
 
-    return (
-        <Flex style={{ height: '60%' }} justify="center" align="center">
-            <Card
-                variant="borderless"
-                style={{
-                    width: '100%',
-                    maxWidth: 400,
-                    maxHeight: 600,
-                }}
-            >
-                <Flex vertical gap={24} align="center">
-                    <Flex
-                        justify="center"
-                        align="center"
-                        gap={4}
-                        style={{
-                            flexDirection: 'column',
-                        }}
-                    >
-                        <Title level={3}>Sign in to BCA</Title>
-                    </Flex>
+    const onLoginWithUsbToken = () => {
+        notification.info({
+            message: 'USB Token',
+            description: 'Chức năng đăng nhập bằng USB Token đang được cập nhật.',
+        })
+    }
 
-                    <Form onFinish={onLoginFinish} style={{ width: '100%' }}>
+    return (
+        <div className={styles.loginPage}>
+            <section className={styles.heroSection}>
+                <div className={styles.heroContent}>
+                </div>
+            </section>
+
+            <section className={styles.formSection}>
+                <div className={styles.loginCard}>
+                    <Title level={1} className={styles.title}>
+                        Đăng nhập
+                    </Title>
+
+                    <Form
+                        autoComplete="off"
+                        onFinish={onLoginFinish}
+                        className={styles.form}
+                        initialValues={{remember: false}}
+                    >
+                        <div className={styles.fieldLabel}>Tên đăng nhập</div>
                         <Form.Item
-                            name="email"
+                            name="username"
+                            className={styles.formItem}
                             rules={[
                                 {
                                     required: true,
-                                    message: 'Please enter your username',
+                                    message: 'Vui lòng nhập tên đăng nhập',
                                 },
                             ]}
                         >
                             <Input
-                                prefix={<UserOutlined />}
-                                placeholder="Username"
+                                className={styles.input}
+                                prefix={
+                                    <UserOutlined
+                                        className={styles.inputIcon}
+                                    />
+                                }
+                                placeholder="Nhập tên"
+                                size="large"
+                            />
+                        </Form.Item>
+
+                        <div className={styles.fieldLabel}>Mật khẩu</div>
+                        <Form.Item
+                            name="password"
+                            className={styles.formItem}
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Vui lòng nhập mật khẩu',
+                                },
+                            ]}
+                        >
+                            <Input.Password
+                                className={styles.input}
+                                prefix={
+                                    <LockOutlined
+                                        className={styles.inputIcon}
+                                    />
+                                }
+                                placeholder="Nhập mật khẩu"
                                 size="large"
                             />
                         </Form.Item>
 
                         <Form.Item
-                            name="password"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: 'Please enter your password',
-                                },
-                            ]}
+                            name="remember"
+                            valuePropName="checked"
+                            className={styles.rememberItem}
+                            label={null}
                         >
-                            <Input.Password
-                                prefix={<LockOutlined />}
-                                placeholder="Password"
-                                size="large"
-                            />
+                            <Checkbox className={styles.rememberCheckbox}>
+                                Nhớ mật khẩu đăng nhập
+                            </Checkbox>
                         </Form.Item>
 
-                        <Form.Item>
+                        <Form.Item className={styles.actionItem}>
                             <Button
+                                className={styles.submitButton}
                                 type="primary"
                                 htmlType="submit"
                                 block
                                 size="large"
                                 loading={loginLoading}
                             >
-                                Sign In
+                                Đăng nhập
                             </Button>
                         </Form.Item>
+
+                        <Button
+                            className={styles.usbButton}
+                            htmlType="button"
+                            block
+                            size="large"
+                            onClick={onLoginWithUsbToken}
+                        >
+                            Đăng ký
+                        </Button>
                     </Form>
-                </Flex>
-            </Card>
-        </Flex>
+                </div>
+            </section>
+        </div>
     )
 }
 

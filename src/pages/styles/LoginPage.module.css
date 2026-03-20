@@ -1,0 +1,200 @@
+.loginPage {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 476px);
+    align-items: center;
+    gap: clamp(32px, 5vw, 88px);
+    padding: clamp(20px, 3vw, 40px);
+    background:
+        url('/bg_fullhd.png') center center / cover no-repeat;
+}
+
+.heroSection {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+    padding: 24px;
+}
+
+.heroContent {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    text-align: center;
+}
+
+.heroLogo {
+    width: min(100%, 420px);
+    object-fit: contain;
+    filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.22));
+}
+
+.heroText {
+    max-width: 620px;
+    color: #fff;
+    font-size: clamp(22px, 2vw, 30px);
+    line-height: 1.25;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+}
+
+.formSection {
+    display: flex;
+    justify-content: center;
+}
+
+.loginCard {
+    width: 100%;
+    padding: clamp(28px, 3vw, 42px);
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 24px 70px rgba(3, 38, 21, 0.28);
+    backdrop-filter: blur(4px);
+}
+
+.title {
+    margin-bottom: 36px !important;
+    color: #0f172a !important;
+    font-size: clamp(34px, 3vw, 52px) !important;
+    line-height: 1.08 !important;
+    font-weight: 700 !important;
+}
+
+.form {
+    width: 100%;
+}
+
+.fieldLabel {
+    margin-bottom: 10px;
+    color: #111827;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.formItem {
+    margin-bottom: 24px;
+}
+
+.input {
+    border-radius: 6px;
+    border-color: #d1d5db;
+    padding-inline: 10px;
+    box-shadow: none;
+}
+
+.input:hover,
+.input:focus,
+.input:focus-within {
+    border-color: #0d6830;
+    box-shadow: 0 0 0 2px rgba(13, 104, 48, 0.08);
+}
+
+.inputIcon {
+    color: #111827;
+}
+
+.rememberItem {
+    margin-bottom: 28px;
+}
+
+.rememberCheckbox {
+    color: #111827;
+    font-weight: 600;
+}
+
+.actionItem {
+    margin-bottom: 12px;
+}
+
+.submitButton,
+.usbButton {
+    height: 56px !important;
+    border-radius: 6px !important;
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    box-shadow: none !important;
+}
+
+.submitButton {
+    background: #0f6a2d !important;
+    border-color: #0f6a2d !important;
+}
+
+.submitButton:hover,
+.submitButton:focus {
+    background: #0b5825 !important;
+    border-color: #0b5825 !important;
+}
+
+.usbButton {
+    color: #fff !important;
+    background: #56b44f !important;
+    border-color: #56b44f !important;
+}
+
+.usbButton:hover,
+.usbButton:focus {
+    color: #fff !important;
+    background: #459e3f !important;
+    border-color: #459e3f !important;
+}
+
+@media (max-width: 1100px) {
+    .loginPage {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 24px;
+    }
+
+    .heroSection {
+        padding-bottom: 0;
+    }
+
+    .heroLogo {
+        width: min(100%, 280px);
+    }
+
+    .heroText {
+        max-width: 520px;
+        font-size: 22px;
+    }
+
+    .formSection {
+        width: 100%;
+        max-width: 520px;
+    }
+}
+
+@media (max-width: 767px) {
+    .loginPage {
+        padding: 16px;
+        gap: 18px;
+    }
+
+    .heroSection {
+        padding: 8px 0 0;
+    }
+
+    .heroText {
+        font-size: 18px;
+    }
+
+    .loginCard {
+        padding: 24px 20px;
+        border-radius: 20px;
+    }
+
+    .title {
+        margin-bottom: 28px !important;
+        font-size: 40px !important;
+    }
+
+    .submitButton,
+    .usbButton {
+        height: 50px !important;
+        font-size: 16px !important;
+    }
+}
