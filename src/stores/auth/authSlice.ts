@@ -8,15 +8,9 @@ import {
     removeLocalStorage,
 } from '@/utils/storage'
 
-import { loginAction } from './authAction'
+import { getCurrentUserAction, loginAction } from './authAction'
 
-const initialUser: User = {
-    operator_id: '',
-    full_name: '',
-    team_id: '',
-    role_id: 0,
-    access_level: '',
-}
+const initialUser: User = {}
 
 const initialState: any = {
     isAuthenticated: Boolean(getLocalStorage(CREDENTIALS.IS_LOGIN)) || false,
@@ -34,26 +28,41 @@ const authSlice = createSlice({
             state.user = null
             removeLocalStorage(CREDENTIALS.IS_LOGIN)
             removeLocalStorage(CREDENTIALS.AUTHENTICATION_TOKEN)
+            removeLocalStorage(CREDENTIALS.USER_INFO)
         },
     },
     extraReducers: (builder) => {
         builder
             .addCase(loginAction.fulfilled, (state, action: any) => {
-                state.isAuthenticated = true
-                state.user = action.payload.user
-                putLocalStorage(
-                    CREDENTIALS.AUTHENTICATION_TOKEN,
-                    action.payload.token
-                )
-                putLocalStorage(
-                    CREDENTIALS.USER_INFO,
-                    JSON.stringify(action.payload.user)
-                )
-                putLocalStorage(CREDENTIALS.IS_LOGIN, 'true')
+                if (action.payload?.token) {
+                    putLocalStorage(
+                        CREDENTIALS.AUTHENTICATION_TOKEN,
+                        action.payload.token
+                    )
+                }
             })
             .addCase(loginAction.rejected, (state, action) => {
                 state.isAuthenticated = false
                 state.user = null
+                removeLocalStorage(CREDENTIALS.IS_LOGIN)
+                removeLocalStorage(CREDENTIALS.AUTHENTICATION_TOKEN)
+                removeLocalStorage(CREDENTIALS.USER_INFO)
+            })
+            .addCase(getCurrentUserAction.fulfilled, (state, action: any) => {
+                state.isAuthenticated = true
+                state.user = action.payload
+                putLocalStorage(
+                    CREDENTIALS.USER_INFO,
+                    JSON.stringify(action.payload)
+                )
+                putLocalStorage(CREDENTIALS.IS_LOGIN, 'true')
+            })
+            .addCase(getCurrentUserAction.rejected, (state) => {
+                state.isAuthenticated = false
+                state.user = null
+                removeLocalStorage(CREDENTIALS.IS_LOGIN)
+                removeLocalStorage(CREDENTIALS.AUTHENTICATION_TOKEN)
+                removeLocalStorage(CREDENTIALS.USER_INFO)
             })
     },
 })

@@ -33,10 +33,13 @@ const HeaderComponent = ({
 }: HeaderComponentProps) => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
-    const isAuthenticated = true
+    const isAuthenticated = useSelector(
+        (store: any) => store.auth.isAuthenticated
+    )
     const user = useSelector((store: any) => store.auth.user)
     const siteRole = getSiteRole(user)
-    const displayName = user?.full_name || 'Admin'
+    const displayName =
+        user?.full_name || user?.userName || user?.email || 'Admin'
     const profilePath = getProfilePathByRole(siteRole)
     const roleLabel =
         siteRole === SITE_ROLES.ADMIN

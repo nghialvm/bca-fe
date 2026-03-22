@@ -3,7 +3,12 @@ import { User } from '@/interfaces/user/user.interface'
 import { PATHS } from '@/routers/path'
 
 export const getSiteRole = (user?: Partial<User> | null): SiteRole => {
-    const accessLevel = String(user?.access_level || 'candidate').toLowerCase()
+    const roleValue = Array.isArray(user?.roles)
+        ? user?.roles.join(' ')
+        : user?.roles
+    const accessLevel = String(
+        user?.access_level || roleValue || 'candidate'
+    ).toLowerCase()
 
     if (accessLevel.includes('admin')) {
         return SITE_ROLES.ADMIN

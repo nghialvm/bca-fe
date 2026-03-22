@@ -1,6 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-import { Avatar, Card, Skeleton, Space, Table, Tag, Typography } from 'antd'
+import {
+    Avatar,
+    Card,
+    Empty,
+    Skeleton,
+    Space,
+    Table,
+    Tag,
+    Typography,
+} from 'antd'
 
 import { Column, Line } from '@ant-design/charts'
 import {
@@ -10,14 +19,24 @@ import {
     TeamOutlined,
     UserOutlined,
 } from '@ant-design/icons'
+import dayjs from 'dayjs'
 
 import AdminStatCard from '@/components/cards/AdminStatCard'
+import AdminService, {
+    ApplicationDto,
+    ApplicationStatusCount,
+    CandidateDto,
+    DepartmentDto,
+    RecruitmentDashboardSummary,
+    RecruitmentRequestDto,
+    RecruitmentTrendItem,
+} from '@/services/admin'
 import {
-    activityTrend,
-    dashboardStats,
-    recentApplications,
-    recruitmentStatus,
-} from '@/mock/adminData'
+    formatCount,
+    formatDisplayDate,
+    getApplicationStatusColor,
+    getApplicationStatusLabel,
+} from '@/utils/admin'
 
 import styles from '../styles/AdminUi.module.css'
 
@@ -31,21 +50,49 @@ const statIcons = [
     <ClockCircleOutlined />,
 ]
 
-const activityData = activityTrend.flatMap((item) => [
-    {
-        month: item.month,
-        type: 'Hồ sơ',
-        value: item.applications,
-    },
-    {
-        month: item.month,
-        type: 'Tin tuyển dụng',
-        value: item.postings,
-    },
-])
+type ActivityPoint = {
+    month: string
+    type: string
+    value: number
+}
+
+type StatusPoint = {
+    name: string
+    value: number
+}
+
+type RecentApplicationRow = {
+    id: string
+    key: string
+    candidate: string
+    position: string
+    unit: string
+    status: string | number
+    date: string
+}
+
+const getMonthLabel = (value?: string | null) => {
+    if (!value) return '-'
+
+    const parsed = dayjs(value)
+    if (parsed.isValid()) {
+        return parsed.format('MM/YYYY')
+    }
+
+    return value
+}
 
 const AdminDashboardPage = () => {
     const [chartsReady, setChartsReady] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [summary, setSummary] = useState<RecruitmentDashboardSummary | null>(
+        null
+    )
+    const [activityData, setActivityData] = useState<ActivityPoint[]>([])
+    const [statusData, setStatusData] = useState<StatusPoint[]>([])
+    const [recentApplications, setRecentApplications] = useState<
+        RecentApplicationRow[]
+    >([])
 
     useEffect(() => {
         const frameId = window.requestAnimationFrame(() => {
@@ -56,6 +103,163 @@ const AdminDashboardPage = () => {
             window.cancelAnimationFrame(frameId)
         }
     }, [])
+
+    useEffect(() => {
+        const loadDashboard = async () => {
+            setLoading(true)
+            try {
+                const [
+                    summaryResponse,
+                    trendResponse,
+                    statusResponse,
+                    recruitmentResponse,
+                    applicationResponse,
+                    candidateResponse,
+                    departmentResponse,
+                ] = await Promise.all([
+                    AdminService.getDashboardSummary(),
+                    AdminService.getRecruitmentTrend(),
+                    AdminService.getApplicationStatusStatistics(),
+                    AdminService.getRecruitmentRequests({
+                        Sorting: 'creationTime desc',
+                        MaxResultCount: 1000,
+                    }),
+                    AdminService.getApplications({
+                        Sorting: 'appliedTime desc',
+                        MaxResultCount: 1000,
+                    }),
+                    AdminService.getCandidates({
+                        Sorting: 'creationTime desc',
+                        MaxResultCount: 1000,
+                    }),
+                    AdminService.getDepartments({
+                        Sorting: 'name asc',
+                        MaxResultCount: 1000,
+                    }),
+                ])
+
+                const summaryData =
+                    summaryResponse as RecruitmentDashboardSummary
+                const trendItems = (trendResponse ||
+                    []) as RecruitmentTrendItem[]
+                const statusItems = (statusResponse ||
+                    []) as ApplicationStatusCount[]
+                const recruitments = (recruitmentResponse?.items ||
+                    []) as RecruitmentRequestDto[]
+                const applications = (applicationResponse?.items ||
+                    []) as ApplicationDto[]
+                const candidates = (candidateResponse?.items ||
+                    []) as CandidateDto[]
+                const departments = (departmentResponse?.items ||
+                    []) as DepartmentDto[]
+
+                const postingsByMonth = recruitments.reduce(
+                    (accumulator, item) => {
+                        const month = getMonthLabel(item.creationTime)
+                        accumulator[month] = (accumulator[month] || 0) + 1
+
+                        return accumulator
+                    },
+                    {} as Record<string, number>
+                )
+
+                const trendPoints = trendItems.flatMap((item) => [
+                    {
+                        month: getMonthLabel(item.period),
+                        type: 'Hồ sơ',
+                        value: item.totalApplications || 0,
+                    },
+                    {
+                        month: getMonthLabel(item.period),
+                        type: 'Tin tuyển dụng',
+                        value: postingsByMonth[getMonthLabel(item.period)] || 0,
+                    },
+                ])
+
+                const candidatesById = new Map(
+                    candidates.map((item) => [item.id, item.fullName])
+                )
+                const departmentsById = new Map(
+                    departments.map((item) => [item.id, item.name])
+                )
+                const recruitmentById = new Map(
+                    recruitments.map((item) => [item.id, item])
+                )
+
+                setSummary(summaryData)
+                setActivityData(trendPoints)
+                setStatusData(
+                    statusItems.map((item) => ({
+                        name: getApplicationStatusLabel(item.status),
+                        value: item.count || 0,
+                    }))
+                )
+                setRecentApplications(
+                    applications.slice(0, 6).map((item) => {
+                        const recruitment = recruitmentById.get(
+                            item.recruitmentRequestId
+                        )
+
+                        return {
+                            id: item.id,
+                            key: item.id,
+                            candidate:
+                                candidatesById.get(item.candidateId) ||
+                                'Chưa cập nhật ứng viên',
+                            position: recruitment?.title || '-',
+                            unit:
+                                departmentsById.get(
+                                    recruitment?.departmentId || ''
+                                ) || '-',
+                            status: item.status,
+                            date: formatDisplayDate(item.appliedTime),
+                        }
+                    })
+                )
+            } catch {
+                setSummary(null)
+                setActivityData([])
+                setStatusData([])
+                setRecentApplications([])
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        void loadDashboard()
+    }, [])
+
+    const dashboardStats = useMemo(
+        () => [
+            {
+                key: 'requests',
+                label: 'Tổng tin tuyển dụng',
+                value: formatCount(summary?.totalRecruitmentRequests),
+                change: `Đang đăng ${formatCount(
+                    summary?.totalPublishedRecruitmentRequests
+                )}`,
+            },
+            {
+                key: 'candidates',
+                label: 'Tổng ứng viên',
+                value: formatCount(summary?.totalCandidates),
+                change: `${formatCount(summary?.totalApplications)} hồ sơ`,
+            },
+            {
+                key: 'offers',
+                label: 'Tổng offer',
+                value: formatCount(summary?.totalOffers),
+                change: `${formatCount(summary?.totalOfferAccepted)} đã nhận`,
+            },
+            {
+                key: 'hires',
+                label: 'Đã tuyển',
+                value: formatCount(summary?.totalHiredEmployees),
+                change: `${summary?.hiringRate || 0}% tỷ lệ tuyển`,
+            },
+        ],
+        [summary]
+    )
 
     return (
         <div className={styles.page}>
@@ -69,8 +273,8 @@ const AdminDashboardPage = () => {
                     <div>
                         <Title level={2}>Tổng quan hệ thống tuyển dụng</Title>
                         <Paragraph style={{ maxWidth: 720 }}>
-                            Theo dõi toàn cảnh vận hành tuyển dụng trên toàn
-                            quốc dành cho quản trị viên H05.
+                            Theo dõi toàn cảnh vận hành tuyển dụng trên toàn hệ
+                            thống cho quản trị viên.
                         </Paragraph>
                     </div>
                 </Space>
@@ -103,7 +307,9 @@ const AdminDashboardPage = () => {
                         Theo dõi số lượng hồ sơ và tin tuyển dụng theo tháng.
                     </div>
                     <div className={styles.chart}>
-                        {chartsReady ? (
+                        {loading || !chartsReady ? (
+                            <Skeleton active paragraph={{ rows: 8 }} />
+                        ) : activityData.length ? (
                             <Line
                                 data={activityData}
                                 xField="month"
@@ -122,7 +328,7 @@ const AdminDashboardPage = () => {
                                 }}
                             />
                         ) : (
-                            <Skeleton active paragraph={{ rows: 8 }} />
+                            <Empty description="Không có dữ liệu xu hướng" />
                         )}
                     </div>
                 </Card>
@@ -132,17 +338,19 @@ const AdminDashboardPage = () => {
                     className={styles.sectionCard}
                     title={
                         <span className={styles.sectionTitle}>
-                            Trạng thái tuyển dụng
+                            Trạng thái hồ sơ
                         </span>
                     }
                 >
                     <div className={styles.sectionHint}>
-                        Phân bổ trạng thái phê duyệt các chiến dịch và hồ sơ.
+                        Phân bố hồ sơ theo các bước xử lý hiện tại.
                     </div>
                     <div className={styles.chart}>
-                        {chartsReady ? (
+                        {loading || !chartsReady ? (
+                            <Skeleton active paragraph={{ rows: 8 }} />
+                        ) : statusData.length ? (
                             <Column
-                                data={recruitmentStatus}
+                                data={statusData}
                                 xField="name"
                                 yField="value"
                                 color="#0B3D2E"
@@ -157,7 +365,7 @@ const AdminDashboardPage = () => {
                                 }}
                             />
                         ) : (
-                            <Skeleton active paragraph={{ rows: 8 }} />
+                            <Empty description="Không có dữ liệu trạng thái" />
                         )}
                     </div>
                 </Card>
@@ -171,12 +379,17 @@ const AdminDashboardPage = () => {
                 }
             >
                 <div className={styles.sectionHint}>
-                    Danh sách hồ sơ cần quản trị viên theo dõi và kiểm tra
-                    nhanh.
+                    Danh sách hồ sơ cần quản trị viên theo dõi nhanh.
                 </div>
                 <Table
                     rowKey="key"
+                    loading={loading}
                     pagination={false}
+                    locale={{
+                        emptyText: (
+                            <Empty description="Không có hồ sơ ứng tuyển" />
+                        ),
+                    }}
                     dataSource={recentApplications}
                     columns={[
                         {
@@ -212,18 +425,12 @@ const AdminDashboardPage = () => {
                             title: 'Trạng thái',
                             dataIndex: 'status',
                             key: 'status',
-                            render: (value: string) => (
+                            render: (value: string | number) => (
                                 <Tag
-                                    color={
-                                        value === 'Đã duyệt'
-                                            ? 'success'
-                                            : value === 'Chờ duyệt'
-                                              ? 'processing'
-                                              : 'warning'
-                                    }
+                                    color={getApplicationStatusColor(value)}
                                     className={styles.statusTag}
                                 >
-                                    {value}
+                                    {getApplicationStatusLabel(value)}
                                 </Tag>
                             ),
                         },

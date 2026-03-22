@@ -28,6 +28,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 import HeaderComponent from '@/components/commons/HeaderComponent'
 import NavBar from '@/components/commons/NavBar'
 import { SITE_ROLES, SiteRole } from '@/constants/role'
+import { User } from '@/interfaces/user/user.interface'
 import { PATHS } from '@/routers/path'
 import { logout } from '@/stores/auth/authSlice'
 import { getProfilePathByRole, getSiteRole } from '@/utils/role'
@@ -94,20 +95,16 @@ const portalTheme: ThemeConfig = {
 
 type RootState = {
     auth: {
-        user?: {
-            full_name?: string
-            access_level?: string
-            role_id?: number
-        } | null
+        user?: User | null
     }
 }
 
-const getUserInitials = (fullName?: string) => {
-    if (!fullName) {
+const getUserInitials = (displayName?: string) => {
+    if (!displayName) {
         return 'BC'
     }
 
-    return fullName
+    return displayName
         .split(' ')
         .filter(Boolean)
         .slice(0, 2)
@@ -252,6 +249,8 @@ const CandidateShell = () => {
             .find((item) =>
                 location.pathname.startsWith(String(item?.key || ''))
             )?.key || PATHS.CANDIDATE_DASHBOARD
+    const displayName =
+        user?.full_name || user?.userName || user?.email || 'Ứng viên hệ thống'
 
     return (
         <Layout className={styles.candidateShell}>
@@ -325,13 +324,12 @@ const CandidateShell = () => {
                         <Button type="text" className={styles.profileTrigger}>
                             <Space size={12}>
                                 <Avatar className={styles.profileAvatar}>
-                                    {getUserInitials(user?.full_name)}
+                                    {getUserInitials(displayName)}
                                 </Avatar>
                                 {screens.lg ? (
                                     <div className={styles.profileMeta}>
                                         <Text className={styles.profileName}>
-                                            {user?.full_name ||
-                                                'Ứng viên hệ thống'}
+                                            {displayName}
                                         </Text>
                                         <Text className={styles.profileRole}>
                                             Ứng viên

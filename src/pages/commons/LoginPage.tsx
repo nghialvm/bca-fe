@@ -1,13 +1,13 @@
-import {FC, useEffect, useState} from 'react'
+import { FC, useEffect, useState } from 'react'
 
-import {Button, Checkbox, Form, Input, notification, Typography} from 'antd'
+import { Button, Checkbox, Form, Input, Typography, notification } from 'antd'
 
-import {LockOutlined, UserOutlined} from '@ant-design/icons'
-import {useDispatch, useSelector} from 'react-redux'
-import {useNavigate} from 'react-router-dom'
+import { LockOutlined, UserOutlined } from '@ant-design/icons'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 
-import {loginAction} from '@/stores/auth/authAction'
-import {getDefaultPathByRole, getSiteRole} from '@/utils/role'
+import { getCurrentUserAction, loginAction } from '@/stores/auth/authAction'
+import { getDefaultPathByRole, getSiteRole } from '@/utils/role'
 
 import styles from '../styles/LoginPage.module.css'
 
@@ -38,18 +38,27 @@ const LoginPage: FC = () => {
                     rememberMe: values.remember,
                 })
             )
-            if (loginResponse.type === '/auth/login/fulfilled') {
-                notification.success({
-                    message: 'Login successfully!',
-                    description: 'Welcome back',
-                })
-                navigate(
-                    getDefaultPathByRole(
-                        getSiteRole(loginResponse.payload.user)
-                    ),
-                    { replace: true }
-                )
-            } else if (loginResponse.type === '/auth/login/rejected') {
+            if (loginAction.fulfilled.match(loginResponse)) {
+                const userResponse: any = await dispatch(getCurrentUserAction())
+                const user = userResponse.payload
+                if (
+                    getCurrentUserAction.fulfilled.match(userResponse) &&
+                    user
+                ) {
+                    notification.success({
+                        message: 'Login successfully!',
+                        description: 'Welcome back',
+                    })
+                    navigate(getDefaultPathByRole(getSiteRole(user)), {
+                        replace: true,
+                    })
+                } else {
+                    notification.error({
+                        message: 'Login failed!',
+                        description: 'Authenticated but could not load profile',
+                    })
+                }
+            } else if (loginAction.rejected.match(loginResponse)) {
                 notification.error({
                     message: 'Login failed!',
                     description: 'Incorrect username or password',
@@ -68,15 +77,15 @@ const LoginPage: FC = () => {
     const onLoginWithUsbToken = () => {
         notification.info({
             message: 'USB Token',
-            description: 'Chức năng đăng nhập bằng USB Token đang được cập nhật.',
+            description:
+                'Chức năng đăng nhập bằng USB Token đang được cập nhật.',
         })
     }
 
     return (
         <div className={styles.loginPage}>
             <section className={styles.heroSection}>
-                <div className={styles.heroContent}>
-                </div>
+                <div className={styles.heroContent}></div>
             </section>
 
             <section className={styles.formSection}>
@@ -89,7 +98,7 @@ const LoginPage: FC = () => {
                         autoComplete="off"
                         onFinish={onLoginFinish}
                         className={styles.form}
-                        initialValues={{remember: false}}
+                        initialValues={{ remember: false }}
                     >
                         <div className={styles.fieldLabel}>Tên đăng nhập</div>
                         <Form.Item

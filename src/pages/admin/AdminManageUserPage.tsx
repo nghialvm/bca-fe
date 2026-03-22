@@ -1,14 +1,16 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import {
     Button,
     Card,
+    Empty,
     Input,
     Select,
     Space,
     Table,
     Tag,
     Typography,
+    notification,
 } from 'antd'
 
 import {
@@ -20,28 +22,150 @@ import {
     StopOutlined,
 } from '@ant-design/icons'
 
-import { adminUsers } from '@/mock/adminData'
+import AdminService, {
+    IdentityRoleDto,
+    IdentityUserDto,
+} from '@/services/admin'
+import {
+    formatCount,
+    formatDisplayDateTime,
+    getDisplayName,
+    getUserStatusColor,
+    getUserStatusLabel,
+} from '@/utils/admin'
 
 import styles from '../styles/AdminUi.module.css'
+
+type UserRow = {
+    id: string
+    key: string
+    name: string
+    email: string
+    role: string
+    unit: string
+    isActive: boolean
+    creationTime: string
+}
 
 const AdminManageUserPage = () => {
     const [search, setSearch] = useState('')
     const [roleFilter, setRoleFilter] = useState<string | undefined>()
     const [statusFilter, setStatusFilter] = useState<string | undefined>()
+    const [loading, setLoading] = useState(false)
+    const [roles, setRoles] = useState<IdentityRoleDto[]>([])
+    const [rows, setRows] = useState<UserRow[]>([])
+
+    useEffect(() => {
+        const loadUsers = async () => {
+            setLoading(true)
+            try {
+                const [userResponse, roleResponse] = await Promise.all([
+                    AdminService.getIdentityUsers({
+                        Sorting: 'userName asc',
+                        MaxResultCount: 1000,
+                    }),
+                    AdminService.getIdentityRoles({
+                        Sorting: 'name asc',
+                        MaxResultCount: 1000,
+                    }),
+                ])
+
+                const users = (userResponse?.items || []) as IdentityUserDto[]
+                const availableRoles = (roleResponse?.items ||
+                    []) as IdentityRoleDto[]
+
+                const userRoles = await Promise.all(
+                    users.map(async (user) => {
+                        try {
+                            const roleResult =
+                                await AdminService.getIdentityUserRoles(user.id)
+                            const items = Array.isArray(roleResult?.items)
+                                ? roleResult.items
+                                : Array.isArray(roleResult)
+                                  ? roleResult
+                                  : []
+
+                            return {
+                                userId: user.id,
+                                roles: items as IdentityRoleDto[],
+                            }
+                        } catch {
+                            return {
+                                userId: user.id,
+                                roles: [] as IdentityRoleDto[],
+                            }
+                        }
+                    })
+                )
+
+                const rolesByUserId = new Map(
+                    userRoles.map((item) => [item.userId, item.roles])
+                )
+
+                setRoles(availableRoles)
+                setRows(
+                    users.map((user) => {
+                        const assignedRoles = rolesByUserId.get(user.id) || []
+
+                        return {
+                            id: user.id,
+                            key: user.id,
+                            name: getDisplayName(user),
+                            email: user.email || '-',
+                            role: assignedRoles[0]?.name || 'Chưa gán vai trò',
+                            unit: '-',
+                            isActive: Boolean(user.isActive),
+                            creationTime: formatDisplayDateTime(
+                                user.creationTime
+                            ),
+                        }
+                    })
+                )
+            } catch {
+                notification.error({
+                    message: 'Không tải được danh sách người dùng',
+                    description:
+                        'Kiểm tra identity/users, identity/roles và user roles API.',
+                })
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        void loadUsers()
+    }, [])
+
+    const roleOptions = useMemo(() => {
+        const uniqueRoles = new Set(
+            roles.map((role) => role.name).filter(Boolean) as string[]
+        )
+
+        rows.forEach((row) => {
+            if (row.role) uniqueRoles.add(row.role)
+        })
+
+        return Array.from(uniqueRoles).map((role) => ({
+            value: role,
+            label: role,
+        }))
+    }, [roles, rows])
 
     const filteredUsers = useMemo(() => {
-        return adminUsers.filter((user) => {
+        return rows.filter((user) => {
             const keyword = search.trim().toLowerCase()
             const matchesKeyword =
                 !keyword ||
                 user.name.toLowerCase().includes(keyword) ||
                 user.email.toLowerCase().includes(keyword)
             const matchesRole = !roleFilter || user.role === roleFilter
-            const matchesStatus = !statusFilter || user.status === statusFilter
+            const matchesStatus =
+                !statusFilter ||
+                (statusFilter === 'active' && user.isActive) ||
+                (statusFilter === 'inactive' && !user.isActive)
 
             return matchesKeyword && matchesRole && matchesStatus
         })
-    }, [roleFilter, search, statusFilter])
+    }, [roleFilter, rows, search, statusFilter])
 
     return (
         <div className={styles.page}>
@@ -57,8 +181,8 @@ const AdminManageUserPage = () => {
                             Quản lý danh sách người dùng
                         </Typography.Title>
                         <Typography.Paragraph style={{ maxWidth: 720 }}>
-                            Quản lý tài khoản, trạng thái hoạt động và phân
-                            quyền người dùng trong toàn hệ thống.
+                            Đồng bộ tài khoản, vai trò và trạng thái hoạt động
+                            từ hệ thống Identity để quản trị tập trung.
                         </Typography.Paragraph>
                     </div>
                     <Button type="primary" size="large" icon={<PlusOutlined />}>
@@ -66,6 +190,37 @@ const AdminManageUserPage = () => {
                     </Button>
                 </Space>
             </section>
+
+            <div className={styles.metricGrid}>
+                <div className={styles.metricBox}>
+                    <div className={styles.metricValue}>
+                        {formatCount(rows.length)}
+                    </div>
+                    <div className={styles.metricLabel}>Tổng người dùng</div>
+                </div>
+                <div className={styles.metricBox}>
+                    <div className={styles.metricValue}>
+                        {formatCount(
+                            rows.filter((item) => item.isActive).length
+                        )}
+                    </div>
+                    <div className={styles.metricLabel}>Đang hoạt động</div>
+                </div>
+                <div className={styles.metricBox}>
+                    <div className={styles.metricValue}>
+                        {formatCount(
+                            rows.filter((item) => !item.isActive).length
+                        )}
+                    </div>
+                    <div className={styles.metricLabel}>Tạm khóa</div>
+                </div>
+                <div className={styles.metricBox}>
+                    <div className={styles.metricValue}>
+                        {formatCount(roleOptions.length)}
+                    </div>
+                    <div className={styles.metricLabel}>Số nhóm vai trò</div>
+                </div>
+            </div>
 
             <Card variant="borderless" className={styles.filterCard}>
                 <div className={styles.filterRow}>
@@ -83,17 +238,7 @@ const AdminManageUserPage = () => {
                         size="large"
                         placeholder="Tất cả vai trò"
                         style={{ minWidth: 220 }}
-                        options={[
-                            { value: 'Quản trị viên', label: 'Quản trị viên' },
-                            {
-                                value: 'Quản lý đơn vị',
-                                label: 'Quản lý đơn vị',
-                            },
-                            {
-                                value: 'Nhân viên tuyển dụng',
-                                label: 'Nhân viên tuyển dụng',
-                            },
-                        ]}
+                        options={roleOptions}
                         onChange={(value) => setRoleFilter(value)}
                     />
                     <Select
@@ -102,8 +247,8 @@ const AdminManageUserPage = () => {
                         placeholder="Tất cả trạng thái"
                         style={{ minWidth: 220 }}
                         options={[
-                            { value: 'Hoạt động', label: 'Hoạt động' },
-                            { value: 'Tạm khóa', label: 'Tạm khóa' },
+                            { value: 'active', label: 'Hoạt động' },
+                            { value: 'inactive', label: 'Tạm khóa' },
                         ]}
                         onChange={(value) => setStatusFilter(value)}
                     />
@@ -120,17 +265,20 @@ const AdminManageUserPage = () => {
             <Card variant="borderless" className={styles.sectionCard}>
                 <Table
                     rowKey="key"
+                    loading={loading}
                     dataSource={filteredUsers}
-                    pagination={{ pageSize: 5 }}
+                    pagination={{ pageSize: 10 }}
+                    locale={{
+                        emptyText: (
+                            <Empty description="Không có người dùng phù hợp" />
+                        ),
+                    }}
                     columns={[
                         {
                             title: 'Người dùng',
                             dataIndex: 'name',
                             key: 'name',
-                            render: (
-                                _: string,
-                                record: (typeof adminUsers)[0]
-                            ) => (
+                            render: (_: string, record: UserRow) => (
                                 <div className={styles.tableNameCell}>
                                     <span className={styles.tableMainText}>
                                         {record.name}
@@ -153,25 +301,21 @@ const AdminManageUserPage = () => {
                         },
                         {
                             title: 'Trạng thái',
-                            dataIndex: 'status',
+                            dataIndex: 'isActive',
                             key: 'status',
-                            render: (value: string) => (
+                            render: (value: boolean) => (
                                 <Tag
-                                    color={
-                                        value === 'Hoạt động'
-                                            ? 'success'
-                                            : 'warning'
-                                    }
+                                    color={getUserStatusColor(value)}
                                     className={styles.statusTag}
                                 >
-                                    {value}
+                                    {getUserStatusLabel(value)}
                                 </Tag>
                             ),
                         },
                         {
-                            title: 'Đăng nhập cuối',
-                            dataIndex: 'lastLogin',
-                            key: 'lastLogin',
+                            title: 'Ngày tạo',
+                            dataIndex: 'creationTime',
+                            key: 'creationTime',
                         },
                         {
                             title: 'Thao tác',

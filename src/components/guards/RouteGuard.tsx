@@ -15,7 +15,9 @@ interface RouteGuardProps {
 }
 
 const RouteGuard = ({ children, allowedRoles }: RouteGuardProps) => {
-    const isAuthenticated = true
+    const isAuthenticated = useSelector(
+        (state: any) => state.auth.isAuthenticated
+    )
     const user = useSelector((state: any) => state.auth.user)
     const location = useLocation()
 

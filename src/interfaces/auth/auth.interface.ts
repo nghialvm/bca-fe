@@ -8,8 +8,8 @@ export interface LoginDto {
 }
 
 export interface LoginResult {
-    token: string
-    user: any
+    token?: string
+    user?: any
 }
 
 export interface LogoutDto {

@@ -1,55 +1,15 @@
-import { useMemo, useState } from 'react'
+import { Button, Card, Empty, Space, Typography } from 'antd'
 
 import {
-    Button,
-    Card,
-    Input,
-    Segmented,
-    Space,
-    Table,
-    Tag,
-    Typography,
-} from 'antd'
-
-import {
-    CheckCircleOutlined,
     DownloadOutlined,
-    FilterOutlined,
     InfoCircleOutlined,
     SafetyOutlined,
-    SearchOutlined,
     WarningOutlined,
 } from '@ant-design/icons'
 
-import { systemLogs } from '@/mock/adminData'
-
 import styles from '../styles/AdminUi.module.css'
 
-const severityStyles = {
-    info: { color: 'processing', icon: <InfoCircleOutlined /> },
-    success: { color: 'success', icon: <CheckCircleOutlined /> },
-    warning: { color: 'warning', icon: <WarningOutlined /> },
-    error: { color: 'error', icon: <SafetyOutlined /> },
-} as const
-
 const AdminManageLogPage = () => {
-    const [search, setSearch] = useState('')
-    const [type, setType] = useState('all')
-
-    const filteredLogs = useMemo(() => {
-        return systemLogs.filter((log) => {
-            const keyword = search.trim().toLowerCase()
-            const matchesKeyword =
-                !keyword ||
-                log.user.toLowerCase().includes(keyword) ||
-                log.action.toLowerCase().includes(keyword) ||
-                log.ip.toLowerCase().includes(keyword)
-            const matchesType = type === 'all' || log.type === type
-
-            return matchesKeyword && matchesType
-        })
-    }, [search, type])
-
     return (
         <div className={styles.page}>
             <section className="portal-hero portal-hero--light">
@@ -64,13 +24,15 @@ const AdminManageLogPage = () => {
                             Quản lý nhật ký hệ thống
                         </Typography.Title>
                         <Typography.Paragraph style={{ maxWidth: 720 }}>
-                            Theo dõi đăng nhập, thao tác nghiệp vụ và các cảnh
-                            báo bảo mật trên toàn hệ thống.
+                            Module này đã bỏ dữ liệu mock. Hiện backend trong
+                            repo chưa expose endpoint audit/security log rõ ràng
+                            để frontend gọi và phân trang an toàn.
                         </Typography.Paragraph>
                     </div>
                     <Button
                         type="primary"
                         size="large"
+                        disabled
                         icon={<DownloadOutlined />}
                     >
                         Xuất nhật ký
@@ -84,19 +46,10 @@ const AdminManageLogPage = () => {
                         <InfoCircleOutlined />
                     </div>
                     <div>
-                        <div className={styles.metricValue}>1,234</div>
+                        <div className={styles.metricValue}>API</div>
                         <div className={styles.metricLabel}>
-                            Hoạt động hôm nay
+                            Audit log chưa sẵn sàng
                         </div>
-                    </div>
-                </div>
-                <div className={styles.metricBox}>
-                    <div className={styles.metricIcon}>
-                        <CheckCircleOutlined />
-                    </div>
-                    <div>
-                        <div className={styles.metricValue}>567</div>
-                        <div className={styles.metricLabel}>Đăng nhập</div>
                     </div>
                 </div>
                 <div className={styles.metricBox}>
@@ -104,8 +57,10 @@ const AdminManageLogPage = () => {
                         <WarningOutlined />
                     </div>
                     <div>
-                        <div className={styles.metricValue}>23</div>
-                        <div className={styles.metricLabel}>Cảnh báo</div>
+                        <div className={styles.metricValue}>ABP</div>
+                        <div className={styles.metricLabel}>
+                            Module đã có trong backend
+                        </div>
                     </div>
                 </div>
                 <div className={styles.metricBox}>
@@ -113,94 +68,31 @@ const AdminManageLogPage = () => {
                         <SafetyOutlined />
                     </div>
                     <div>
-                        <div className={styles.metricValue}>5</div>
+                        <div className={styles.metricValue}>TODO</div>
                         <div className={styles.metricLabel}>
-                            Sự kiện bảo mật
+                            Cần xác nhận route và DTO
+                        </div>
+                    </div>
+                </div>
+                <div className={styles.metricBox}>
+                    <div className={styles.metricIcon}>
+                        <InfoCircleOutlined />
+                    </div>
+                    <div>
+                        <div className={styles.metricValue}>0</div>
+                        <div className={styles.metricLabel}>
+                            Bản ghi mock còn lại
                         </div>
                     </div>
                 </div>
             </div>
 
-            <Card variant="borderless" className={styles.filterCard}>
-                <div className={styles.filterRow}>
-                    <Input
-                        allowClear
-                        size="large"
-                        prefix={<SearchOutlined />}
-                        value={search}
-                        className={styles.flexGrow}
-                        placeholder="Tìm kiếm theo user, IP hoặc hành động..."
-                        onChange={(event) => setSearch(event.target.value)}
-                    />
-                    <Segmented
-                        size="large"
-                        value={type}
-                        options={[
-                            { value: 'all', label: 'Tất cả' },
-                            { value: 'login', label: 'Đăng nhập' },
-                            { value: 'operation', label: 'Thao tác' },
-                            { value: 'security', label: 'Bảo mật' },
-                        ]}
-                        onChange={(value) => setType(String(value))}
-                    />
-                    <Button size="large" icon={<FilterOutlined />}>
-                        Lọc nâng cao
-                    </Button>
-                </div>
-            </Card>
-
             <Card variant="borderless" className={styles.sectionCard}>
-                <Table
-                    rowKey="key"
-                    dataSource={filteredLogs}
-                    pagination={{ pageSize: 8 }}
-                    columns={[
-                        {
-                            title: 'Mức độ',
-                            dataIndex: 'severity',
-                            key: 'severity',
-                            render: (value: keyof typeof severityStyles) => (
-                                <Tag
-                                    color={severityStyles[value].color}
-                                    icon={severityStyles[value].icon}
-                                    className={styles.statusTag}
-                                >
-                                    {value.toUpperCase()}
-                                </Tag>
-                            ),
-                        },
-                        {
-                            title: 'Thời gian',
-                            dataIndex: 'timestamp',
-                            key: 'timestamp',
-                        },
-                        {
-                            title: 'Người dùng',
-                            dataIndex: 'user',
-                            key: 'user',
-                        },
-                        {
-                            title: 'Hành động',
-                            dataIndex: 'action',
-                            key: 'action',
-                            render: (value: string) => (
-                                <span className={styles.tableMainText}>
-                                    {value}
-                                </span>
-                            ),
-                        },
-                        {
-                            title: 'IP',
-                            dataIndex: 'ip',
-                            key: 'ip',
-                        },
-                        {
-                            title: 'Chi tiết',
-                            dataIndex: 'details',
-                            key: 'details',
-                        },
-                    ]}
-                />
+                <Empty description="Chờ backend expose endpoint audit logging hoặc identity security logs" />
+                <div className={styles.sectionHint} style={{ marginTop: 12 }}>
+                    Khi backend bổ sung route rõ ràng, có thể nối tiếp danh
+                    sách log, bộ lọc severity, tìm kiếm và export.
+                </div>
             </Card>
         </div>
     )

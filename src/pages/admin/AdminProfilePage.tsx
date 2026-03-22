@@ -1,4 +1,6 @@
-import { Avatar, Button, Card, Space, Typography } from 'antd'
+import { useEffect, useMemo, useState } from 'react'
+
+import { Avatar, Button, Card, Empty, Skeleton, Space, Typography } from 'antd'
 
 import {
     LockOutlined,
@@ -9,18 +11,192 @@ import {
 } from '@ant-design/icons'
 import { useSelector } from 'react-redux'
 
+import { User } from '@/interfaces/user/user.interface'
+import AdminService, {
+    ApplicationDto,
+    GetPermissionListResultDto,
+    IdentityRoleDto,
+    IdentityUserDto,
+    RecruitmentDashboardSummary,
+    RecruitmentRequestDto,
+} from '@/services/admin'
 import {
-    profileActivities,
-    profileHighlights,
-    profilePermissions,
-    profileSummary,
-} from '@/mock/adminData'
+    formatCount,
+    formatDisplayDateTime,
+    getDisplayName,
+    getRecruitmentRequestStatusLabel,
+} from '@/utils/admin'
 
 import styles from '../styles/AdminUi.module.css'
 
+type RootState = {
+    auth: {
+        user?: User | null
+    }
+}
+
+type ActivityItem = {
+    title: string
+    time: string
+    description: string
+}
+
+const roleProviderName = 'R'
+
 const AdminProfilePage = () => {
-    const user = useSelector((store: any) => store.auth.user)
-    const displayName = user?.full_name || 'Admin H05'
+    const user = useSelector((store: RootState) => store.auth.user)
+    const [loading, setLoading] = useState(false)
+    const [identityUser, setIdentityUser] = useState<IdentityUserDto | null>(
+        null
+    )
+    const [roles, setRoles] = useState<IdentityRoleDto[]>([])
+    const [summary, setSummary] = useState<RecruitmentDashboardSummary | null>(
+        null
+    )
+    const [grantedPermissions, setGrantedPermissions] = useState<string[]>([])
+    const [activities, setActivities] = useState<ActivityItem[]>([])
+
+    useEffect(() => {
+        const loadProfileData = async () => {
+            if (!user?.id) return
+
+            setLoading(true)
+            try {
+                const [identityResponse, roleResponse, summaryResponse] =
+                    await Promise.all([
+                        AdminService.getIdentityUser(user.id),
+                        AdminService.getIdentityUserRoles(user.id),
+                        AdminService.getDashboardSummary(),
+                    ])
+
+                const currentRoles = Array.isArray(roleResponse?.items)
+                    ? (roleResponse.items as IdentityRoleDto[])
+                    : Array.isArray(roleResponse)
+                      ? (roleResponse as IdentityRoleDto[])
+                      : []
+
+                const permissionResponses = await Promise.all(
+                    currentRoles.map(async (role) => {
+                        try {
+                            return (await AdminService.getPermissions(
+                                roleProviderName,
+                                role.name
+                            )) as GetPermissionListResultDto
+                        } catch {
+                            return { groups: [] } as GetPermissionListResultDto
+                        }
+                    })
+                )
+
+                const [recruitmentResponse, applicationResponse] =
+                    await Promise.all([
+                        AdminService.getRecruitmentRequests({
+                            Sorting: 'creationTime desc',
+                            MaxResultCount: 5,
+                        }),
+                        AdminService.getApplications({
+                            Sorting: 'appliedTime desc',
+                            MaxResultCount: 5,
+                        }),
+                    ])
+
+                const grantedPermissionNames = Array.from(
+                    new Set(
+                        permissionResponses.flatMap((result) =>
+                            result.groups.flatMap((group) =>
+                                group.permissions
+                                    .filter(
+                                        (permission) => permission.isGranted
+                                    )
+                                    .map(
+                                        (permission) =>
+                                            permission.displayName ||
+                                            permission.name
+                                    )
+                            )
+                        )
+                    )
+                ).slice(0, 6)
+
+                const recruitments = (recruitmentResponse?.items ||
+                    []) as RecruitmentRequestDto[]
+                const applications = (applicationResponse?.items ||
+                    []) as ApplicationDto[]
+
+                setIdentityUser(identityResponse as IdentityUserDto)
+                setRoles(currentRoles)
+                setSummary(summaryResponse as RecruitmentDashboardSummary)
+                setGrantedPermissions(grantedPermissionNames)
+                setActivities([
+                    ...recruitments.slice(0, 2).map((item) => ({
+                        title: `Cập nhật tin tuyển dụng ${item.title}`,
+                        time: formatDisplayDateTime(item.creationTime),
+                        description: `Trạng thái hiện tại: ${getRecruitmentRequestStatusLabel(item.status)}`,
+                    })),
+                    ...applications.slice(0, 2).map((item) => ({
+                        title: `Hồ sơ moi ${item.applicationCode}`,
+                        time: formatDisplayDateTime(item.appliedTime),
+                        description: `Ứng tuyển vào yêu cầu ${item.recruitmentRequestId}`,
+                    })),
+                ])
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        void loadProfileData()
+    }, [user?.id])
+
+    const displayName =
+        user?.full_name ||
+        getDisplayName(identityUser || user || undefined) ||
+        user?.userName ||
+        user?.email ||
+        'Admin H05'
+
+    const roleLabel = useMemo(() => {
+        if (roles.length) {
+            return roles.map((role) => role.name).join(', ')
+        }
+
+        if (Array.isArray(user?.roles)) {
+            return user.roles.join(', ')
+        }
+
+        return user?.roles || 'Admin'
+    }, [roles, user?.roles])
+
+    const profileHighlights = [
+        { label: 'Vai trò', value: roleLabel || 'Admin' },
+        {
+            label: 'Tài khoản',
+            value: identityUser?.userName || user?.userName || '-',
+        },
+        { label: 'Email', value: identityUser?.email || user?.email || '-' },
+        {
+            label: 'Ngày tạo',
+            value: formatDisplayDateTime(identityUser?.creationTime),
+        },
+    ]
+
+    const profileSummary = [
+        {
+            label: 'Role đang gán',
+            value: formatCount(roles.length || (roleLabel ? 1 : 0)),
+        },
+        {
+            label: 'Quyền đang được cấp',
+            value: formatCount(grantedPermissions.length),
+        },
+        {
+            label: 'Tin đang mở',
+            value: formatCount(summary?.totalPublishedRecruitmentRequests),
+        },
+        {
+            label: 'Hồ sơ trong hệ thống',
+            value: formatCount(summary?.totalApplications),
+        },
+    ]
 
     return (
         <div className={styles.page}>
@@ -36,8 +212,9 @@ const AdminProfilePage = () => {
                             Tổng quan hồ sơ quản trị viên
                         </Typography.Title>
                         <Typography.Paragraph style={{ maxWidth: 720 }}>
-                            Thông tin cá nhân, quyền truy cập và lịch sử hoạt
-                            động của quản trị viên hệ thống.
+                            Thông tin người dùng hiện tại, quyền truy cập và một
+                            số chỉ số vận hành backend liên quan đến tài khoản
+                            admin.
                         </Typography.Paragraph>
                     </div>
                     <Space>
@@ -80,20 +257,24 @@ const AdminProfilePage = () => {
                                     color: 'rgba(232, 240, 255, 0.76)',
                                 }}
                             >
-                                Quản trị viên hệ thống H05
+                                {roleLabel || 'Quản trị viên hệ thống'}
                             </div>
                         </div>
                         <div className={styles.profileMetaList}>
-                            {profileHighlights.map((item) => (
-                                <div key={item.label}>
-                                    <div className={styles.profileLabel}>
-                                        {item.label}
+                            {loading && !identityUser ? (
+                                <Skeleton active paragraph={{ rows: 4 }} />
+                            ) : (
+                                profileHighlights.map((item) => (
+                                    <div key={item.label}>
+                                        <div className={styles.profileLabel}>
+                                            {item.label}
+                                        </div>
+                                        <div className={styles.profileValue}>
+                                            {item.value}
+                                        </div>
                                     </div>
-                                    <div className={styles.profileValue}>
-                                        {item.value}
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            )}
                         </div>
                     </Space>
                 </Card>
@@ -139,25 +320,35 @@ const AdminProfilePage = () => {
                             </span>
                         }
                     >
-                        <Space wrap>
-                            {profilePermissions.map((permission) => (
-                                <span
-                                    key={permission}
-                                    className={styles.summaryPill}
-                                >
-                                    <LockOutlined />
-                                    {permission}
-                                </span>
-                            ))}
-                        </Space>
+                        {grantedPermissions.length ? (
+                            <Space wrap>
+                                {grantedPermissions.map((permission) => (
+                                    <span
+                                        key={permission}
+                                        className={styles.summaryPill}
+                                    >
+                                        <LockOutlined />
+                                        {permission}
+                                    </span>
+                                ))}
+                            </Space>
+                        ) : (
+                            <Empty description="Không có permission được hiển thị" />
+                        )}
+
                         <div className={styles.detailList}>
                             <div className={styles.detailItem}>
                                 <MailOutlined className={styles.detailIcon} />
-                                <span>admin.h05@congannha.gov.vn</span>
+                                <span>
+                                    {identityUser?.email || user?.email || '-'}
+                                </span>
                             </div>
                             <div className={styles.detailItem}>
                                 <PhoneOutlined className={styles.detailIcon} />
-                                <span>024.3999.8899</span>
+                                <span>
+                                    {identityUser?.phoneNumber ||
+                                        'Chưa cập nhật'}
+                                </span>
                             </div>
                         </div>
                     </Card>
@@ -171,30 +362,40 @@ const AdminProfilePage = () => {
                             </span>
                         }
                     >
-                        <div className={styles.timelineList}>
-                            {profileActivities.map((activity) => (
-                                <div
-                                    key={`${activity.title}-${activity.time}`}
-                                    className={styles.timelineItem}
-                                >
-                                    <div className={styles.timelineDot} />
-                                    <div>
-                                        <div className={styles.tableMainText}>
-                                            {activity.title}
-                                        </div>
-                                        <div className={styles.tableSubText}>
-                                            {activity.time}
-                                        </div>
-                                        <div
-                                            className={styles.sectionHint}
-                                            style={{ marginTop: 4 }}
-                                        >
-                                            {activity.description}
+                        {loading ? (
+                            <Skeleton active paragraph={{ rows: 5 }} />
+                        ) : activities.length ? (
+                            <div className={styles.timelineList}>
+                                {activities.map((activity) => (
+                                    <div
+                                        key={`${activity.title}-${activity.time}`}
+                                        className={styles.timelineItem}
+                                    >
+                                        <div className={styles.timelineDot} />
+                                        <div>
+                                            <div
+                                                className={styles.tableMainText}
+                                            >
+                                                {activity.title}
+                                            </div>
+                                            <div
+                                                className={styles.tableSubText}
+                                            >
+                                                {activity.time}
+                                            </div>
+                                            <div
+                                                className={styles.sectionHint}
+                                                style={{ marginTop: 4 }}
+                                            >
+                                                {activity.description}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <Empty description="Không có hoạt động để hiển thị" />
+                        )}
                     </Card>
                 </Space>
             </div>
