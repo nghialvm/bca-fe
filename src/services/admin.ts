@@ -161,6 +161,33 @@ export interface IdentityUserDto {
     extraProperties?: Record<string, unknown>
 }
 
+export interface IdentityUserCreateDto {
+    userName: string
+    name?: string
+    surname?: string
+    password: string
+    email: string
+    phoneNumber?: string
+    roleNames: string[]
+    isActive: boolean
+    lockoutEnabled?: boolean
+}
+
+export interface IdentityUserUpdateDto {
+    userName: string
+    name?: string
+    surname?: string
+    email: string
+    phoneNumber?: string
+    roleNames: string[]
+    isActive: boolean
+    lockoutEnabled?: boolean
+}
+
+export interface IdentityUserUpdateRolesDto {
+    roleNames: string[]
+}
+
 export interface PermissionGrantInfoDto {
     name: string
     displayName?: string
@@ -312,8 +339,27 @@ export class AdminService {
         return await http.get(`identity/users/${id}`)
     }
 
+    async createIdentityUser(input: IdentityUserCreateDto) {
+        return await http.post('identity/users', input)
+    }
+
+    async updateIdentityUser(id: string, input: IdentityUserUpdateDto) {
+        return await http.put(`identity/users/${id}`, input)
+    }
+
+    async deleteIdentityUser(id: string) {
+        return await http.delete(`identity/users/${id}`)
+    }
+
     async getIdentityUserRoles(id: string) {
         return await http.get(`identity/users/${id}/roles`)
+    }
+
+    async updateIdentityUserRoles(
+        id: string,
+        input: IdentityUserUpdateRolesDto
+    ) {
+        return await http.put(`identity/users/${id}/roles`, input)
     }
 
     async getIdentityRoles(query: PagedQuery = {}) {

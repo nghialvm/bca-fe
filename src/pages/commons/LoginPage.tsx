@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
 import { getCurrentUserAction, loginAction } from '@/stores/auth/authAction'
+import { initializeAntiforgeryToken } from '@/services/http'
 import { getDefaultPathByRole, getSiteRole } from '@/utils/role'
 
 import styles from '../styles/LoginPage.module.css'
@@ -39,6 +40,7 @@ const LoginPage: FC = () => {
                 })
             )
             if (loginAction.fulfilled.match(loginResponse)) {
+                await initializeAntiforgeryToken(true)
                 const userResponse: any = await dispatch(getCurrentUserAction())
                 const user = userResponse.payload
                 if (

@@ -1,12 +1,21 @@
+import { useEffect } from 'react'
+
 import { ConfigProvider, theme } from 'antd'
 
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 
 import NotFound from '@/pages/commons/NotFound'
 import AppRouter from '@/routers/router'
+import { initializeAntiforgeryToken } from '@/services/http'
 
 function App() {
     const { defaultAlgorithm } = theme
+
+    useEffect(() => {
+        void initializeAntiforgeryToken().catch((error) => {
+            console.error('Failed to initialize antiforgery token', error)
+        })
+    }, [])
 
     return (
         <ConfigProvider
