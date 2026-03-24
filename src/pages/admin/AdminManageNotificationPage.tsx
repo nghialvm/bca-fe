@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 
 import {
     Button,
@@ -11,6 +11,7 @@ import {
     Select,
     Space,
     Table,
+    Tag,
     Typography,
     notification,
 } from 'antd'
@@ -31,7 +32,7 @@ import AdminService, {
     DepartmentDto,
     IdentityUserDto,
 } from '@/services/admin'
-import { formatCount, getDisplayName } from '@/utils/admin'
+import { formatCount, formatDisplayDateTime, getDisplayName } from '@/utils/admin'
 
 import styles from '../styles/AdminUi.module.css'
 
@@ -54,12 +55,34 @@ type RecipientGroupRow = {
     source: string
 }
 
+type NotificationFormValues = {
+    title: string
+    content: string
+    recipientGroup: string
+    specificRecipients?: string[]
+}
+
+type SendHistoryItem = {
+    id: string
+    key: string
+    sentAt: string
+    title: string
+    groupLabel: string
+    recipientCount: number
+    successCount: number
+    failedCount: number
+    sender: string
+    status: 'success' | 'partial' | 'failed'
+}
+
 const recipientGroupOptions = [
     { key: 'all-candidates', label: 'Tất cả ứng viên' },
     { key: 'all-units', label: 'Quản lý đơn vị' },
     { key: 'all-users', label: 'Tất cả người dùng' },
     { key: 'specific', label: 'Chọn cụ thể' },
 ]
+
+const notificationHistoryStorageKey = 'admin.notification.history.v1'
 
 const getUniqueEmails = (items: Array<string | undefined | null>) =>
     Array.from(
@@ -75,13 +98,40 @@ const AdminManageNotificationPage = () => {
     const [open, setOpen] = useState(false)
     const [loading, setLoading] = useState(false)
     const [sending, setSending] = useState(false)
-    const [form] = Form.useForm()
+    const [form] = Form.useForm<NotificationFormValues>()
     const [candidateEmails, setCandidateEmails] = useState<string[]>([])
     const [userEmails, setUserEmails] = useState<string[]>([])
     const [unitManagerEmails, setUnitManagerEmails] = useState<string[]>([])
     const [recipientOptions, setRecipientOptions] = useState<RecipientOption[]>(
         []
     )
+    const [history, setHistory] = useState<SendHistoryItem[]>([])
+
+    const watchedRecipientGroup = Form.useWatch('recipientGroup', form)
+    const watchedSpecificRecipients = Form.useWatch('specificRecipients', form)
+    const watchedTitle = Form.useWatch('title', form)
+    const watchedContent = Form.useWatch('content', form)
+
+    useEffect(() => {
+        try {
+            const storedValue = window.localStorage.getItem(
+                notificationHistoryStorageKey
+            )
+            if (!storedValue) return
+
+            const parsed = JSON.parse(storedValue) as SendHistoryItem[]
+            setHistory(Array.isArray(parsed) ? parsed : [])
+        } catch {
+            setHistory([])
+        }
+    }, [])
+
+    useEffect(() => {
+        window.localStorage.setItem(
+            notificationHistoryStorageKey,
+            JSON.stringify(history)
+        )
+    }, [history])
 
     useEffect(() => {
         const loadRecipients = async () => {
@@ -200,7 +250,7 @@ const AdminManageNotificationPage = () => {
 
     const getTargetRecipients = (
         group: string,
-        specificRecipients: string[]
+        specificRecipients: string[] = []
     ) => {
         if (group === 'all-candidates') return candidateEmails
         if (group === 'all-units') return unitManagerEmails
@@ -208,6 +258,21 @@ const AdminManageNotificationPage = () => {
 
         return getUniqueEmails(specificRecipients)
     }
+
+    const previewRecipients = useMemo(
+        () =>
+            getTargetRecipients(
+                watchedRecipientGroup || 'all-candidates',
+                watchedSpecificRecipients || []
+            ),
+        [
+            candidateEmails,
+            unitManagerEmails,
+            userEmails,
+            watchedRecipientGroup,
+            watchedSpecificRecipients,
+        ]
+    )
 
     const handleSend = async () => {
         const values = await form.validateFields()
@@ -226,7 +291,7 @@ const AdminManageNotificationPage = () => {
 
         setSending(true)
         try {
-            await Promise.all(
+            const settledResults = await Promise.allSettled(
                 recipients.map((email) =>
                     AdminService.sendEmail({
                         to: email,
@@ -237,13 +302,54 @@ const AdminManageNotificationPage = () => {
                 )
             )
 
-            notification.success({
-                message: 'Đã gửi thông báo',
-                description: `Gửi thành công tới ${formatCount(recipients.length)} người nhận.`,
-            })
-            setOpen(false)
-            form.resetFields()
-        } catch {
+            const successCount = settledResults.filter(
+                (item) => item.status === 'fulfilled'
+            ).length
+            const failedCount = recipients.length - successCount
+            const groupLabel =
+                recipientGroupOptions.find(
+                    (item) => item.key === values.recipientGroup
+                )?.label || 'Tùy chọn khác'
+            const historyItem: SendHistoryItem = {
+                id: `${Date.now()}`,
+                key: `${Date.now()}`,
+                sentAt: new Date().toISOString(),
+                title: values.title,
+                groupLabel,
+                recipientCount: recipients.length,
+                successCount,
+                failedCount,
+                sender: currentUser?.email || currentUser?.userName || '-',
+                status:
+                    failedCount === 0
+                        ? 'success'
+                        : successCount > 0
+                          ? 'partial'
+                          : 'failed',
+            }
+
+            setHistory((currentValue) => [historyItem, ...currentValue].slice(0, 20))
+
+            if (failedCount === 0) {
+                notification.success({
+                    message: 'Đã gửi thông báo',
+                    description: `Gửi thành công tới ${formatCount(successCount)} người nhận.`,
+                })
+                setOpen(false)
+                form.resetFields()
+                return
+            }
+
+            if (successCount > 0) {
+                notification.warning({
+                    message: 'Gửi thông báo một phần',
+                    description: `Thành công ${formatCount(successCount)}, thất bại ${formatCount(failedCount)}.`,
+                })
+                setOpen(false)
+                form.resetFields()
+                return
+            }
+
             notification.error({
                 message: 'Gửi thông báo thất bại',
                 description:
@@ -253,6 +359,18 @@ const AdminManageNotificationPage = () => {
             setSending(false)
         }
     }
+
+    const historyMetrics = useMemo(() => {
+        const successCount = history.filter((item) => item.status === 'success').length
+        const partialCount = history.filter((item) => item.status === 'partial').length
+        const failedCount = history.filter((item) => item.status === 'failed').length
+
+        return {
+            successCount,
+            partialCount,
+            failedCount,
+        }
+    }, [history])
 
     return (
         <div className={styles.page}>
@@ -268,9 +386,9 @@ const AdminManageNotificationPage = () => {
                             Gửi thông báo hệ thống
                         </Typography.Title>
                         <Typography.Paragraph style={{ maxWidth: 720 }}>
-                            Chọn nhóm người nhận từ backend và gửi thông báo qua
-                            email service hiện có. Lịch sử gửi chỉ hiển thị được
-                            khi backend bổ sung endpoint lưu notification.
+                            Chọn nhóm người nhận từ backend, xem trước phạm vi gửi
+                            và lưu lại lịch sử gửi trên giao diện admin khi backend
+                            chưa có notification history riêng.
                         </Typography.Paragraph>
                     </div>
                     <Button
@@ -328,13 +446,121 @@ const AdminManageNotificationPage = () => {
                     </div>
                     <div>
                         <div className={styles.metricValue}>
-                            {formatCount(totalRecipients)}
+                            {formatCount(history.length)}
                         </div>
-                        <div className={styles.metricLabel}>
-                            Tổng email hợp lệ
-                        </div>
+                        <div className={styles.metricLabel}>Lượt gửi đã lưu</div>
                     </div>
                 </div>
+            </div>
+
+            <div className={styles.chartGrid}>
+                <Card
+                    variant="borderless"
+                    className={styles.sectionCard}
+                    title={
+                        <span className={styles.sectionTitle}>
+                            Người nhận theo nhóm
+                        </span>
+                    }
+                >
+                    <div className={styles.sectionHint}>
+                        Bảng này được đồng bộ từ candidate, identity users và
+                        department manager.
+                    </div>
+                    <Table
+                        rowKey="key"
+                        loading={loading}
+                        pagination={false}
+                        locale={{
+                            emptyText: (
+                                <Empty description="Không có người nhận để hiển thị" />
+                            ),
+                        }}
+                        dataSource={recipientGroupRows}
+                        columns={[
+                            {
+                                title: 'Nhóm',
+                                dataIndex: 'group',
+                                key: 'group',
+                                render: (value: string) => (
+                                    <span className={styles.tableMainText}>
+                                        {value}
+                                    </span>
+                                ),
+                            },
+                            {
+                                title: 'Số lượng',
+                                dataIndex: 'count',
+                                key: 'count',
+                                render: (value: number) => formatCount(value),
+                            },
+                            {
+                                title: 'Email mẫu',
+                                dataIndex: 'sample',
+                                key: 'sample',
+                            },
+                            {
+                                title: 'Nguồn dữ liệu',
+                                dataIndex: 'source',
+                                key: 'source',
+                                render: (value: string) => (
+                                    <span className={styles.tableSubText}>
+                                        {value}
+                                    </span>
+                                ),
+                            },
+                        ]}
+                    />
+                </Card>
+
+                <Card
+                    variant="borderless"
+                    className={styles.sectionCard}
+                    title={
+                        <span className={styles.sectionTitle}>
+                            Xem trước thông báo
+                        </span>
+                    }
+                >
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                        <span className={styles.summaryPill}>
+                            Nhóm: {' '}
+                            {recipientGroupOptions.find(
+                                (item) => item.key === watchedRecipientGroup
+                            )?.label || 'Tất cả ứng viên'}
+                        </span>
+                        <span className={styles.summaryPill}>
+                            Người nhận: {formatCount(previewRecipients.length)}
+                        </span>
+                        <span className={styles.summaryPill}>
+                            Gửi thành công: {formatCount(historyMetrics.successCount)}
+                        </span>
+                        <span className={styles.summaryPill}>
+                            Gửi một phần: {formatCount(historyMetrics.partialCount)}
+                        </span>
+                    </div>
+
+                    <div className={styles.detailList}>
+                        <div className={styles.detailItem}>
+                            <MailOutlined className={styles.detailIcon} />
+                            <span>
+                                Tiêu đề: {watchedTitle?.trim() || 'Chưa nhập tiêu đề'}
+                            </span>
+                        </div>
+                        <div className={styles.detailItem}>
+                            <BellOutlined className={styles.detailIcon} />
+                            <span>
+                                Nội dung: {watchedContent?.trim() || 'Chưa nhập nội dung'}
+                            </span>
+                        </div>
+                        <div className={styles.detailItem}>
+                            <UserOutlined className={styles.detailIcon} />
+                            <span>
+                                Mẫu người nhận: {previewRecipients.slice(0, 5).join(', ') || '-'}
+                            </span>
+                        </div>
+                    </div>
+                </Card>
             </div>
 
             <Card
@@ -342,54 +568,78 @@ const AdminManageNotificationPage = () => {
                 className={styles.sectionCard}
                 title={
                     <span className={styles.sectionTitle}>
-                        Người nhận theo nhóm
+                        Lịch sử gửi trên giao diện admin
                     </span>
                 }
+                extra={
+                    <Button
+                        type="link"
+                        danger
+                        onClick={() => setHistory([])}
+                        disabled={!history.length}
+                    >
+                        Xóa lịch sử
+                    </Button>
+                }
             >
-                <div className={styles.sectionHint}>
-                    Bảng này được đồng bộ từ candidate, identity users và
-                    department manager.
-                </div>
                 <Table
                     rowKey="key"
-                    loading={loading}
-                    pagination={false}
+                    pagination={{ pageSize: 5 }}
                     locale={{
                         emptyText: (
-                            <Empty description="Không có người nhận để hiển thị" />
+                            <Empty description="Chưa có lịch sử gửi nào trên giao diện" />
                         ),
                     }}
-                    dataSource={recipientGroupRows}
+                    dataSource={history}
                     columns={[
                         {
-                            title: 'Nhóm',
-                            dataIndex: 'group',
-                            key: 'group',
+                            title: 'Thời gian',
+                            dataIndex: 'sentAt',
+                            key: 'sentAt',
+                            render: (value: string) => formatDisplayDateTime(value),
+                        },
+                        {
+                            title: 'Tiêu đề',
+                            dataIndex: 'title',
+                            key: 'title',
                             render: (value: string) => (
-                                <span className={styles.tableMainText}>
-                                    {value}
+                                <span className={styles.tableMainText}>{value}</span>
+                            ),
+                        },
+                        {
+                            title: 'Nhóm',
+                            dataIndex: 'groupLabel',
+                            key: 'groupLabel',
+                        },
+                        {
+                            title: 'Kết quả',
+                            key: 'result',
+                            render: (_: unknown, record: SendHistoryItem) => (
+                                <span className={styles.tableSubText}>
+                                    {formatCount(record.successCount)}/{formatCount(record.recipientCount)} thành công
                                 </span>
                             ),
                         },
                         {
-                            title: 'Số lượng',
-                            dataIndex: 'count',
-                            key: 'count',
-                            render: (value: number) => formatCount(value),
-                        },
-                        {
-                            title: 'Email mẫu',
-                            dataIndex: 'sample',
-                            key: 'sample',
-                        },
-                        {
-                            title: 'Nguồn dữ liệu',
-                            dataIndex: 'source',
-                            key: 'source',
-                            render: (value: string) => (
-                                <span className={styles.tableSubText}>
-                                    {value}
-                                </span>
+                            title: 'Trạng thái',
+                            dataIndex: 'status',
+                            key: 'status',
+                            render: (value: SendHistoryItem['status']) => (
+                                <Tag
+                                    color={
+                                        value === 'success'
+                                            ? 'success'
+                                            : value === 'partial'
+                                              ? 'warning'
+                                              : 'error'
+                                    }
+                                >
+                                    {value === 'success'
+                                        ? 'Thành công'
+                                        : value === 'partial'
+                                          ? 'Một phần'
+                                          : 'Thất bại'}
+                                </Tag>
                             ),
                         },
                     ]}
@@ -415,16 +665,14 @@ const AdminManageNotificationPage = () => {
                     <div className={styles.detailItem}>
                         <BellOutlined className={styles.detailIcon} />
                         <span>
-                            Chưa có API backend lưu lịch sử thông báo nên trang
-                            này hiện tập trung vào compose và gửi thực tế.
+                            Lịch sử bên dưới được lưu phía frontend để hỗ trợ vận hành
+                            khi backend chưa có notification history riêng.
                         </span>
                     </div>
                     <div className={styles.detailItem}>
                         <UserOutlined className={styles.detailIcon} />
                         <span>
-                            Người tạo hiện tại:{' '}
-                            {currentUser?.email || currentUser?.userName || '-'}
-                            .
+                            Người tạo hiện tại: {currentUser?.email || currentUser?.userName || '-'}.
                         </span>
                     </div>
                 </div>
@@ -479,7 +727,7 @@ const AdminManageNotificationPage = () => {
                         />
                     </Form.Item>
 
-                    <Form.Item label="Nhóm người nhan" name="recipientGroup">
+                    <Form.Item label="Nhóm người nhận" name="recipientGroup">
                         <Radio.Group className={styles.recipientGrid}>
                             {recipientGroupOptions.map((option) => (
                                 <Radio.Button
@@ -517,7 +765,7 @@ const AdminManageNotificationPage = () => {
                                         {
                                             required: true,
                                             message:
-                                                'Vui long chon it nhat mot người nhan',
+                                                'Vui lòng chọn ít nhất một người nhận',
                                         },
                                     ]}
                                 >
@@ -526,7 +774,7 @@ const AdminManageNotificationPage = () => {
                                         allowClear
                                         showSearch
                                         size="large"
-                                        placeholder="Chon email người nhan"
+                                        placeholder="Chọn email người nhận"
                                         options={recipientOptions}
                                     />
                                 </Form.Item>

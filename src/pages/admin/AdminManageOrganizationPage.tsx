@@ -14,7 +14,10 @@ import {
 } from 'antd'
 
 import {
-    EnvironmentOutlined,
+    DeleteOutlined,
+    EditOutlined,
+    EyeOutlined,
+    FileTextOutlined,
     IdcardOutlined,
     MailOutlined,
     PhoneOutlined,
@@ -24,120 +27,110 @@ import {
     TeamOutlined,
 } from '@ant-design/icons'
 
+import CreateAdminOrganizationModal from '@/components/modals/CreateAdminOrganizationModal'
+import DeleteAdminOrganizationModal from '@/components/modals/DeleteAdminOrganizationModal'
+import UpdateAdminOrganizationModal from '@/components/modals/UpdateAdminOrganizationModal'
+import ViewAdminOrganizationModal from '@/components/modals/ViewAdminOrganizationModal'
+import {
+    type AdminOrganizationFormValues,
+    type AdminOrganizationRecord,
+    mapDepartmentToAdminOrganizationRecord,
+    mapIdentityUsersToOrganizationManagerOptions,
+} from '@/components/modals/adminOrganizationModal.shared'
 import AdminService, {
     DepartmentDto,
     IdentityUserDto,
     RecruitmentRequestDto,
 } from '@/services/admin'
-import {
-    formatCount,
-    getDisplayName,
-    isRecruitmentRequestActive,
-} from '@/utils/admin'
+import { formatCount, isRecruitmentRequestActive } from '@/utils/admin'
 
 import styles from '../styles/AdminUi.module.css'
-
-type OrganizationViewModel = {
-    id: string
-    key: string
-    name: string
-    code: string
-    address: string
-    contact: string
-    phone: string
-    email: string
-    users: number
-    activeRecruitments: number
-    status: string
-}
 
 const AdminManageOrganizationPage = () => {
     const [search, setSearch] = useState('')
     const [status, setStatus] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
-    const [organizations, setOrganizations] = useState<OrganizationViewModel[]>(
+    const [submitting, setSubmitting] = useState(false)
+    const [organizations, setOrganizations] = useState<AdminOrganizationRecord[]>(
         []
     )
+    const [managerUsers, setManagerUsers] = useState<IdentityUserDto[]>([])
+    const [createOpen, setCreateOpen] = useState(false)
+    const [viewingOrganization, setViewingOrganization] =
+        useState<AdminOrganizationRecord | null>(null)
+    const [editingOrganization, setEditingOrganization] =
+        useState<AdminOrganizationRecord | null>(null)
+    const [deletingOrganization, setDeletingOrganization] =
+        useState<AdminOrganizationRecord | null>(null)
+
+    const loadOrganizations = async () => {
+        setLoading(true)
+        try {
+            const [departmentResponse, userResponse, recruitmentResponse] =
+                await Promise.all([
+                    AdminService.getDepartments({
+                        Sorting: 'name asc',
+                        MaxResultCount: 1000,
+                    }),
+                    AdminService.getIdentityUsers({
+                        Sorting: 'userName asc',
+                        MaxResultCount: 1000,
+                    }),
+                    AdminService.getRecruitmentRequests({
+                        Sorting: 'creationTime desc',
+                        MaxResultCount: 1000,
+                    }),
+                ])
+
+            const departments = (departmentResponse?.items ||
+                []) as DepartmentDto[]
+            const users = (userResponse?.items || []) as IdentityUserDto[]
+            const recruitments = (recruitmentResponse?.items ||
+                []) as RecruitmentRequestDto[]
+
+            const usersById = new Map(users.map((item) => [item.id, item]))
+            const recruitmentCountByDepartment = recruitments.reduce(
+                (accumulator, item) => {
+                    if (isRecruitmentRequestActive(item.status)) {
+                        accumulator[item.departmentId] =
+                            (accumulator[item.departmentId] || 0) + 1
+                    }
+
+                    return accumulator
+                },
+                {} as Record<string, number>
+            )
+
+            setManagerUsers(users)
+            setOrganizations(
+                departments.map((department) =>
+                    mapDepartmentToAdminOrganizationRecord(
+                        department,
+                        department.managerUserId
+                            ? usersById.get(department.managerUserId)
+                            : undefined,
+                        recruitmentCountByDepartment[department.id] || 0
+                    )
+                )
+            )
+        } catch {
+            notification.error({
+                message: 'Không tải được danh sách đơn vị',
+                description: 'Kiểm tra quyền truy cập hoặc trạng thái API backend.',
+            })
+        } finally {
+            setLoading(false)
+        }
+    }
 
     useEffect(() => {
-        const loadOrganizations = async () => {
-            setLoading(true)
-            try {
-                const [departmentResponse, userResponse, recruitmentResponse] =
-                    await Promise.all([
-                        AdminService.getDepartments({
-                            Sorting: 'name asc',
-                            MaxResultCount: 1000,
-                        }),
-                        AdminService.getIdentityUsers({
-                            Sorting: 'userName asc',
-                            MaxResultCount: 1000,
-                        }),
-                        AdminService.getRecruitmentRequests({
-                            Sorting: 'creationTime desc',
-                            MaxResultCount: 1000,
-                        }),
-                    ])
-
-                const departments = (departmentResponse?.items ||
-                    []) as DepartmentDto[]
-                const users = (userResponse?.items || []) as IdentityUserDto[]
-                const recruitments = (recruitmentResponse?.items ||
-                    []) as RecruitmentRequestDto[]
-
-                const usersById = new Map(users.map((item) => [item.id, item]))
-                const recruitmentCountByDepartment = recruitments.reduce(
-                    (accumulator, item) => {
-                        if (isRecruitmentRequestActive(item.status)) {
-                            accumulator[item.departmentId] =
-                                (accumulator[item.departmentId] || 0) + 1
-                        }
-
-                        return accumulator
-                    },
-                    {} as Record<string, number>
-                )
-
-                setOrganizations(
-                    departments.map((department) => {
-                        const manager = department.managerUserId
-                            ? usersById.get(department.managerUserId)
-                            : undefined
-
-                        return {
-                            id: department.id,
-                            key: department.id,
-                            name: department.name,
-                            code: department.code,
-                            address:
-                                department.description?.trim() ||
-                                'Chưa cập nhật mô tả đơn vị',
-                            contact: getDisplayName(manager),
-                            phone: manager?.phoneNumber || 'Chưa cập nhật',
-                            email: manager?.email || 'Chưa cập nhật',
-                            users: manager ? 1 : 0,
-                            activeRecruitments:
-                                recruitmentCountByDepartment[department.id] ||
-                                0,
-                            status: department.isActive
-                                ? 'Hoạt động'
-                                : 'Tạm dừng',
-                        }
-                    })
-                )
-            } catch (error) {
-                notification.error({
-                    message: 'Không tải được danh sách đơn vị',
-                    description:
-                        'Kiểm tra quyền truy cập hoặc trạng thái API backend.',
-                })
-            } finally {
-                setLoading(false)
-            }
-        }
-
         void loadOrganizations()
     }, [])
+
+    const managerOptions = useMemo(
+        () => mapIdentityUsersToOrganizationManagerOptions(managerUsers),
+        [managerUsers]
+    )
 
     const filteredOrganizations = useMemo(() => {
         return organizations.filter((organization) => {
@@ -147,7 +140,7 @@ const AdminManageOrganizationPage = () => {
                 organization.name.toLowerCase().includes(keyword) ||
                 organization.code.toLowerCase().includes(keyword)
 
-            return matchesKeyword && (!status || organization.status === status)
+            return matchesKeyword && (!status || organization.statusLabel === status)
         })
     }, [organizations, search, status])
 
@@ -156,6 +149,92 @@ const AdminManageOrganizationPage = () => {
         (sum, item) => sum + item.activeRecruitments,
         0
     )
+
+    const normalizeOrganizationPayload = (
+        values: AdminOrganizationFormValues
+    ) => ({
+        code: values.code.trim(),
+        name: values.name.trim(),
+        managerUserId: values.managerUserId || null,
+        description: values.description.trim(),
+        isActive: values.isActive,
+    })
+
+    const handleCreateOrganization = async (
+        values: AdminOrganizationFormValues
+    ) => {
+        setSubmitting(true)
+        try {
+            await AdminService.createDepartment(
+                normalizeOrganizationPayload(values)
+            )
+            notification.success({
+                message: 'Đã tạo đơn vị',
+                description: values.name.trim(),
+            })
+            setCreateOpen(false)
+            await loadOrganizations()
+        } catch {
+            notification.error({
+                message: 'Tạo đơn vị thất bại',
+                description:
+                    'Backend từ chối dữ liệu hoặc bạn chưa có quyền tạo đơn vị.',
+            })
+        } finally {
+            setSubmitting(false)
+        }
+    }
+
+    const handleUpdateOrganization = async (
+        values: AdminOrganizationFormValues
+    ) => {
+        if (!editingOrganization) return
+
+        setSubmitting(true)
+        try {
+            await AdminService.updateDepartment(
+                editingOrganization.id,
+                normalizeOrganizationPayload(values)
+            )
+            notification.success({
+                message: 'Đã cập nhật đơn vị',
+                description: values.name.trim(),
+            })
+            setEditingOrganization(null)
+            await loadOrganizations()
+        } catch {
+            notification.error({
+                message: 'Cập nhật đơn vị thất bại',
+                description:
+                    'Backend từ chối dữ liệu hoặc bạn chưa có quyền cập nhật đơn vị.',
+            })
+        } finally {
+            setSubmitting(false)
+        }
+    }
+
+    const handleDeleteOrganization = async () => {
+        if (!deletingOrganization) return
+
+        setSubmitting(true)
+        try {
+            await AdminService.deleteDepartment(deletingOrganization.id)
+            notification.success({
+                message: 'Đã xóa đơn vị',
+                description: deletingOrganization.name,
+            })
+            setDeletingOrganization(null)
+            await loadOrganizations()
+        } catch {
+            notification.error({
+                message: 'Xóa đơn vị thất bại',
+                description:
+                    'Đơn vị có thể đang được tham chiếu bởi dữ liệu khác hoặc bạn chưa có quyền xóa.',
+            })
+        } finally {
+            setSubmitting(false)
+        }
+    }
 
     return (
         <div className={styles.page}>
@@ -171,12 +250,17 @@ const AdminManageOrganizationPage = () => {
                             Quản lý danh sách đơn vị
                         </Typography.Title>
                         <Typography.Paragraph style={{ maxWidth: 720 }}>
-                            Đồng bộ danh mục phòng ban từ backend và hiển thị
-                            đầu mối quản lý cùng số lượng đợt tuyển dụng đang
-                            hoạt động theo từng đơn vị.
+                            Đồng bộ danh mục phòng ban từ backend, đồng thời cho
+                            phép admin thêm, cập nhật và xóa đơn vị ngay trên
+                            giao diện quản trị.
                         </Typography.Paragraph>
                     </div>
-                    <Button type="primary" size="large" icon={<PlusOutlined />}>
+                    <Button
+                        type="primary"
+                        size="large"
+                        icon={<PlusOutlined />}
+                        onClick={() => setCreateOpen(true)}
+                    >
                         Thêm đơn vị
                     </Button>
                 </Space>
@@ -227,9 +311,7 @@ const AdminManageOrganizationPage = () => {
                         <div className={styles.metricValue}>
                             {formatCount(totalUsers)}
                         </div>
-                        <div className={styles.metricLabel}>
-                            Đầu mối quản lý
-                        </div>
+                        <div className={styles.metricLabel}>Đầu mối quản lý</div>
                     </div>
                 </div>
                 <div className={styles.metricBox}>
@@ -252,14 +334,11 @@ const AdminManageOrganizationPage = () => {
                     <div>
                         <div className={styles.metricValue}>
                             {formatCount(
-                                organizations.filter(
-                                    (item) => item.status === 'Hoạt động'
-                                ).length
+                                organizations.filter((item) => item.isActive)
+                                    .length
                             )}
                         </div>
-                        <div className={styles.metricLabel}>
-                            Đơn vị hoạt động
-                        </div>
+                        <div className={styles.metricLabel}>Đơn vị hoạt động</div>
                     </div>
                 </div>
             </div>
@@ -289,13 +368,13 @@ const AdminManageOrganizationPage = () => {
                                     </div>
                                     <Tag
                                         color={
-                                            organization.status === 'Hoạt động'
+                                            organization.isActive
                                                 ? 'success'
                                                 : 'warning'
                                         }
                                         className={styles.statusTag}
                                     >
-                                        {organization.status}
+                                        {organization.statusLabel}
                                     </Tag>
                                 </div>
 
@@ -313,19 +392,19 @@ const AdminManageOrganizationPage = () => {
                                         <IdcardOutlined
                                             className={styles.detailIcon}
                                         />
-                                        <span>{organization.contact}</span>
+                                        <span>{organization.managerName}</span>
                                     </div>
                                     <div className={styles.detailItem}>
-                                        <EnvironmentOutlined
+                                        <FileTextOutlined
                                             className={styles.detailIcon}
                                         />
-                                        <span>{organization.address}</span>
+                                        <span>{organization.description}</span>
                                     </div>
                                     <div className={styles.detailItem}>
                                         <PhoneOutlined
                                             className={styles.detailIcon}
                                         />
-                                        <span>{organization.phone}</span>
+                                        <span>{organization.managerPhone}</span>
                                     </div>
                                     <div className={styles.detailItem}>
                                         <MailOutlined
@@ -334,7 +413,7 @@ const AdminManageOrganizationPage = () => {
                                         <span
                                             style={{ overflowWrap: 'anywhere' }}
                                         >
-                                            {organization.email}
+                                            {organization.managerEmail}
                                         </span>
                                     </div>
                                 </div>
@@ -360,14 +439,39 @@ const AdminManageOrganizationPage = () => {
                                     </div>
                                 </div>
 
-                                <Button
-                                    block
-                                    size="large"
-                                    type="default"
-                                    style={{ marginTop: 'auto' }}
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        gap: 8,
+                                        marginTop: 'auto',
+                                    }}
                                 >
-                                    Quản lý đơn vị
-                                </Button>
+                                    <Button
+                                        icon={<EyeOutlined />}
+                                        onClick={() =>
+                                            setViewingOrganization(organization)
+                                        }
+                                    >
+                                        Xem
+                                    </Button>
+                                    <Button
+                                        icon={<EditOutlined />}
+                                        onClick={() =>
+                                            setEditingOrganization(organization)
+                                        }
+                                    >
+                                        Sửa
+                                    </Button>
+                                    <Button
+                                        danger
+                                        icon={<DeleteOutlined />}
+                                        onClick={() =>
+                                            setDeletingOrganization(organization)
+                                        }
+                                    >
+                                        Xóa
+                                    </Button>
+                                </div>
                             </div>
                         </Card>
                     ))}
@@ -377,6 +481,43 @@ const AdminManageOrganizationPage = () => {
                     <Empty description="Không có đơn vị phù hợp bộ lọc hiện tại" />
                 </Card>
             )}
+
+            <CreateAdminOrganizationModal
+                open={createOpen}
+                managerOptions={managerOptions}
+                submitting={submitting}
+                onCancel={() => {
+                    if (!submitting) setCreateOpen(false)
+                }}
+                onSubmit={handleCreateOrganization}
+            />
+
+            <ViewAdminOrganizationModal
+                open={Boolean(viewingOrganization)}
+                organization={viewingOrganization}
+                onCancel={() => setViewingOrganization(null)}
+            />
+
+            <UpdateAdminOrganizationModal
+                open={Boolean(editingOrganization)}
+                organization={editingOrganization}
+                managerOptions={managerOptions}
+                submitting={submitting}
+                onCancel={() => {
+                    if (!submitting) setEditingOrganization(null)
+                }}
+                onSubmit={handleUpdateOrganization}
+            />
+
+            <DeleteAdminOrganizationModal
+                open={Boolean(deletingOrganization)}
+                organization={deletingOrganization}
+                submitting={submitting}
+                onCancel={() => {
+                    if (!submitting) setDeletingOrganization(null)
+                }}
+                onConfirm={handleDeleteOrganization}
+            />
         </div>
     )
 }

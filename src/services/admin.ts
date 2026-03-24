@@ -91,6 +91,31 @@ export interface DepartmentDto {
     isActive: boolean
 }
 
+export interface JobPositionDto {
+    id: string
+    code: string
+    name: string
+    departmentId: string
+    description?: string
+    isActive: boolean
+}
+
+export interface DepartmentCreateDto {
+    code: string
+    name: string
+    managerUserId?: string | null
+    description?: string
+    isActive: boolean
+}
+
+export interface DepartmentUpdateDto {
+    code: string
+    name: string
+    managerUserId?: string | null
+    description?: string
+    isActive: boolean
+}
+
 export interface RecruitmentRequestDto {
     id: string
     requestCode: string
@@ -287,6 +312,31 @@ export class AdminService {
                 ...query,
             },
         })
+    }
+
+    async getJobPositions(query: PagedQuery = {}) {
+        return await http.get('app/job-position', {
+            params: {
+                ...defaultPagedQuery,
+                ...query,
+            },
+        })
+    }
+
+    async getDepartment(id: string) {
+        return await http.get(`app/department/${id}`)
+    }
+
+    async createDepartment(input: DepartmentCreateDto) {
+        return await http.post('app/department', input)
+    }
+
+    async updateDepartment(id: string, input: DepartmentUpdateDto) {
+        return await http.put(`app/department/${id}`, input)
+    }
+
+    async deleteDepartment(id: string) {
+        return await http.delete(`app/department/${id}`)
     }
 
     async getRecruitmentRequests(query: PagedQuery = {}) {
