@@ -4,12 +4,14 @@ import {
     Button,
     Card,
     Col,
+    Empty,
     List,
     Radio,
     Row,
     Space,
     Tag,
     Typography,
+    notification,
 } from 'antd'
 
 import {
@@ -21,41 +23,78 @@ import {
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 
-import { EmployerInterview, employerInterviews } from '@/mock/employerData'
+import { useEmployerWorkspace } from '@/hooks/useEmployerWorkspace'
+import {
+    getInterviewStatusColor,
+    getInterviewStatusLabel,
+    getInterviewTypeLabel,
+} from '@/utils/employer'
 
 const { Paragraph, Text, Title } = Typography
 
-const interviewTypeLabel: Record<EmployerInterview['type'], string> = {
-    video: 'Video call',
-    phone: 'Điện thoại',
-    'in-person': 'Trực tiếp',
-}
-
-const interviewStatusColor: Record<EmployerInterview['status'], string> = {
-    scheduled: 'blue',
-    completed: 'green',
-    cancelled: 'red',
-}
-
-const interviewStatusLabel: Record<EmployerInterview['status'], string> = {
-    scheduled: 'Đã lên lịch',
-    completed: 'Hoàn thành',
-    cancelled: 'Đã hủy',
+type InterviewRow = {
+    id: string
+    candidateName: string
+    position: string
+    scheduledTime: string
+    interviewer: string
+    interviewType: string | number
+    status: string | number
+    note?: string | null
+    location?: string | null
+    meetingLink?: string | null
 }
 
 const EmployerManageInterviewPage = () => {
     const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
+    const { applicationRows, interviews, loading } = useEmployerWorkspace()
+
+    const interviewRows = useMemo<InterviewRow[]>(
+        () =>
+            interviews
+                .map((item) => {
+                    const applicationRow = applicationRows.find(
+                        (row) => row.application.id === item.applicationId
+                    )
+
+                    return {
+                        id: item.id,
+                        candidateName:
+                            applicationRow?.candidate?.fullName || 'Ứng viên',
+                        position:
+                            applicationRow?.recruitmentRequest?.title ||
+                            applicationRow?.jobPosition?.name ||
+                            '-',
+                        scheduledTime: item.scheduledTime,
+                        interviewer:
+                            item.contactPerson || 'Chưa cập nhật người phụ trách',
+                        interviewType: item.interviewType,
+                        status: item.status,
+                        note: item.note,
+                        location: item.location,
+                        meetingLink: item.meetingLink,
+                    }
+                })
+                .sort(
+                    (left, right) =>
+                        dayjs(left.scheduledTime).valueOf() -
+                        dayjs(right.scheduledTime).valueOf()
+                ),
+        [applicationRows, interviews]
+    )
 
     const grouped = useMemo(
         () => ({
-            upcoming: employerInterviews.filter(
-                (item) => item.status === 'scheduled'
+            upcoming: interviewRows.filter((item) =>
+                ['1', '2', '3', 'pending', 'confirmed', 'rescheduled'].includes(
+                    String(item.status).toLowerCase()
+                )
             ),
-            completed: employerInterviews.filter(
-                (item) => item.status === 'completed'
+            completed: interviewRows.filter((item) =>
+                ['5', 'completed'].includes(String(item.status).toLowerCase())
             ),
         }),
-        []
+        [interviewRows]
     )
 
     return (
@@ -70,12 +109,23 @@ const EmployerManageInterviewPage = () => {
                     <div>
                         <Title level={2}>Quản lý lịch phỏng vấn</Title>
                         <Paragraph style={{ maxWidth: 760 }}>
-                            Màn hình lịch phỏng vấn được đồng bộ về cùng hệ
-                            layout và card với admin, đồng thời giữ cách tổ chức
-                            nội dung rõ ràng cho recruiter theo từng trạng thái.
+                            Trang này lấy dữ liệu trực tiếp từ API lịch phỏng
+                            vấn để recruiter theo dõi ứng viên, thời gian, hình
+                            thức và trạng thái của từng buổi phỏng vấn.
                         </Paragraph>
                     </div>
-                    <Button type="primary" size="large" icon={<PlusOutlined />}>
+                    <Button
+                        type="primary"
+                        size="large"
+                        icon={<PlusOutlined />}
+                        onClick={() => {
+                            notification.info({
+                                message: 'Chức năng đang được cập nhật',
+                                description:
+                                    'Tính năng lên lịch phỏng vấn trực tiếp sẽ được bổ sung ở bước tiếp theo.',
+                            })
+                        }}
+                    >
                         Lên lịch phỏng vấn
                     </Button>
                 </Space>
@@ -99,93 +149,110 @@ const EmployerManageInterviewPage = () => {
                             title={`Sắp tới (${grouped.upcoming.length})`}
                             className="portal-section-card"
                         >
-                            <List
-                                dataSource={grouped.upcoming}
-                                renderItem={(item) => (
-                                    <List.Item>
-                                        <Space
-                                            direction="vertical"
-                                            size={12}
-                                            style={{ width: '100%' }}
-                                        >
+                            {loading ? (
+                                <Typography.Paragraph>
+                                    Đang tải dữ liệu lịch phỏng vấn...
+                                </Typography.Paragraph>
+                            ) : grouped.upcoming.length ? (
+                                <List
+                                    dataSource={grouped.upcoming}
+                                    renderItem={(item) => (
+                                        <List.Item>
                                             <Space
-                                                style={{
-                                                    width: '100%',
-                                                    justifyContent:
-                                                        'space-between',
-                                                }}
-                                                align="start"
+                                                direction="vertical"
+                                                size={12}
+                                                style={{ width: '100%' }}
                                             >
-                                                <div>
-                                                    <Title
-                                                        level={5}
-                                                        style={{
-                                                            marginBottom: 4,
-                                                        }}
-                                                    >
-                                                        {item.candidateName}
-                                                    </Title>
-                                                    <Text className="portal-muted">
-                                                        {item.position}
-                                                    </Text>
-                                                </div>
-                                                <Tag
-                                                    color={
-                                                        interviewStatusColor[
-                                                            item.status
-                                                        ]
-                                                    }
+                                                <Space
+                                                    style={{
+                                                        width: '100%',
+                                                        justifyContent:
+                                                            'space-between',
+                                                    }}
+                                                    align="start"
                                                 >
-                                                    {
-                                                        interviewStatusLabel[
+                                                    <div>
+                                                        <Title
+                                                            level={5}
+                                                            style={{
+                                                                marginBottom: 4,
+                                                            }}
+                                                        >
+                                                            {item.candidateName}
+                                                        </Title>
+                                                        <Text className="portal-muted">
+                                                            {item.position}
+                                                        </Text>
+                                                    </div>
+                                                    <Tag
+                                                        color={getInterviewStatusColor(
                                                             item.status
-                                                        ]
-                                                    }
-                                                </Tag>
-                                            </Space>
-                                            <Row gutter={[12, 12]}>
-                                                <Col xs={24} md={12}>
-                                                    <Text>
-                                                        <CalendarOutlined />{' '}
-                                                        {dayjs(
-                                                            item.date
-                                                        ).format('DD/MM/YYYY')}
-                                                    </Text>
-                                                </Col>
-                                                <Col xs={24} md={12}>
-                                                    <Text>
-                                                        <ClockCircleOutlined />{' '}
-                                                        {item.time}
-                                                    </Text>
-                                                </Col>
-                                                <Col xs={24} md={12}>
-                                                    <Text>
-                                                        <VideoCameraOutlined />{' '}
-                                                        {
-                                                            interviewTypeLabel[
-                                                                item.type
-                                                            ]
-                                                        }
-                                                    </Text>
-                                                </Col>
-                                                <Col xs={24} md={12}>
-                                                    <Text>
-                                                        <TeamOutlined />{' '}
-                                                        {item.interviewer}
-                                                    </Text>
-                                                </Col>
-                                            </Row>
-                                            {item.notes ? (
-                                                <Card size="small">
+                                                        )}
+                                                    >
+                                                        {getInterviewStatusLabel(
+                                                            item.status
+                                                        )}
+                                                    </Tag>
+                                                </Space>
+                                                <Row gutter={[12, 12]}>
+                                                    <Col xs={24} md={12}>
+                                                        <Text>
+                                                            <CalendarOutlined />{' '}
+                                                            {dayjs(
+                                                                item.scheduledTime
+                                                            ).format(
+                                                                'DD/MM/YYYY'
+                                                            )}
+                                                        </Text>
+                                                    </Col>
+                                                    <Col xs={24} md={12}>
+                                                        <Text>
+                                                            <ClockCircleOutlined />{' '}
+                                                            {dayjs(
+                                                                item.scheduledTime
+                                                            ).format('HH:mm')}
+                                                        </Text>
+                                                    </Col>
+                                                    <Col xs={24} md={12}>
+                                                        <Text>
+                                                            <VideoCameraOutlined />{' '}
+                                                            {getInterviewTypeLabel(
+                                                                item.interviewType
+                                                            )}
+                                                        </Text>
+                                                    </Col>
+                                                    <Col xs={24} md={12}>
+                                                        <Text>
+                                                            <TeamOutlined />{' '}
+                                                            {item.interviewer}
+                                                        </Text>
+                                                    </Col>
+                                                </Row>
+                                                {item.location ? (
                                                     <Text className="portal-muted">
-                                                        {item.notes}
+                                                        Địa điểm: {item.location}
                                                     </Text>
-                                                </Card>
-                                            ) : null}
-                                        </Space>
-                                    </List.Item>
-                                )}
-                            />
+                                                ) : null}
+                                                {item.meetingLink ? (
+                                                    <Text className="portal-muted">
+                                                        Link họp:{' '}
+                                                        {item.meetingLink}
+                                                    </Text>
+                                                ) : null}
+                                                {item.note ? (
+                                                    <Card size="small">
+                                                        <Text className="portal-muted">
+                                                            {item.note}
+                                                        </Text>
+                                                    </Card>
+                                                ) : null}
+                                            </Space>
+                                        </List.Item>
+                                    )}
+                                />
+                            ) : (
+                                <Empty description="Chưa có lịch phỏng vấn sắp tới" />
+                            )}
                         </Card>
                     </Col>
 
@@ -194,41 +261,48 @@ const EmployerManageInterviewPage = () => {
                             title={`Đã hoàn thành (${grouped.completed.length})`}
                             className="portal-section-card"
                         >
-                            <List
-                                dataSource={grouped.completed}
-                                renderItem={(item) => (
-                                    <List.Item>
-                                        <Space
-                                            direction="vertical"
-                                            size={8}
-                                            style={{ width: '100%' }}
-                                        >
-                                            <div className="portal-split">
-                                                <div>
-                                                    <Text strong>
-                                                        {item.candidateName}
-                                                    </Text>
+                            {loading ? (
+                                <Typography.Paragraph>
+                                    Đang tải dữ liệu lịch phỏng vấn...
+                                </Typography.Paragraph>
+                            ) : grouped.completed.length ? (
+                                <List
+                                    dataSource={grouped.completed}
+                                    renderItem={(item) => (
+                                        <List.Item>
+                                            <Space
+                                                direction="vertical"
+                                                size={8}
+                                                style={{ width: '100%' }}
+                                            >
+                                                <div className="portal-split">
                                                     <div>
-                                                        <Text className="portal-muted">
-                                                            {item.position}
+                                                        <Text strong>
+                                                            {item.candidateName}
                                                         </Text>
+                                                        <div>
+                                                            <Text className="portal-muted">
+                                                                {item.position}
+                                                            </Text>
+                                                        </div>
                                                     </div>
+                                                    <Tag color="green">
+                                                        Hoàn thành
+                                                    </Tag>
                                                 </div>
-                                                <Tag color="green">
-                                                    Hoàn thành
-                                                </Tag>
-                                            </div>
-                                            <Text className="portal-muted">
-                                                {dayjs(item.date).format(
-                                                    'DD/MM/YYYY'
-                                                )}{' '}
-                                                - {item.time}
-                                            </Text>
-                                            <Text>{item.notes}</Text>
-                                        </Space>
-                                    </List.Item>
-                                )}
-                            />
+                                                <Text className="portal-muted">
+                                                    {dayjs(
+                                                        item.scheduledTime
+                                                    ).format('DD/MM/YYYY HH:mm')}
+                                                </Text>
+                                                <Text>{item.note || '-'}</Text>
+                                            </Space>
+                                        </List.Item>
+                                    )}
+                                />
+                            ) : (
+                                <Empty description="Chưa có lịch phỏng vấn hoàn thành" />
+                            )}
                         </Card>
                     </Col>
                 </Row>
@@ -242,9 +316,8 @@ const EmployerManageInterviewPage = () => {
                             Chế độ xem lịch
                         </Title>
                         <Text className="portal-muted">
-                            Khung lịch chi tiết chưa được mở rộng trong phạm vi
-                            chỉnh sửa này, nhưng theme và layout đã sẵn sàng để
-                            gắn `Calendar` của Ant Design ở bước tiếp theo.
+                            Dữ liệu phỏng vấn đã được lấy từ API. Chế độ hiển thị
+                            dạng lịch chi tiết sẽ được bổ sung ở bước tiếp theo.
                         </Text>
                     </Space>
                 </Card>

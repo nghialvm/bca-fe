@@ -12,6 +12,17 @@ export interface LoginResult {
     user?: any
 }
 
+export interface RegisterDto {
+    userName: string
+    emailAddress: string
+    password: string
+    appName: string
+}
+
+export interface RegisterResult {
+    [key: string]: unknown
+}
+
 export interface LogoutDto {
     token: string
 }

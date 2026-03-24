@@ -6,8 +6,9 @@ import { LockOutlined, UserOutlined } from '@ant-design/icons'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 
-import { getCurrentUserAction, loginAction } from '@/stores/auth/authAction'
+import { PATHS } from '@/routers/path'
 import { initializeAntiforgeryToken } from '@/services/http'
+import { getCurrentUserAction, loginAction } from '@/stores/auth/authAction'
 import { getDefaultPathByRole, getSiteRole } from '@/utils/role'
 
 import styles from '../styles/LoginPage.module.css'
@@ -42,46 +43,40 @@ const LoginPage: FC = () => {
             if (loginAction.fulfilled.match(loginResponse)) {
                 await initializeAntiforgeryToken(true)
                 const userResponse: any = await dispatch(getCurrentUserAction())
-                const user = userResponse.payload
+                const currentUser = userResponse.payload
+
                 if (
                     getCurrentUserAction.fulfilled.match(userResponse) &&
-                    user
+                    currentUser
                 ) {
                     notification.success({
-                        message: 'Login successfully!',
-                        description: 'Welcome back',
+                        message: 'Đăng nhập thành công',
+                        description: 'Chào mừng bạn quay trở lại hệ thống.',
                     })
-                    navigate(getDefaultPathByRole(getSiteRole(user)), {
+                    navigate(getDefaultPathByRole(getSiteRole(currentUser)), {
                         replace: true,
                     })
                 } else {
                     notification.error({
-                        message: 'Login failed!',
-                        description: 'Authenticated but could not load profile',
+                        message: 'Đăng nhập thất bại',
+                        description:
+                            'Đã xác thực nhưng không tải được thông tin người dùng.',
                     })
                 }
             } else if (loginAction.rejected.match(loginResponse)) {
                 notification.error({
-                    message: 'Login failed!',
-                    description: 'Incorrect username or password',
+                    message: 'Đăng nhập thất bại',
+                    description: 'Tên đăng nhập hoặc mật khẩu không chính xác.',
                 })
             }
-        } catch (e: any) {
+        } catch {
             notification.error({
-                message: 'Login failed!',
-                description: 'Incorrect username or password',
+                message: 'Đăng nhập thất bại',
+                description: 'Tên đăng nhập hoặc mật khẩu không chính xác.',
             })
         } finally {
             setLoginLoading(false)
         }
-    }
-
-    const onLoginWithUsbToken = () => {
-        notification.info({
-            message: 'USB Token',
-            description:
-                'Chức năng đăng nhập bằng USB Token đang được cập nhật.',
-        })
     }
 
     return (
@@ -116,11 +111,9 @@ const LoginPage: FC = () => {
                             <Input
                                 className={styles.input}
                                 prefix={
-                                    <UserOutlined
-                                        className={styles.inputIcon}
-                                    />
+                                    <UserOutlined className={styles.inputIcon} />
                                 }
-                                placeholder="Nhập tên"
+                                placeholder="Nhập tên đăng nhập"
                                 size="large"
                             />
                         </Form.Item>
@@ -139,9 +132,7 @@ const LoginPage: FC = () => {
                             <Input.Password
                                 className={styles.input}
                                 prefix={
-                                    <LockOutlined
-                                        className={styles.inputIcon}
-                                    />
+                                    <LockOutlined className={styles.inputIcon} />
                                 }
                                 placeholder="Nhập mật khẩu"
                                 size="large"
@@ -177,7 +168,7 @@ const LoginPage: FC = () => {
                             htmlType="button"
                             block
                             size="large"
-                            onClick={onLoginWithUsbToken}
+                            onClick={() => navigate(PATHS.REGISTER)}
                         >
                             Đăng ký
                         </Button>

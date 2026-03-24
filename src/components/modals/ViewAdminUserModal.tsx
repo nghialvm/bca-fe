@@ -1,6 +1,7 @@
 import { Descriptions, Modal, Space, Tag, Typography } from 'antd'
 
 import { getUserStatusColor, getUserStatusLabel } from '@/utils/admin'
+import { getRoleDisplayName } from '@/utils/role'
 
 import type { AdminUserRecord } from './adminUserModal.shared'
 
@@ -47,7 +48,9 @@ const ViewAdminUserModal = ({
                         {user?.roleNames.length ? (
                             <Space wrap>
                                 {user.roleNames.map((roleName) => (
-                                    <Tag key={roleName}>{roleName}</Tag>
+                                    <Tag key={roleName}>
+                                        {getRoleDisplayName(roleName)}
+                                    </Tag>
                                 ))}
                             </Space>
                         ) : (

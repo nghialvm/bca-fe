@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import {
     Card,
     Col,
+    Empty,
     List,
     Row,
     Skeleton,
@@ -21,11 +22,15 @@ import {
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 
+import { useEmployerWorkspace } from '@/hooks/useEmployerWorkspace'
+import { formatCount } from '@/utils/admin'
 import {
-    employerCandidates,
-    employerInterviews,
-    employerJobs,
-} from '@/mock/employerData'
+    buildApplicationStageStats,
+    getInterviewStatusLabel,
+    getInterviewTypeLabel,
+    isApplicationSelected,
+    isRecruitmentRequestPublished,
+} from '@/utils/employer'
 
 import styles from '../styles/AdminUi.module.css'
 
@@ -33,6 +38,8 @@ const { Paragraph, Text, Title } = Typography
 
 const EmployerDashboardPage = () => {
     const [chartsReady, setChartsReady] = useState(false)
+    const { applicationRows, interviews, loading, recruitmentRequests } =
+        useEmployerWorkspace()
 
     useEffect(() => {
         let frameId = 0
@@ -50,55 +57,59 @@ const EmployerDashboardPage = () => {
         }
     }, [])
 
+    const jobApplicantCount = useMemo(() => {
+        return applicationRows.reduce(
+            (accumulator, row) => {
+                const key = row.recruitmentRequest?.id
+                if (!key) return accumulator
+
+                const title =
+                    row.recruitmentRequest?.title ||
+                    row.jobPosition?.name ||
+                    row.recruitmentRequest?.requestCode ||
+                    'Tin tuyển dụng'
+
+                accumulator[key] = {
+                    name: title,
+                    applicants: (accumulator[key]?.applicants || 0) + 1,
+                }
+
+                return accumulator
+            },
+            {} as Record<string, { name: string; applicants: number }>
+        )
+    }, [applicationRows])
+
+    const upcomingInterviews = useMemo(
+        () =>
+            interviews
+                .filter((item) =>
+                    ['1', '2', '3', 'pending', 'confirmed', 'rescheduled'].includes(
+                        String(item.status).toLowerCase()
+                    )
+                )
+                .sort((left, right) =>
+                    dayjs(left.scheduledTime).valueOf() -
+                    dayjs(right.scheduledTime).valueOf()
+                ),
+        [interviews]
+    )
+
     const stats = {
-        activeJobs: employerJobs.filter((item) => item.status === 'active')
-            .length,
-        totalApplicants: employerCandidates.length,
-        upcomingInterviews: employerInterviews.filter(
-            (item) => item.status === 'scheduled'
+        activeJobs: recruitmentRequests.filter((item) =>
+            isRecruitmentRequestPublished(item.status)
         ).length,
-        selectedCandidates: employerCandidates.filter(
-            (item) => item.stage === 'selected'
+        totalApplicants: applicationRows.length,
+        upcomingInterviews: upcomingInterviews.length,
+        selectedCandidates: applicationRows.filter((item) =>
+            isApplicationSelected(item.application.status)
         ).length,
     }
 
-    const stageData = [
-        {
-            type: 'Hồ sơ mới',
-            value: employerCandidates.filter(
-                (item) => item.stage === 'application'
-            ).length,
-        },
-        {
-            type: 'Sàng lọc',
-            value: employerCandidates.filter(
-                (item) => item.stage === 'screening'
-            ).length,
-        },
-        {
-            type: 'Thi viết',
-            value: employerCandidates.filter(
-                (item) => item.stage === 'written-exam'
-            ).length,
-        },
-        {
-            type: 'Phỏng vấn',
-            value: employerCandidates.filter(
-                (item) => item.stage === 'interview'
-            ).length,
-        },
-        {
-            type: 'Đã chọn',
-            value: employerCandidates.filter(
-                (item) => item.stage === 'selected'
-            ).length,
-        },
-    ]
-
-    const jobApplicationData = employerJobs.map((job) => ({
-        name: job.title,
-        applicants: job.applicants,
-    }))
+    const stageData = buildApplicationStageStats(
+        applicationRows.map((item) => item.application.status)
+    )
+    const jobApplicationData = Object.values(jobApplicantCount)
 
     return (
         <div className="portal-page">
@@ -110,9 +121,9 @@ const EmployerDashboardPage = () => {
                     Tổng quan hệ thống tuyển dụng của đơn vị
                 </Title>
                 <Paragraph style={{ maxWidth: 760 }}>
-                    Trang tổng quan employer đã được đồng bộ lại với back-office
-                    mới: cùng layout, cùng thang màu và cùng hệ bề mặt card với
-                    admin để thao tác quản trị nhất quán hơn.
+                    Dữ liệu tại trang này được đồng bộ trực tiếp từ các API
+                    tuyển dụng của hệ thống, giúp đơn vị theo dõi vị trí đang
+                    tuyển, hồ sơ ứng viên và lịch phỏng vấn theo thời gian thực.
                 </Paragraph>
             </section>
 
@@ -126,14 +137,7 @@ const EmployerDashboardPage = () => {
                             <Statistic
                                 title="Tin đang mở"
                                 value={stats.activeJobs}
-                                suffix={
-                                    <Text
-                                        type="success"
-                                        style={{ fontSize: 14 }}
-                                    >
-                                        +12%
-                                    </Text>
-                                }
+                                formatter={(value) => formatCount(Number(value))}
                             />
                         </Space>
                     </Card>
@@ -147,14 +151,7 @@ const EmployerDashboardPage = () => {
                             <Statistic
                                 title="Tổng ứng viên"
                                 value={stats.totalApplicants}
-                                suffix={
-                                    <Text
-                                        type="success"
-                                        style={{ fontSize: 14 }}
-                                    >
-                                        +8%
-                                    </Text>
-                                }
+                                formatter={(value) => formatCount(Number(value))}
                             />
                         </Space>
                     </Card>
@@ -168,9 +165,10 @@ const EmployerDashboardPage = () => {
                             <Statistic
                                 title="Lịch phỏng vấn"
                                 value={stats.upcomingInterviews}
+                                formatter={(value) => formatCount(Number(value))}
                                 suffix={
                                     <Text className="portal-muted">
-                                        Tuần này
+                                        Sắp tới
                                     </Text>
                                 }
                             />
@@ -186,14 +184,7 @@ const EmployerDashboardPage = () => {
                             <Statistic
                                 title="Ứng viên đã chọn"
                                 value={stats.selectedCandidates}
-                                suffix={
-                                    <Text
-                                        type="success"
-                                        style={{ fontSize: 14 }}
-                                    >
-                                        +5%
-                                    </Text>
-                                }
+                                formatter={(value) => formatCount(Number(value))}
                             />
                         </Space>
                     </Card>
@@ -207,7 +198,9 @@ const EmployerDashboardPage = () => {
                         className="portal-section-card"
                     >
                         <div className={styles.chart}>
-                            {chartsReady ? (
+                            {loading ? (
+                                <Skeleton active paragraph={{ rows: 8 }} />
+                            ) : jobApplicationData.length && chartsReady ? (
                                 <Column
                                     height={320}
                                     data={jobApplicationData}
@@ -222,7 +215,7 @@ const EmployerDashboardPage = () => {
                                     }}
                                 />
                             ) : (
-                                <Skeleton active paragraph={{ rows: 8 }} />
+                                <Empty description="Chưa có dữ liệu ứng viên theo vị trí" />
                             )}
                         </div>
                     </Card>
@@ -232,25 +225,31 @@ const EmployerDashboardPage = () => {
                         title="Phân bổ theo giai đoạn"
                         className="portal-section-card"
                     >
-                        <Pie
-                            height={320}
-                            data={stageData}
-                            angleField="value"
-                            colorField="type"
-                            innerRadius={0.58}
-                            label={{ text: 'type', position: 'outside' }}
-                            scale={{
-                                color: {
-                                    range: [
-                                        '#0B3D2E',
-                                        '#166534',
-                                        '#B7791F',
-                                        '#2E7D60',
-                                        '#10B981',
-                                    ],
-                                },
-                            }}
-                        />
+                        {loading ? (
+                            <Skeleton active paragraph={{ rows: 8 }} />
+                        ) : stageData.some((item) => item.value > 0) ? (
+                            <Pie
+                                height={320}
+                                data={stageData}
+                                angleField="value"
+                                colorField="type"
+                                innerRadius={0.58}
+                                label={{ text: 'type', position: 'outside' }}
+                                scale={{
+                                    color: {
+                                        range: [
+                                            '#0B3D2E',
+                                            '#166534',
+                                            '#B7791F',
+                                            '#2E7D60',
+                                            '#10B981',
+                                        ],
+                                    },
+                                }}
+                            />
+                        ) : (
+                            <Empty description="Chưa có dữ liệu giai đoạn tuyển dụng" />
+                        )}
                     </Card>
                 </Col>
             </Row>
@@ -259,48 +258,69 @@ const EmployerDashboardPage = () => {
                 title="Lịch phỏng vấn sắp tới"
                 className="portal-section-card"
             >
-                <List
-                    dataSource={employerInterviews.filter(
-                        (item) => item.status === 'scheduled'
-                    )}
-                    renderItem={(item) => (
-                        <List.Item>
-                            <Space
-                                style={{
-                                    width: '100%',
-                                    justifyContent: 'space-between',
-                                }}
-                                align="start"
-                            >
-                                <div>
-                                    <Title
-                                        level={5}
-                                        style={{ marginBottom: 4 }}
+                {loading ? (
+                    <Skeleton active paragraph={{ rows: 6 }} />
+                ) : upcomingInterviews.length ? (
+                    <List
+                        dataSource={upcomingInterviews}
+                        renderItem={(item) => {
+                            const applicationRow = applicationRows.find(
+                                (row) => row.application.id === item.applicationId
+                            )
+
+                            return (
+                                <List.Item>
+                                    <Space
+                                        style={{
+                                            width: '100%',
+                                            justifyContent: 'space-between',
+                                        }}
+                                        align="start"
                                     >
-                                        {item.candidateName}
-                                    </Title>
-                                    <Text className="portal-muted">
-                                        {item.position}
-                                    </Text>
-                                </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <Tag color="green">{item.type}</Tag>
-                                    <div>
-                                        <Text strong>
-                                            {dayjs(item.date).format(
-                                                'DD/MM/YYYY'
-                                            )}{' '}
-                                            - {item.time}
-                                        </Text>
-                                    </div>
-                                    <Text className="portal-muted">
-                                        {item.interviewer}
-                                    </Text>
-                                </div>
-                            </Space>
-                        </List.Item>
-                    )}
-                />
+                                        <div>
+                                            <Title
+                                                level={5}
+                                                style={{ marginBottom: 4 }}
+                                            >
+                                                {applicationRow?.candidate?.fullName ||
+                                                    'Ứng viên'}
+                                            </Title>
+                                            <Text className="portal-muted">
+                                                {applicationRow?.recruitmentRequest
+                                                    ?.title || '-'}
+                                            </Text>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <Tag color="green">
+                                                {getInterviewTypeLabel(
+                                                    item.interviewType
+                                                )}
+                                            </Tag>
+                                            <Tag color="blue">
+                                                {getInterviewStatusLabel(
+                                                    item.status
+                                                )}
+                                            </Tag>
+                                            <div>
+                                                <Text strong>
+                                                    {dayjs(
+                                                        item.scheduledTime
+                                                    ).format('DD/MM/YYYY HH:mm')}
+                                                </Text>
+                                            </div>
+                                            <Text className="portal-muted">
+                                                {item.contactPerson ||
+                                                    'Chưa cập nhật người phỏng vấn'}
+                                            </Text>
+                                        </div>
+                                    </Space>
+                                </List.Item>
+                            )
+                        }}
+                    />
+                ) : (
+                    <Empty description="Chưa có lịch phỏng vấn sắp tới" />
+                )}
             </Card>
         </div>
     )

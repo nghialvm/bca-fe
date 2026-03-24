@@ -18,3 +18,13 @@ export const getCurrentUserAction = createAsyncThunk(
         return await UserService.getCurrentUser()
     }
 )
+
+export const logoutAction = createAsyncThunk(AUTH_API.LOGOUT, async () => {
+    try {
+        await AuthService.logout()
+        return { serverLogoutSucceeded: true }
+    } catch (error) {
+        console.warn('Server logout failed, falling back to local logout.', error)
+        return { serverLogoutSucceeded: false }
+    }
+})

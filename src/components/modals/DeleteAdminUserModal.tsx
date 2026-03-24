@@ -1,6 +1,7 @@
 import { Alert, Modal, Space, Tag, Typography } from 'antd'
 
 import { getUserStatusColor, getUserStatusLabel } from '@/utils/admin'
+import { getRoleDisplayName } from '@/utils/role'
 
 import type { AdminUserRecord } from './adminUserModal.shared'
 
@@ -50,7 +51,9 @@ const DeleteAdminUserModal = ({
                 <Space wrap>
                     {user?.roleNames.length ? (
                         user.roleNames.map((roleName) => (
-                            <Tag key={roleName}>{roleName}</Tag>
+                            <Tag key={roleName}>
+                                {getRoleDisplayName(roleName)}
+                            </Tag>
                         ))
                     ) : (
                         <Tag>Chưa gán vai trò</Tag>

@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { Form, Input, Modal, Select, Switch } from 'antd'
 
 import type { IdentityRoleDto } from '@/services/admin'
+import { getRoleDisplayName } from '@/utils/role'
 
 import {
     type AdminUserFormValues,
@@ -126,7 +127,7 @@ const CreateAdminUserModal = ({
                         placeholder="Chọn vai trò"
                         options={roles.map((role) => ({
                             value: role.name,
-                            label: role.name,
+                            label: getRoleDisplayName(role.name) || role.name,
                         }))}
                     />
                 </Form.Item>

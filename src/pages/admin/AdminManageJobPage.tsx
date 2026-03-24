@@ -23,41 +23,27 @@ import {
     StopOutlined,
 } from '@ant-design/icons'
 
+import ViewEmployerJobModal from '@/components/modals/ViewEmployerJobModal'
+import type { EmployerJobRecord } from '@/components/modals/employerJobModal.shared'
+import { mapRecruitmentRequestToEmployerJobRecord } from '@/components/modals/employerJobModal.shared'
 import AdminService, {
     ApplicationDto,
     DepartmentDto,
+    JobPositionDto,
     RecruitmentRequestDto,
 } from '@/services/admin'
 import {
     formatCount,
     formatDisplayDate,
-    getRecruitmentRequestStatusColor,
-    getRecruitmentRequestStatusLabel,
     isRecruitmentRequestPending,
 } from '@/utils/admin'
 
 import styles from '../styles/AdminUi.module.css'
 
-type RecruitmentRow = {
-    id: string
-    key: string
-    title: string
-    unit: string
-    quantity: number
-    applications: number
-    status: string | number
-    statusLabel: string
-    deadline: string
-    position: string
-}
-
 const statColors = ['#2f54eb', '#d48806', '#389e0d', '#cf1322']
 
 const normalizeStatus = (value: string | number) =>
-    String(value)
-        .trim()
-        .replace(/[\s_-]+/g, '')
-        .toLowerCase()
+    String(value).trim().replace(/[\s_-]+/g, '').toLowerCase()
 
 const isApprovedOrPublished = (value: string | number) =>
     ['2', 'approved', '4', 'published'].includes(normalizeStatus(value))
@@ -95,8 +81,9 @@ const AdminManageJobPage = () => {
     const [status, setStatus] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
     const [actionLoadingId, setActionLoadingId] = useState<string>()
-    const [rows, setRows] = useState<RecruitmentRow[]>([])
-    const [rejectingRow, setRejectingRow] = useState<RecruitmentRow | null>(
+    const [rows, setRows] = useState<EmployerJobRecord[]>([])
+    const [viewingRow, setViewingRow] = useState<EmployerJobRecord | null>(null)
+    const [rejectingRow, setRejectingRow] = useState<EmployerJobRecord | null>(
         null
     )
     const [rejectReason, setRejectReason] = useState('')
@@ -107,6 +94,7 @@ const AdminManageJobPage = () => {
             const [
                 recruitmentResponse,
                 departmentResponse,
+                jobPositionResponse,
                 applicationResponse,
             ] = await Promise.all([
                 AdminService.getRecruitmentRequests({
@@ -114,6 +102,10 @@ const AdminManageJobPage = () => {
                     MaxResultCount: 1000,
                 }),
                 AdminService.getDepartments({
+                    Sorting: 'name asc',
+                    MaxResultCount: 1000,
+                }),
+                AdminService.getJobPositions({
                     Sorting: 'name asc',
                     MaxResultCount: 1000,
                 }),
@@ -127,11 +119,16 @@ const AdminManageJobPage = () => {
                 []) as RecruitmentRequestDto[]
             const departments = (departmentResponse?.items ||
                 []) as DepartmentDto[]
+            const jobPositions = (jobPositionResponse?.items ||
+                []) as JobPositionDto[]
             const applications = (applicationResponse?.items ||
                 []) as ApplicationDto[]
 
             const departmentsById = new Map(
                 departments.map((item) => [item.id, item.name])
+            )
+            const jobPositionsById = new Map(
+                jobPositions.map((item) => [item.id, item.name])
             )
             const applicationCountByRequest = applications.reduce(
                 (accumulator, item) => {
@@ -144,29 +141,22 @@ const AdminManageJobPage = () => {
             )
 
             setRows(
-                recruitments.map((item) => ({
-                    id: item.id,
-                    key: item.id,
-                    title: item.title,
-                    unit:
+                recruitments.map((item) =>
+                    mapRecruitmentRequestToEmployerJobRecord(
+                        item,
                         departmentsById.get(item.departmentId) ||
-                        'Chưa cập nhật đơn vị',
-                    quantity: item.headcount || 0,
-                    applications: applicationCountByRequest[item.id] || 0,
-                    status: item.status,
-                    statusLabel: getRecruitmentRequestStatusLabel(item.status),
-                    deadline: formatDisplayDate(item.applicationDeadline),
-                    position:
-                        item.employmentType?.trim() ||
-                        item.workLocation?.trim() ||
-                        '-',
-                }))
+                            'Chưa cập nhật đơn vị',
+                        jobPositionsById.get(item.jobPositionId) ||
+                            'Chưa gắn vị trí',
+                        applicationCountByRequest[item.id] || 0
+                    )
+                )
             )
         } catch {
             notification.error({
                 message: 'Không tải được danh sách tin tuyển dụng',
                 description:
-                    'Kiểm tra API recruitment request, department và application.',
+                    'Kiểm tra API recruitment request, department, job position và application.',
             })
         } finally {
             setLoading(false)
@@ -183,8 +173,9 @@ const AdminManageJobPage = () => {
             const matchesKeyword =
                 !keyword ||
                 recruitment.title.toLowerCase().includes(keyword) ||
-                recruitment.unit.toLowerCase().includes(keyword) ||
-                recruitment.position.toLowerCase().includes(keyword)
+                recruitment.departmentName.toLowerCase().includes(keyword) ||
+                recruitment.jobPositionName.toLowerCase().includes(keyword) ||
+                recruitment.requestCode.toLowerCase().includes(keyword)
 
             return (
                 matchesKeyword &&
@@ -221,14 +212,14 @@ const AdminManageJobPage = () => {
                 key: 'applications',
                 label: 'Tổng hồ sơ',
                 value: formatCount(
-                    rows.reduce((sum, item) => sum + item.applications, 0)
+                    rows.reduce((sum, item) => sum + item.applicants, 0)
                 ),
             },
         ],
         [rows]
     )
 
-    const handleApprove = async (record: RecruitmentRow) => {
+    const handleApprove = async (record: EmployerJobRecord) => {
         setActionLoadingId(record.id)
         try {
             await AdminService.approveRecruitmentRequest(record.id)
@@ -376,33 +367,34 @@ const AdminManageJobPage = () => {
                             title: 'Tin tuyển dụng',
                             dataIndex: 'title',
                             key: 'title',
-                            render: (_: string, record: RecruitmentRow) => (
+                            render: (_: string, record: EmployerJobRecord) => (
                                 <div className={styles.tableNameCell}>
                                     <span className={styles.tableMainText}>
                                         {record.title}
                                     </span>
                                     <span className={styles.tableSubText}>
-                                        {record.position}
+                                        {record.requestCode} •{' '}
+                                        {record.jobPositionName}
                                     </span>
                                 </div>
                             ),
                         },
                         {
                             title: 'Đơn vị',
-                            dataIndex: 'unit',
-                            key: 'unit',
+                            dataIndex: 'departmentName',
+                            key: 'departmentName',
                         },
                         {
                             title: 'Số lượng',
-                            dataIndex: 'quantity',
-                            key: 'quantity',
+                            dataIndex: 'headcount',
+                            key: 'headcount',
                             render: (value: number) =>
                                 `${formatCount(value)} người`,
                         },
                         {
                             title: 'Hồ sơ',
-                            dataIndex: 'applications',
-                            key: 'applications',
+                            dataIndex: 'applicants',
+                            key: 'applicants',
                             render: (value: number) => (
                                 <span className={styles.tableMainText}>
                                     {formatCount(value)} hồ sơ
@@ -411,18 +403,18 @@ const AdminManageJobPage = () => {
                         },
                         {
                             title: 'Hạn nộp',
-                            dataIndex: 'deadline',
-                            key: 'deadline',
+                            dataIndex: 'applicationDeadline',
+                            key: 'applicationDeadline',
+                            render: (value?: string | null) =>
+                                formatDisplayDate(value),
                         },
                         {
                             title: 'Trạng thái',
                             dataIndex: 'statusLabel',
                             key: 'status',
-                            render: (_: string, record: RecruitmentRow) => (
+                            render: (_: string, record: EmployerJobRecord) => (
                                 <Tag
-                                    color={getRecruitmentRequestStatusColor(
-                                        record.status
-                                    )}
+                                    color={record.statusColor}
                                     className={styles.statusTag}
                                 >
                                     {record.statusLabel}
@@ -432,9 +424,12 @@ const AdminManageJobPage = () => {
                         {
                             title: 'Thao tác',
                             key: 'actions',
-                            render: (_: unknown, record: RecruitmentRow) => (
+                            render: (_: unknown, record: EmployerJobRecord) => (
                                 <Space size="small">
-                                    <Button icon={<EyeOutlined />} />
+                                    <Button
+                                        icon={<EyeOutlined />}
+                                        onClick={() => setViewingRow(record)}
+                                    />
                                     {isRecruitmentRequestPending(
                                         record.status
                                     ) ? (
@@ -470,6 +465,12 @@ const AdminManageJobPage = () => {
                     ]}
                 />
             </Card>
+
+            <ViewEmployerJobModal
+                open={Boolean(viewingRow)}
+                job={viewingRow}
+                onCancel={() => setViewingRow(null)}
+            />
 
             <Modal
                 title="Từ chối tin tuyển dụng"

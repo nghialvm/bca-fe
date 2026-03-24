@@ -6,8 +6,8 @@ import {
     Empty,
     Input,
     Select,
-    Skeleton,
     Space,
+    Table,
     Tag,
     Typography,
     notification,
@@ -17,10 +17,6 @@ import {
     DeleteOutlined,
     EditOutlined,
     EyeOutlined,
-    FileTextOutlined,
-    IdcardOutlined,
-    MailOutlined,
-    PhoneOutlined,
     PlusOutlined,
     SearchOutlined,
     ShopOutlined,
@@ -116,7 +112,8 @@ const AdminManageOrganizationPage = () => {
         } catch {
             notification.error({
                 message: 'Không tải được danh sách đơn vị',
-                description: 'Kiểm tra quyền truy cập hoặc trạng thái API backend.',
+                description:
+                    'Kiểm tra quyền truy cập hoặc trạng thái API backend.',
             })
         } finally {
             setLoading(false)
@@ -138,7 +135,9 @@ const AdminManageOrganizationPage = () => {
             const matchesKeyword =
                 !keyword ||
                 organization.name.toLowerCase().includes(keyword) ||
-                organization.code.toLowerCase().includes(keyword)
+                organization.code.toLowerCase().includes(keyword) ||
+                organization.managerName.toLowerCase().includes(keyword) ||
+                organization.managerEmail.toLowerCase().includes(keyword)
 
             return matchesKeyword && (!status || organization.statusLabel === status)
         })
@@ -274,7 +273,7 @@ const AdminManageOrganizationPage = () => {
                         prefix={<SearchOutlined />}
                         value={search}
                         className={styles.flexGrow}
-                        placeholder="Tìm kiếm đơn vị theo tên hoặc mã..."
+                        placeholder="Tìm kiếm theo tên đơn vị, mã, quản lý hoặc email..."
                         onChange={(event) => setSearch(event.target.value)}
                     />
                     <Select
@@ -343,144 +342,122 @@ const AdminManageOrganizationPage = () => {
                 </div>
             </div>
 
-            {loading ? (
-                <Card variant="borderless" className={styles.sectionCard}>
-                    <Skeleton active paragraph={{ rows: 10 }} />
-                </Card>
-            ) : filteredOrganizations.length ? (
-                <div className={styles.cardGrid}>
-                    {filteredOrganizations.map((organization) => (
-                        <Card
-                            key={organization.key}
-                            variant="borderless"
-                            className={styles.infoCard}
-                        >
-                            <div className={styles.cardContent}>
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        gap: 12,
-                                    }}
+            <Card variant="borderless" className={styles.sectionCard}>
+                <Table
+                    rowKey="key"
+                    loading={loading}
+                    dataSource={filteredOrganizations}
+                    pagination={{ pageSize: 10 }}
+                    scroll={{ x: 1100 }}
+                    locale={{
+                        emptyText: (
+                            <Empty description="Không có đơn vị phù hợp bộ lọc hiện tại" />
+                        ),
+                    }}
+                    columns={[
+                        {
+                            title: 'Đơn vị',
+                            key: 'organization',
+                            render: (_: unknown, record: AdminOrganizationRecord) => (
+                                <div className={styles.tableNameCell}>
+                                    <span className={styles.tableMainText}>
+                                        {record.name}
+                                    </span>
+                                    <span className={styles.tableSubText}>
+                                        {record.code}
+                                    </span>
+                                </div>
+                            ),
+                        },
+                        {
+                            title: 'Quản lý',
+                            key: 'manager',
+                            render: (_: unknown, record: AdminOrganizationRecord) => (
+                                <div className={styles.tableNameCell}>
+                                    <span className={styles.tableMainText}>
+                                        {record.managerName}
+                                    </span>
+                                    <span className={styles.tableSubText}>
+                                        {record.managerEmail}
+                                    </span>
+                                </div>
+                            ),
+                        },
+                        {
+                            title: 'Liên hệ',
+                            dataIndex: 'managerPhone',
+                            key: 'managerPhone',
+                        },
+                        {
+                            title: 'Mô tả',
+                            dataIndex: 'description',
+                            key: 'description',
+                            render: (value: string) => (
+                                <Typography.Paragraph
+                                    ellipsis={{ rows: 2, tooltip: value }}
+                                    style={{ marginBottom: 0, maxWidth: 320 }}
                                 >
-                                    <div className={styles.metricIcon}>
-                                        <ShopOutlined />
-                                    </div>
-                                    <Tag
-                                        color={
-                                            organization.isActive
-                                                ? 'success'
-                                                : 'warning'
-                                        }
-                                        className={styles.statusTag}
-                                    >
-                                        {organization.statusLabel}
-                                    </Tag>
-                                </div>
-
-                                <div style={{ marginTop: 18 }}>
-                                    <div className={styles.tableMainText}>
-                                        {organization.name}
-                                    </div>
-                                    <div className={styles.tableSubText}>
-                                        {organization.code}
-                                    </div>
-                                </div>
-
-                                <div className={styles.detailList}>
-                                    <div className={styles.detailItem}>
-                                        <IdcardOutlined
-                                            className={styles.detailIcon}
-                                        />
-                                        <span>{organization.managerName}</span>
-                                    </div>
-                                    <div className={styles.detailItem}>
-                                        <FileTextOutlined
-                                            className={styles.detailIcon}
-                                        />
-                                        <span>{organization.description}</span>
-                                    </div>
-                                    <div className={styles.detailItem}>
-                                        <PhoneOutlined
-                                            className={styles.detailIcon}
-                                        />
-                                        <span>{organization.managerPhone}</span>
-                                    </div>
-                                    <div className={styles.detailItem}>
-                                        <MailOutlined
-                                            className={styles.detailIcon}
-                                        />
-                                        <span
-                                            style={{ overflowWrap: 'anywhere' }}
-                                        >
-                                            {organization.managerEmail}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className={styles.splitStats}>
-                                    <div>
-                                        <div className={styles.splitValue}>
-                                            {formatCount(organization.users)}
-                                        </div>
-                                        <div className={styles.splitLabel}>
-                                            Đầu mối
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div className={styles.splitValue}>
-                                            {formatCount(
-                                                organization.activeRecruitments
-                                            )}
-                                        </div>
-                                        <div className={styles.splitLabel}>
-                                            Tin tuyển dụng
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        gap: 8,
-                                        marginTop: 'auto',
-                                    }}
+                                    {value}
+                                </Typography.Paragraph>
+                            ),
+                        },
+                        {
+                            title: 'Đầu mối',
+                            dataIndex: 'users',
+                            key: 'users',
+                            align: 'center',
+                            render: (value: number) => formatCount(value),
+                        },
+                        {
+                            title: 'Tin đang mở',
+                            dataIndex: 'activeRecruitments',
+                            key: 'activeRecruitments',
+                            align: 'center',
+                            render: (value: number) => formatCount(value),
+                        },
+                        {
+                            title: 'Trạng thái',
+                            dataIndex: 'statusLabel',
+                            key: 'statusLabel',
+                            render: (_: string, record: AdminOrganizationRecord) => (
+                                <Tag
+                                    color={record.isActive ? 'success' : 'warning'}
+                                    className={styles.statusTag}
                                 >
+                                    {record.statusLabel}
+                                </Tag>
+                            ),
+                        },
+                        {
+                            title: 'Thao tác',
+                            key: 'actions',
+                            render: (_: unknown, record: AdminOrganizationRecord) => (
+                                <Space size="small">
                                     <Button
                                         icon={<EyeOutlined />}
                                         onClick={() =>
-                                            setViewingOrganization(organization)
+                                            setViewingOrganization(record)
                                         }
-                                    >
-                                        Xem
-                                    </Button>
+                                    />
                                     <Button
                                         icon={<EditOutlined />}
                                         onClick={() =>
-                                            setEditingOrganization(organization)
+                                            setEditingOrganization(record)
                                         }
-                                    >
-                                        Sửa
-                                    </Button>
+                                    />
                                     <Button
                                         danger
                                         icon={<DeleteOutlined />}
                                         onClick={() =>
-                                            setDeletingOrganization(organization)
+                                            setDeletingOrganization(record)
                                         }
-                                    >
-                                        Xóa
-                                    </Button>
-                                </div>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
-            ) : (
-                <Card variant="borderless" className={styles.sectionCard}>
-                    <Empty description="Không có đơn vị phù hợp bộ lọc hiện tại" />
-                </Card>
-            )}
+                                    />
+                                </Space>
+                            ),
+                        },
+                    ]}
+                />
+            </Card>
 
             <CreateAdminOrganizationModal
                 open={createOpen}

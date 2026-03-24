@@ -1,18 +1,52 @@
-import { ROLE_ID_TO_SITE_ROLE, SITE_ROLES, SiteRole } from '@/constants/role'
+import { SITE_ROLES, SiteRole } from '@/constants/role'
 import { User } from '@/interfaces/user/user.interface'
 import { PATHS } from '@/routers/path'
 
+const ROLE_KEY_TO_SITE_ROLE: Record<string, SiteRole> = {
+    admin: SITE_ROLES.ADMIN,
+    administrator: SITE_ROLES.ADMIN,
+    employer: SITE_ROLES.EMPLOYER,
+    recruiter: SITE_ROLES.EMPLOYER,
+    candidate: SITE_ROLES.CANDIDATE,
+    applicant: SITE_ROLES.CANDIDATE,
+}
+
+const ROLE_DISPLAY_NAME_MAP: Record<string, string> = {
+    admin: 'Quản trị viên',
+    administrator: 'Quản trị viên',
+    employer: 'Nhà tuyển dụng (đơn vị)',
+    recruiter: 'Nhà tuyển dụng (đơn vị)',
+    candidate: 'Ứng viên',
+    applicant: 'Ứng viên',
+}
+
+const normalizeRoleKey = (role?: string | null) => role?.trim().toLowerCase()
+
 export const getSiteRole = (user?: Partial<User> | null) => {
-    if (user?.role?.toLowerCase() === 'admin') {
-        return SITE_ROLES.ADMIN
-    } else if (user?.role?.toLowerCase() === 'employer') {
-        return SITE_ROLES.EMPLOYER
-    } else if (user?.role?.toLowerCase() === 'candidate') {
-        return SITE_ROLES.CANDIDATE
+    const normalizedRole = normalizeRoleKey(user?.role)
+
+    if (normalizedRole) {
+        return ROLE_KEY_TO_SITE_ROLE[normalizedRole]
     }
 }
 
-export const getDefaultPathByRole = (role: SiteRole) => {
+export const getRoleDisplayName = (role?: string | null) => {
+    const normalizedRole = normalizeRoleKey(role)
+
+    if (!normalizedRole) {
+        return ''
+    }
+
+    return ROLE_DISPLAY_NAME_MAP[normalizedRole] || role?.trim() || ''
+}
+
+export const formatRoleNames = (roles: Array<string | null | undefined>) => {
+    return roles
+        .map((role) => getRoleDisplayName(role))
+        .filter((roleName): roleName is string => Boolean(roleName))
+}
+
+export const getDefaultPathByRole = (role?: SiteRole) => {
     switch (role) {
         case SITE_ROLES.ADMIN:
             return PATHS.ADMIN_DASHBOARD
@@ -24,7 +58,7 @@ export const getDefaultPathByRole = (role: SiteRole) => {
     }
 }
 
-export const getProfilePathByRole = (role: SiteRole) => {
+export const getProfilePathByRole = (role?: SiteRole) => {
     switch (role) {
         case SITE_ROLES.ADMIN:
             return PATHS.ADMIN_PROFILE

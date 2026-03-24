@@ -26,6 +26,7 @@ import AdminService, {
     PermissionGroupDto,
 } from '@/services/admin'
 import { formatCount } from '@/utils/admin'
+import { getRoleDisplayName } from '@/utils/role'
 
 import styles from '../styles/AdminUi.module.css'
 
@@ -398,7 +399,8 @@ const AdminManagePermissionPage = () => {
                                             }}
                                         />
                                         <span className={styles.tableMainText}>
-                                            {role.name}
+                                            {getRoleDisplayName(role.name) ||
+                                                role.name}
                                         </span>
                                     </Space>
                                 </div>
@@ -431,7 +433,9 @@ const AdminManagePermissionPage = () => {
                         <Space wrap>
                             <span className={styles.summaryPill}>
                                 <SafetyOutlined />
-                                {selectedRole?.name || '-'}
+                                {getRoleDisplayName(selectedRole?.name) ||
+                                    selectedRole?.name ||
+                                    '-'}
                             </span>
                             <span className={styles.summaryPill}>
                                 {formatCount(selectedRole?.users)} người dùng
@@ -478,7 +482,9 @@ const AdminManagePermissionPage = () => {
                                     ),
                                 },
                                 ...roles.map((role) => ({
-                                    title: role.name,
+                                    title:
+                                        getRoleDisplayName(role.name) ||
+                                        role.name,
                                     key: role.name,
                                     align: 'center' as const,
                                     render: (record: PermissionMatrixRow) =>

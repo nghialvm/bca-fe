@@ -18,19 +18,22 @@ const RouteGuard = ({ children, allowedRoles }: RouteGuardProps) => {
     const isAuthenticated = useSelector(
         (state: any) => state.auth.isAuthenticated
     )
+    const justLoggedOut = useSelector((state: any) => state.auth.justLoggedOut)
     const user = useSelector((state: any) => state.auth.user)
     const location = useLocation()
 
     if (!isAuthenticated) {
-        notification.error({
-            message: 'You are not logged in. Please sign in',
-        })
+        if (!justLoggedOut) {
+            notification.error({
+                message: 'You are not logged in. Please sign in',
+            })
+        }
         return <Navigate to={PATHS.LOGIN} state={{ from: location }} replace />
     }
 
     const siteRole = getSiteRole(user)
 
-    if (allowedRoles?.length && !allowedRoles.includes(siteRole)) {
+    if (allowedRoles?.length && (!siteRole || !allowedRoles.includes(siteRole))) {
         notification.error({
             message: 'You do not have access to this site',
         })

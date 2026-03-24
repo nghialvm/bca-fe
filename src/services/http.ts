@@ -13,7 +13,7 @@ const antiforgeryBootstrapPath = '/Abp/ApplicationConfigurationScript'
 
 let antiforgeryInitializationPromise: Promise<void> | null = null
 
-const getBackendBaseUrl = () => {
+export const getBackendBaseUrl = () => {
     return rootApiBaseUrl.replace(/\/api\/?$/i, '')
 }
 

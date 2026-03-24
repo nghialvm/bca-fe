@@ -26,6 +26,7 @@ import {
     getDisplayName,
     getRecruitmentRequestStatusLabel,
 } from '@/utils/admin'
+import { formatRoleNames, getRoleDisplayName } from '@/utils/role'
 
 import styles from '../styles/AdminUi.module.css'
 
@@ -156,14 +157,18 @@ const AdminProfilePage = () => {
 
     const roleLabel = useMemo(() => {
         if (roles.length) {
-            return roles.map((role) => role.name).join(', ')
+            return formatRoleNames(roles.map((role) => role.name)).join(', ')
         }
 
         if (Array.isArray(user?.roles)) {
-            return user.roles.join(', ')
+            return formatRoleNames(user.roles).join(', ')
         }
 
-        return user?.roles || 'Admin'
+        return (
+            getRoleDisplayName(user?.role) ||
+            getRoleDisplayName(user?.roles) ||
+            'Quản trị viên'
+        )
     }, [roles, user?.roles])
 
     const profileHighlights = [

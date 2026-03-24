@@ -1,5 +1,6 @@
 import type { IdentityRoleDto, IdentityUserDto } from '@/services/admin'
 import { formatDisplayDateTime, getDisplayName } from '@/utils/admin'
+import { formatRoleNames } from '@/utils/role'
 
 export type AdminUserRecord = {
     id: string
@@ -60,7 +61,9 @@ export const mapIdentityUserToAdminUserRecord = (
         email: user.email || '-',
         phoneNumber: user.phoneNumber || '',
         roleNames,
-        roleLabel: roleNames.length ? roleNames.join(', ') : 'Chưa gán vai trò',
+        roleLabel: roleNames.length
+            ? formatRoleNames(roleNames).join(', ')
+            : 'Chưa gán vai trò',
         unit: '-',
         isActive: Boolean(user.isActive),
         creationTime: user.creationTime,

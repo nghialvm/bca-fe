@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import {
     Button,
     Card,
     Col,
+    Empty,
     Progress,
     Row,
     Skeleton,
@@ -11,22 +12,30 @@ import {
     Statistic,
     Table,
     Typography,
+    notification,
 } from 'antd'
 
 import { Column, Line } from '@ant-design/charts'
 import {
-    ClockCircleOutlined,
+    CalendarOutlined,
     DownloadOutlined,
     RiseOutlined,
     TeamOutlined,
 } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
+import dayjs from 'dayjs'
 
-import { employerCandidates, employerJobs } from '@/mock/employerData'
+import { useEmployerWorkspace } from '@/hooks/useEmployerWorkspace'
+import { formatCount, formatPercent } from '@/utils/admin'
+import {
+    buildApplicationStageStats,
+    isApplicationHired,
+    isRecruitmentRequestPublished,
+} from '@/utils/employer'
 
 import styles from '../styles/AdminUi.module.css'
 
-const { Paragraph, Text, Title } = Typography
+const { Paragraph, Title } = Typography
 
 type PerformanceRow = {
     key: string
@@ -38,46 +47,10 @@ type PerformanceRow = {
     rate: number
 }
 
-const performanceColumns: ColumnsType<PerformanceRow> = [
-    {
-        title: 'Vị trí',
-        dataIndex: 'title',
-        key: 'title',
-    },
-    {
-        title: 'Phòng ban',
-        dataIndex: 'department',
-        key: 'department',
-    },
-    {
-        title: 'Ứng tuyển',
-        dataIndex: 'applicants',
-        key: 'applicants',
-        align: 'right',
-    },
-    {
-        title: 'Phỏng vấn',
-        dataIndex: 'interviewed',
-        key: 'interviewed',
-        align: 'right',
-    },
-    {
-        title: 'Đã tuyển',
-        dataIndex: 'hired',
-        key: 'hired',
-        align: 'right',
-    },
-    {
-        title: 'Tỷ lệ',
-        dataIndex: 'rate',
-        key: 'rate',
-        align: 'right',
-        render: (value: number) => `${value}%`,
-    },
-]
-
 const EmployerReportPage = () => {
     const [chartsReady, setChartsReady] = useState(false)
+    const { applicationRows, currentDepartment, interviews, loading, recruitmentRequests } =
+        useEmployerWorkspace()
 
     useEffect(() => {
         let frameId = 0
@@ -95,88 +68,145 @@ const EmployerReportPage = () => {
         }
     }, [])
 
-    const totalApplications = employerCandidates.length
-    const selectedCandidates = employerCandidates.filter(
-        (item) => item.stage === 'selected'
+    const totalApplications = applicationRows.length
+    const hiredApplications = applicationRows.filter((item) =>
+        isApplicationHired(item.application.status)
     ).length
-    const hiringSuccessRate = Number(
-        ((selectedCandidates / totalApplications) * 100).toFixed(1)
-    )
-    const avgTimeToHire = 18
+    const hiringSuccessRate = totalApplications
+        ? Number(((hiredApplications / totalApplications) * 100).toFixed(1))
+        : 0
+    const scheduledInterviews = interviews.filter((item) =>
+        ['1', '2', '3', '5', 'pending', 'confirmed', 'rescheduled', 'completed'].includes(
+            String(item.status).toLowerCase()
+        )
+    ).length
+    const activeJobs = recruitmentRequests.filter((item) =>
+        isRecruitmentRequestPublished(item.status)
+    ).length
 
-    const monthlyTrend = [
-        { month: 'T10', applications: 45, hired: 5 },
-        { month: 'T11', applications: 52, hired: 7 },
-        { month: 'T12', applications: 48, hired: 6 },
-        { month: 'T1', applications: 60, hired: 8 },
-        { month: 'T2', applications: 65, hired: 9 },
-        { month: 'T3', applications: 72, hired: 10 },
-    ]
+    const monthlyTrend = useMemo(() => {
+        const grouped = applicationRows.reduce(
+            (accumulator, row) => {
+                const monthKey = dayjs(row.application.appliedTime).format('MM/YYYY')
 
-    const conversionRates = [
-        {
-            stage: 'Hồ sơ mới',
-            count: employerCandidates.filter(
-                (item) => item.stage === 'application'
-            ).length,
-        },
-        {
-            stage: 'Sàng lọc',
-            count: employerCandidates.filter(
-                (item) => item.stage === 'screening'
-            ).length,
-        },
-        {
-            stage: 'Thi viết',
-            count: employerCandidates.filter(
-                (item) => item.stage === 'written-exam'
-            ).length,
-        },
-        {
-            stage: 'Phỏng vấn',
-            count: employerCandidates.filter(
-                (item) => item.stage === 'interview'
-            ).length,
-        },
-        {
-            stage: 'Đã chọn',
-            count: employerCandidates.filter(
-                (item) => item.stage === 'selected'
-            ).length,
-        },
-    ]
+                if (!accumulator[monthKey]) {
+                    accumulator[monthKey] = {
+                        month: monthKey,
+                        applications: 0,
+                        hired: 0,
+                    }
+                }
 
-    const jobPerformance = employerJobs.map((job) => ({
-        name: job.title,
-        applications: job.applicants,
-        qualified: Math.floor(job.applicants * 0.4),
+                accumulator[monthKey].applications += 1
+                if (isApplicationHired(row.application.status)) {
+                    accumulator[monthKey].hired += 1
+                }
+
+                return accumulator
+            },
+            {} as Record<string, { month: string; applications: number; hired: number }>
+        )
+
+        return Object.values(grouped).sort((left, right) =>
+            dayjs(`01/${left.month}`, 'DD/MM/YYYY').valueOf() -
+            dayjs(`01/${right.month}`, 'DD/MM/YYYY').valueOf()
+        )
+    }, [applicationRows])
+
+    const conversionRates = buildApplicationStageStats(
+        applicationRows.map((item) => item.application.status)
+    ).map((item) => ({
+        stage: item.type,
+        count: item.value,
     }))
 
-    const performanceRows: PerformanceRow[] = employerJobs.map((job) => {
-        const applicants = employerCandidates.filter(
-            (candidate) => candidate.jobId === job.id
-        )
-        const interviewed = applicants.filter(
-            (candidate) =>
-                candidate.stage === 'interview' ||
-                candidate.stage === 'selected'
-        )
-        const hired = applicants.filter(
-            (candidate) => candidate.stage === 'selected'
-        )
+    const jobPerformance = useMemo(
+        () =>
+            recruitmentRequests.map((job) => {
+                const applicants = applicationRows.filter(
+                    (row) => row.application.recruitmentRequestId === job.id
+                )
+                const hired = applicants.filter((row) =>
+                    isApplicationHired(row.application.status)
+                )
 
-        return {
-            key: job.id,
-            title: job.title,
-            department: job.department,
-            applicants: applicants.length,
-            interviewed: interviewed.length,
-            hired: hired.length,
-            rate: applicants.length
-                ? Math.round((hired.length / applicants.length) * 100)
-                : 0,
-        }
-    })
+                return {
+                    name: job.title,
+                    applications: applicants.length,
+                    hired: hired.length,
+                }
+            }),
+        [applicationRows, recruitmentRequests]
+    )
+
+    const performanceRows: PerformanceRow[] = useMemo(
+        () =>
+            recruitmentRequests.map((job) => {
+                const applicants = applicationRows.filter(
+                    (row) => row.application.recruitmentRequestId === job.id
+                )
+                const interviewed = applicants.filter((row) =>
+                    ['4', '5', '6', '7'].includes(String(row.application.status))
+                )
+                const hired = applicants.filter((row) =>
+                    isApplicationHired(row.application.status)
+                )
+
+                return {
+                    key: job.id,
+                    title: job.title,
+                    department: currentDepartment?.name || 'Đơn vị tuyển dụng',
+                    applicants: applicants.length,
+                    interviewed: interviewed.length,
+                    hired: hired.length,
+                    rate: applicants.length
+                        ? Math.round((hired.length / applicants.length) * 100)
+                        : 0,
+                }
+            }),
+        [applicationRows, currentDepartment?.name, recruitmentRequests]
+    )
+
+    const performanceColumns: ColumnsType<PerformanceRow> = [
+        {
+            title: 'Vị trí',
+            dataIndex: 'title',
+            key: 'title',
+        },
+        {
+            title: 'Đơn vị',
+            dataIndex: 'department',
+            key: 'department',
+        },
+        {
+            title: 'Ứng tuyển',
+            dataIndex: 'applicants',
+            key: 'applicants',
+            align: 'right',
+            render: (value: number) => formatCount(value),
+        },
+        {
+            title: 'Phỏng vấn',
+            dataIndex: 'interviewed',
+            key: 'interviewed',
+            align: 'right',
+            render: (value: number) => formatCount(value),
+        },
+        {
+            title: 'Đã tuyển',
+            dataIndex: 'hired',
+            key: 'hired',
+            align: 'right',
+            render: (value: number) => formatCount(value),
+        },
+        {
+            title: 'Tỷ lệ',
+            dataIndex: 'rate',
+            key: 'rate',
+            align: 'right',
+            render: (value: number) => `${value}%`,
+        },
+    ]
 
     return (
         <div className="portal-page">
@@ -190,16 +220,22 @@ const EmployerReportPage = () => {
                     <div>
                         <Title level={2}>Báo cáo và thống kê tuyển dụng</Title>
                         <Paragraph style={{ maxWidth: 760 }}>
-                            Các biểu đồ và KPI được chuẩn hóa lại theo cùng hệ
-                            màu, layout và bề mặt với toàn bộ khu vực
-                            back-office để employer và admin có trải nghiệm báo
-                            cáo nhất quán.
+                            Báo cáo employer đã được chuyển sang dùng dữ liệu API
+                            thực tế, giúp theo dõi xu hướng ứng tuyển, tỷ lệ
+                            tuyển dụng và hiệu suất từng vị trí của đơn vị.
                         </Paragraph>
                     </div>
                     <Button
                         size="large"
                         icon={<DownloadOutlined />}
                         type="primary"
+                        onClick={() => {
+                            notification.info({
+                                message: 'Xuất báo cáo',
+                                description:
+                                    'Tính năng xuất file sẽ được bổ sung ở bước tiếp theo.',
+                            })
+                        }}
                     >
                         Xuất báo cáo
                     </Button>
@@ -213,6 +249,7 @@ const EmployerReportPage = () => {
                             title="Tổng ứng viên"
                             value={totalApplications}
                             prefix={<TeamOutlined />}
+                            formatter={(value) => formatCount(Number(value))}
                         />
                     </Card>
                 </Col>
@@ -223,16 +260,17 @@ const EmployerReportPage = () => {
                             value={hiringSuccessRate}
                             suffix="%"
                             prefix={<RiseOutlined />}
+                            formatter={(value) => formatPercent(Number(value)).replace('%', '')}
                         />
                     </Card>
                 </Col>
                 <Col xs={24} sm={12} xl={6}>
                     <Card className="portal-section-card portal-stat-card">
                         <Statistic
-                            title="Thời gian TB để tuyển"
-                            value={avgTimeToHire}
-                            suffix="ngày"
-                            prefix={<ClockCircleOutlined />}
+                            title="Lịch phỏng vấn"
+                            value={scheduledInterviews}
+                            prefix={<CalendarOutlined />}
+                            formatter={(value) => formatCount(Number(value))}
                         />
                     </Card>
                 </Col>
@@ -240,11 +278,8 @@ const EmployerReportPage = () => {
                     <Card className="portal-section-card portal-stat-card">
                         <Statistic
                             title="Vị trí đang mở"
-                            value={
-                                employerJobs.filter(
-                                    (item) => item.status === 'active'
-                                ).length
-                            }
+                            value={activeJobs}
+                            formatter={(value) => formatCount(Number(value))}
                         />
                     </Card>
                 </Col>
@@ -257,7 +292,9 @@ const EmployerReportPage = () => {
                         className="portal-section-card"
                     >
                         <div className={styles.chart}>
-                            {chartsReady ? (
+                            {loading ? (
+                                <Skeleton active paragraph={{ rows: 8 }} />
+                            ) : monthlyTrend.length && chartsReady ? (
                                 <Line
                                     height={320}
                                     data={monthlyTrend}
@@ -267,7 +304,7 @@ const EmployerReportPage = () => {
                                     point={{ size: 4 }}
                                 />
                             ) : (
-                                <Skeleton active paragraph={{ rows: 8 }} />
+                                <Empty description="Chưa có dữ liệu xu hướng theo tháng" />
                             )}
                         </div>
                     </Card>
@@ -278,7 +315,9 @@ const EmployerReportPage = () => {
                         className="portal-section-card"
                     >
                         <div className={styles.chart}>
-                            {chartsReady ? (
+                            {loading ? (
+                                <Skeleton active paragraph={{ rows: 8 }} />
+                            ) : jobPerformance.length && chartsReady ? (
                                 <Column
                                     height={320}
                                     data={jobPerformance}
@@ -288,7 +327,7 @@ const EmployerReportPage = () => {
                                     label={{ position: 'top' }}
                                 />
                             ) : (
-                                <Skeleton active paragraph={{ rows: 8 }} />
+                                <Empty description="Chưa có dữ liệu hiệu suất theo vị trí" />
                             )}
                         </div>
                     </Card>
@@ -296,38 +335,47 @@ const EmployerReportPage = () => {
             </Row>
 
             <Card title="Phễu tuyển dụng" className="portal-section-card">
-                <Space direction="vertical" size={20} style={{ width: '100%' }}>
-                    {conversionRates.map((item, index) => {
-                        const base = conversionRates[0]?.count || 1
-                        const percent = Math.round((item.count / base) * 100)
+                {conversionRates.length ? (
+                    <Space
+                        direction="vertical"
+                        size={20}
+                        style={{ width: '100%' }}
+                    >
+                        {conversionRates.map((item, index) => {
+                            const base = conversionRates[0]?.count || 1
+                            const percent = Math.round((item.count / base) * 100)
 
-                        return (
-                            <div key={item.stage}>
-                                <div className="portal-split">
-                                    <Text strong>{item.stage}</Text>
-                                    <Text className="portal-muted">
-                                        {item.count} ứng viên ({percent}%)
-                                    </Text>
+                            return (
+                                <div key={item.stage}>
+                                    <div className="portal-split">
+                                        <span>{item.stage}</span>
+                                        <span>
+                                            {formatCount(item.count)} ứng viên ({percent}
+                                            %)
+                                        </span>
+                                    </div>
+                                    <Progress
+                                        percent={percent}
+                                        showInfo={false}
+                                        strokeColor={
+                                            index === 0
+                                                ? '#0B3D2E'
+                                                : index === 1
+                                                  ? '#166534'
+                                                  : index === 2
+                                                    ? '#B7791F'
+                                                    : index === 3
+                                                      ? '#2E7D60'
+                                                      : '#10B981'
+                                        }
+                                    />
                                 </div>
-                                <Progress
-                                    percent={percent}
-                                    showInfo={false}
-                                    strokeColor={
-                                        index === 0
-                                            ? '#0B3D2E'
-                                            : index === 1
-                                              ? '#166534'
-                                              : index === 2
-                                                ? '#B7791F'
-                                                : index === 3
-                                                  ? '#2E7D60'
-                                                  : '#10B981'
-                                    }
-                                />
-                            </div>
-                        )
-                    })}
-                </Space>
+                            )
+                        })}
+                    </Space>
+                ) : (
+                    <Empty description="Chưa có dữ liệu phễu tuyển dụng" />
+                )}
             </Card>
 
             <Card
@@ -336,9 +384,13 @@ const EmployerReportPage = () => {
             >
                 <Table
                     rowKey="key"
+                    loading={loading}
                     columns={performanceColumns}
                     dataSource={performanceRows}
                     pagination={false}
+                    locale={{
+                        emptyText: 'Chưa có dữ liệu hiệu suất theo vị trí',
+                    }}
                 />
             </Card>
         </div>

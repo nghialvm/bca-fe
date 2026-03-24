@@ -8,15 +8,24 @@ import {
     removeLocalStorage,
 } from '@/utils/storage'
 
-import { getCurrentUserAction, loginAction } from './authAction'
+import { getCurrentUserAction, loginAction, logoutAction } from './authAction'
 
 const initialUser: User = {}
 
 const initialState: any = {
     isAuthenticated: Boolean(getLocalStorage(CREDENTIALS.IS_LOGIN)) || false,
+    justLoggedOut: false,
     user: getLocalStorage(CREDENTIALS.USER_INFO)
         ? JSON.parse(getLocalStorage(CREDENTIALS.USER_INFO) as string)
         : initialUser,
+}
+
+const clearAuthState = (state: any) => {
+    state.isAuthenticated = false
+    state.user = null
+    removeLocalStorage(CREDENTIALS.IS_LOGIN)
+    removeLocalStorage(CREDENTIALS.AUTHENTICATION_TOKEN)
+    removeLocalStorage(CREDENTIALS.USER_INFO)
 }
 
 const authSlice = createSlice({
@@ -24,16 +33,14 @@ const authSlice = createSlice({
     initialState,
     reducers: {
         logout: (state) => {
-            state.isAuthenticated = false
-            state.user = null
-            removeLocalStorage(CREDENTIALS.IS_LOGIN)
-            removeLocalStorage(CREDENTIALS.AUTHENTICATION_TOKEN)
-            removeLocalStorage(CREDENTIALS.USER_INFO)
+            clearAuthState(state)
+            state.justLoggedOut = true
         },
     },
     extraReducers: (builder) => {
         builder
             .addCase(loginAction.fulfilled, (state, action: any) => {
+                state.justLoggedOut = false
                 if (action.payload?.token) {
                     putLocalStorage(
                         CREDENTIALS.AUTHENTICATION_TOKEN,
@@ -42,14 +49,12 @@ const authSlice = createSlice({
                 }
             })
             .addCase(loginAction.rejected, (state, action) => {
-                state.isAuthenticated = false
-                state.user = null
-                removeLocalStorage(CREDENTIALS.IS_LOGIN)
-                removeLocalStorage(CREDENTIALS.AUTHENTICATION_TOKEN)
-                removeLocalStorage(CREDENTIALS.USER_INFO)
+                clearAuthState(state)
+                state.justLoggedOut = false
             })
             .addCase(getCurrentUserAction.fulfilled, (state, action: any) => {
                 state.isAuthenticated = true
+                state.justLoggedOut = false
                 state.user = action.payload
                 putLocalStorage(
                     CREDENTIALS.USER_INFO,
@@ -58,11 +63,12 @@ const authSlice = createSlice({
                 putLocalStorage(CREDENTIALS.IS_LOGIN, 'true')
             })
             .addCase(getCurrentUserAction.rejected, (state) => {
-                state.isAuthenticated = false
-                state.user = null
-                removeLocalStorage(CREDENTIALS.IS_LOGIN)
-                removeLocalStorage(CREDENTIALS.AUTHENTICATION_TOKEN)
-                removeLocalStorage(CREDENTIALS.USER_INFO)
+                clearAuthState(state)
+                state.justLoggedOut = false
+            })
+            .addCase(logoutAction.fulfilled, (state) => {
+                clearAuthState(state)
+                state.justLoggedOut = true
             })
     },
 })

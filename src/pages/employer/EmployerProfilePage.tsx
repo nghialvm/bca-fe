@@ -2,6 +2,7 @@ import {
     Card,
     Col,
     Descriptions,
+    Empty,
     Row,
     Space,
     Statistic,
@@ -17,24 +18,47 @@ import {
     UserOutlined,
 } from '@ant-design/icons'
 
-import {
-    employerCandidates,
-    employerJobs,
-    employerProfile,
-} from '@/mock/employerData'
+import { useEmployerWorkspace } from '@/hooks/useEmployerWorkspace'
+import { formatCount } from '@/utils/admin'
+import { isRecruitmentRequestPublished } from '@/utils/employer'
 
 const { Paragraph, Text, Title } = Typography
 
 const EmployerProfilePage = () => {
+    const { applicationRows, currentDepartment, managerUser, recruitmentRequests } =
+        useEmployerWorkspace()
+
+    const activeJobs = recruitmentRequests.filter((item) =>
+        isRecruitmentRequestPublished(item.status)
+    ).length
+
+    if (!currentDepartment) {
+        return (
+            <div className="portal-page">
+                <section className="portal-hero portal-hero--light">
+                    <span className="portal-hero__eyebrow">Thông tin đơn vị</span>
+                    <Title level={2}>Thông tin đơn vị tuyển dụng</Title>
+                    <Paragraph style={{ maxWidth: 760 }}>
+                        Chưa xác định được đơn vị employer mà tài khoản hiện tại
+                        đang quản lý.
+                    </Paragraph>
+                </section>
+
+                <Card className="portal-section-card">
+                    <Empty description="Không tìm thấy đơn vị được phân công cho tài khoản này" />
+                </Card>
+            </div>
+        )
+    }
+
     return (
         <div className="portal-page">
             <section className="portal-hero portal-hero--light">
                 <span className="portal-hero__eyebrow">Thông tin đơn vị</span>
                 <Title level={2}>Thông tin đơn vị tuyển dụng</Title>
                 <Paragraph style={{ maxWidth: 760 }}>
-                    Trang hồ sơ employer được chuẩn hóa để cùng một cấu trúc
-                    trình bày với toàn bộ hệ back-office: rõ thông tin đầu mối,
-                    mô tả đơn vị và các chỉ số vận hành cốt lõi.
+                    Trang hồ sơ employer hiện được đồng bộ từ dữ liệu đơn vị,
+                    người quản lý và các chỉ số tuyển dụng thực tế của hệ thống.
                 </Paragraph>
             </section>
 
@@ -53,7 +77,7 @@ const EmployerProfilePage = () => {
                                     </Space>
                                 }
                             >
-                                {employerProfile.organization}
+                                {currentDepartment.name}
                             </Descriptions.Item>
                             <Descriptions.Item
                                 label={
@@ -63,7 +87,7 @@ const EmployerProfilePage = () => {
                                     </Space>
                                 }
                             >
-                                {employerProfile.contactPerson}
+                                {managerUser?.name || managerUser?.userName || '-'}
                             </Descriptions.Item>
                             <Descriptions.Item
                                 label={
@@ -73,7 +97,7 @@ const EmployerProfilePage = () => {
                                     </Space>
                                 }
                             >
-                                {employerProfile.email}
+                                {managerUser?.email || '-'}
                             </Descriptions.Item>
                             <Descriptions.Item
                                 label={
@@ -83,24 +107,25 @@ const EmployerProfilePage = () => {
                                     </Space>
                                 }
                             >
-                                {employerProfile.phone}
+                                {managerUser?.phoneNumber || '-'}
                             </Descriptions.Item>
                             <Descriptions.Item
                                 label={
                                     <Space>
                                         <EnvironmentOutlined />
-                                        Địa chỉ
+                                        Mã đơn vị
                                     </Space>
                                 }
                             >
-                                {employerProfile.address}
+                                {currentDepartment.code}
                             </Descriptions.Item>
                         </Descriptions>
                         <Paragraph
                             className="portal-muted"
                             style={{ marginTop: 8 }}
                         >
-                            {employerProfile.description}
+                            {currentDepartment.description ||
+                                'Chưa cập nhật mô tả đơn vị.'}
                         </Paragraph>
                     </Card>
                 </Col>
@@ -114,11 +139,8 @@ const EmployerProfilePage = () => {
                         <Card className="portal-section-card">
                             <Statistic
                                 title="Tin đang mở"
-                                value={
-                                    employerJobs.filter(
-                                        (item) => item.status === 'active'
-                                    ).length
-                                }
+                                value={activeJobs}
+                                formatter={(value) => formatCount(Number(value))}
                             />
                             <div style={{ marginTop: 16 }}>
                                 <Tag color="green">Đang hoạt động tốt</Tag>
@@ -127,11 +149,12 @@ const EmployerProfilePage = () => {
                         <Card className="portal-section-card">
                             <Statistic
                                 title="Ứng viên đang xử lý"
-                                value={employerCandidates.length}
+                                value={applicationRows.length}
+                                formatter={(value) => formatCount(Number(value))}
                             />
                             <Text className="portal-muted">
-                                Bao gồm các giai đoạn hồ sơ mới, sàng lọc, thi
-                                viết và phỏng vấn.
+                                Bao gồm toàn bộ hồ sơ thuộc các đợt tuyển dụng của
+                                đơn vị.
                             </Text>
                         </Card>
                     </Space>

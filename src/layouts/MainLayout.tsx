@@ -10,6 +10,7 @@ import {
     Grid,
     Layout,
     Menu,
+    notification,
     Space,
     Typography,
 } from 'antd'
@@ -23,15 +24,20 @@ import {
     UserOutlined,
 } from '@ant-design/icons'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import HeaderComponent from '@/components/commons/HeaderComponent'
 import NavBar from '@/components/commons/NavBar'
 import { SITE_ROLES, SiteRole } from '@/constants/role'
 import { User } from '@/interfaces/user/user.interface'
 import { PATHS } from '@/routers/path'
-import { logout } from '@/stores/auth/authSlice'
-import { getProfilePathByRole, getSiteRole } from '@/utils/role'
+import { logoutAction } from '@/stores/auth/authAction'
+import {
+    formatRoleNames,
+    getProfilePathByRole,
+    getRoleDisplayName,
+    getSiteRole,
+} from '@/utils/role'
 
 import styles from './MainLayout.module.css'
 
@@ -133,7 +139,17 @@ const getCandidateMenuItems = (): MenuProps['items'] => [
 
 const useProfileMenu = (role: SiteRole) => {
     const dispatch = useDispatch()
+    const navigate = useNavigate()
     const profilePath = getProfilePathByRole(role)
+
+    const handleLogout = async () => {
+        await dispatch(logoutAction() as any)
+        notification.success({
+            message: 'Đăng xuất thành công',
+            description: 'Phiên làm việc đã được kết thúc.',
+        })
+        navigate(PATHS.LOGIN, { replace: true })
+    }
 
     return useMemo<MenuProps['items']>(
         () => [
@@ -150,18 +166,10 @@ const useProfileMenu = (role: SiteRole) => {
             {
                 key: 'logout',
                 icon: <LogoutOutlined />,
-                label: (
-                    <span
-                        onClick={() => {
-                            dispatch(logout())
-                        }}
-                    >
-                        Đăng xuất
-                    </span>
-                ),
+                label: <span onClick={() => void handleLogout()}>Đăng xuất</span>,
             },
         ],
-        [dispatch, profilePath]
+        [dispatch, navigate, profilePath]
     )
 }
 
@@ -251,6 +259,10 @@ const CandidateShell = () => {
             )?.key || PATHS.CANDIDATE_DASHBOARD
     const displayName =
         user?.full_name || user?.userName || user?.email || 'Ứng viên hệ thống'
+    const roleLabel =
+        formatRoleNames([user?.role])[0] ||
+        getRoleDisplayName(SITE_ROLES.CANDIDATE) ||
+        'Ứng viên'
 
     return (
         <Layout className={styles.candidateShell}>
@@ -332,7 +344,7 @@ const CandidateShell = () => {
                                             {displayName}
                                         </Text>
                                         <Text className={styles.profileRole}>
-                                            Ứng viên
+                                            {roleLabel}
                                         </Text>
                                     </div>
                                 ) : null}

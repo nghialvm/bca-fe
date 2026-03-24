@@ -141,6 +141,37 @@ export interface RecruitmentRequestDto {
     creationTime?: string
 }
 
+export interface RecruitmentRequestCreateDto {
+    requestCode: string
+    title: string
+    departmentId: string
+    positionId: string
+    headcount: number
+    employmentType: string
+    workLocation?: string
+    salaryMin?: number | null
+    salaryMax?: number | null
+    description?: string
+    requirement?: string
+    benefit?: string
+    applicationDeadline?: string | null
+}
+
+export interface RecruitmentRequestUpdateDto {
+    title: string
+    departmentId: string
+    positionId: string
+    headcount: number
+    employmentType: string
+    workLocation?: string
+    salaryMin?: number | null
+    salaryMax?: number | null
+    description?: string
+    requirement?: string
+    benefit?: string
+    applicationDeadline?: string | null
+}
+
 export interface ApplicationDto {
     id: string
     applicationCode: string
@@ -163,6 +194,49 @@ export interface CandidateDto {
     phoneNumber?: string
     currentPosition?: string
     status?: string | number
+}
+
+export interface InterviewScheduleDto {
+    id: string
+    applicationId: string
+    roundNumber: number
+    interviewType: string | number
+    scheduledTime: string
+    durationMinutes: number
+    location?: string | null
+    meetingLink?: string | null
+    contactPerson?: string | null
+    note?: string | null
+    status: string | number
+    createdByUserId?: string | null
+    creationTime?: string
+}
+
+export interface OfferDto {
+    id: string
+    applicationId: string
+    salary: number
+    startDate?: string | null
+    probationMonths?: number | null
+    workLocation?: string | null
+    benefit?: string | null
+    note?: string | null
+    status: string | number
+    sentTime?: string | null
+    expiredTime?: string | null
+    creationTime?: string
+}
+
+export interface CandidateResponseDto {
+    id: string
+    applicationId: string
+    offerId?: string | null
+    responseType: string | number
+    responseChannel: string | number
+    responseTime: string
+    responseContent: string
+    note?: string | null
+    creationTime?: string
 }
 
 export interface IdentityRoleDto {
@@ -250,6 +324,13 @@ export interface SendEmailDto {
     subject: string
     body: string
     isBodyHtml?: boolean
+}
+
+export interface CandidateResponseQuery extends PagedQuery {
+    ApplicationId?: string
+    OfferId?: string
+    ResponseType?: string | number
+    ResponseChannel?: string | number
 }
 
 const defaultPagedQuery: Required<PagedQuery> = {
@@ -348,6 +429,25 @@ export class AdminService {
         })
     }
 
+    async getRecruitmentRequest(id: string) {
+        return await http.get(`app/recruitment-request/${id}`)
+    }
+
+    async createRecruitmentRequest(input: RecruitmentRequestCreateDto) {
+        return await http.post('app/recruitment-request', input)
+    }
+
+    async updateRecruitmentRequest(
+        id: string,
+        input: RecruitmentRequestUpdateDto
+    ) {
+        return await http.put(`app/recruitment-request/${id}`, input)
+    }
+
+    async deleteRecruitmentRequest(id: string) {
+        return await http.delete(`app/recruitment-request/${id}`)
+    }
+
     async approveRecruitmentRequest(id: string) {
         return await http.put(`app/recruitment-request/${id}/approve`, {})
     }
@@ -369,6 +469,33 @@ export class AdminService {
 
     async getCandidates(query: PagedQuery = {}) {
         return await http.get('app/candidate', {
+            params: {
+                ...defaultPagedQuery,
+                ...query,
+            },
+        })
+    }
+
+    async getInterviewSchedules(query: PagedQuery = {}) {
+        return await http.get('app/interview-schedule', {
+            params: {
+                ...defaultPagedQuery,
+                ...query,
+            },
+        })
+    }
+
+    async getOffers(query: PagedQuery = {}) {
+        return await http.get('app/offer', {
+            params: {
+                ...defaultPagedQuery,
+                ...query,
+            },
+        })
+    }
+
+    async getCandidateResponses(query: CandidateResponseQuery = {}) {
+        return await http.get('app/candidate-response', {
             params: {
                 ...defaultPagedQuery,
                 ...query,

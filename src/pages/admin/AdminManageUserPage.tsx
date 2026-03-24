@@ -42,6 +42,7 @@ import {
     getUserStatusColor,
     getUserStatusLabel,
 } from '@/utils/admin'
+import { getRoleDisplayName } from '@/utils/role'
 
 import styles from '../styles/AdminUi.module.css'
 
@@ -212,7 +213,7 @@ const AdminManageUserPage = () => {
 
         return Array.from(uniqueRoles).map((role) => ({
             value: role,
-            label: role,
+            label: getRoleDisplayName(role) || role,
         }))
     }, [roles, rows])
 
@@ -453,7 +454,9 @@ const AdminManageUserPage = () => {
                                 record.roleNames.length ? (
                                     <Space wrap size={[4, 4]}>
                                         {record.roleNames.map((roleName) => (
-                                            <Tag key={roleName}>{roleName}</Tag>
+                                            <Tag key={roleName}>
+                                                {getRoleDisplayName(roleName)}
+                                            </Tag>
                                         ))}
                                     </Space>
                                 ) : (

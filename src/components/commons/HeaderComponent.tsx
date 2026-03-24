@@ -1,4 +1,4 @@
-import { Avatar, Badge, Button, Dropdown, Input } from 'antd'
+import { Avatar, Badge, Button, Dropdown, Input, notification } from 'antd'
 
 import {
     BellOutlined,
@@ -13,10 +13,13 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useNavigate } from 'react-router-dom'
 
-import { SITE_ROLES } from '@/constants/role'
 import { PATHS } from '@/routers/path'
-import { logout } from '@/stores/auth/authSlice'
-import { getProfilePathByRole, getSiteRole } from '@/utils/role'
+import { logoutAction } from '@/stores/auth/authAction'
+import {
+    getProfilePathByRole,
+    getRoleDisplayName,
+    getSiteRole,
+} from '@/utils/role'
 
 import styles from './styles/HeaderComponent.module.css'
 
@@ -41,12 +44,16 @@ const HeaderComponent = ({
     const displayName =
         user?.full_name || user?.userName || user?.email || 'Admin'
     const profilePath = getProfilePathByRole(siteRole)
-    const roleLabel =
-        siteRole === SITE_ROLES.ADMIN
-            ? 'Quản trị viên hệ thống'
-            : siteRole === SITE_ROLES.EMPLOYER
-              ? 'Đơn vị tuyển dụng'
-              : 'Ứng viên'
+    const roleLabel = getRoleDisplayName(siteRole) || 'Quản trị viên'
+
+    const handleLogout = async () => {
+        await dispatch(logoutAction() as any)
+        notification.success({
+            message: 'Đăng xuất thành công',
+            description: 'Phiên làm việc đã được kết thúc.',
+        })
+        navigate(PATHS.LOGIN, { replace: true })
+    }
 
     const items = [
         {
@@ -62,15 +69,7 @@ const HeaderComponent = ({
         {
             key: 'logout',
             icon: <LogoutOutlined />,
-            label: (
-                <div
-                    onClick={() => {
-                        dispatch(logout())
-                    }}
-                >
-                    Đăng xuất
-                </div>
-            ),
+            label: <div onClick={() => void handleLogout()}>Đăng xuất</div>,
         },
     ]
 

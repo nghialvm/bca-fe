@@ -1,5 +1,6 @@
 export const AUTH_API = {
     LOGIN: '/account/login',
+    LOGOUT: '/Account/Logout',
     REGISTER: '/account/register',
 }
 
