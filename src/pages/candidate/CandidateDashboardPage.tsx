@@ -48,19 +48,19 @@ const CandidateDashboardPage = () => {
         () => [
             {
                 key: 'jobs',
-                title: 'Vi tri dang mo',
+                title: 'Vị trí đang mở',
                 value: jobs.length,
                 icon: <FileSearchOutlined />,
             },
             {
                 key: 'applications',
-                title: 'Ho so da nop',
+                title: 'Hồ sơ đã nộp',
                 value: applications.length,
                 icon: <FileTextOutlined />,
             },
             {
                 key: 'interviews',
-                title: 'Dang o vong phong van',
+                title: 'Đang ở vòng phỏng vấn',
                 value: applications.filter((item) =>
                     isCandidateInterviewStage(item.status)
                 ).length,
@@ -68,7 +68,7 @@ const CandidateDashboardPage = () => {
             },
             {
                 key: 'actions',
-                title: 'Can xu ly ngay',
+                title: 'Cần xử lý ngay',
                 value: applications.filter((item) =>
                     isCandidateActionRequired(item.status)
                 ).length,
@@ -87,9 +87,9 @@ const CandidateDashboardPage = () => {
         if (interviewItems.length) {
             items.push({
                 id: 'interview',
-                title: 'Ban dang co ho so o vong phong van',
+                title: 'Bạn đang có hồ sơ ở vòng phỏng vấn',
                 description:
-                    'Theo doi lich hen va ghi chu trong tung ho so de khong bo lo tien do.',
+                    'Theo dõi lịch hẹn và ghi chú trong từng hồ sơ để không bỏ lỡ tiến độ.',
             })
         }
 
@@ -99,25 +99,25 @@ const CandidateDashboardPage = () => {
         if (actionItems.length) {
             items.push({
                 id: 'action',
-                title: 'He thong dang cho phan hoi tu ban',
+                title: 'Hệ thống đang chờ phản hồi từ bạn',
                 description:
-                    'Mot so ho so dang can ban xac nhan lich phong van hoac xu ly offer.',
+                    'Một số hồ sơ đang cần bạn xác nhận lịch phỏng vấn hoặc xử lý offer.',
             })
         }
 
         if (!items.length) {
             items.push({
                 id: 'welcome',
-                title: 'Khong gian candidate da duoc dong bo API',
+                title: 'Không gian ứng viên đã được đồng bộ API',
                 description:
-                    'Du lieu profile, viec lam va ho so ung tuyen hien dang lay truc tiep tu backend.',
+                    'Dữ liệu hồ sơ, việc làm và ứng tuyển hiện đang lấy trực tiếp từ backend.',
             })
         }
 
         if (profile?.note) {
             items.push({
                 id: 'profile-note',
-                title: 'Ghi chu ho so',
+                title: 'Ghi chú hồ sơ',
                 description: profile.note,
             })
         }
@@ -131,26 +131,26 @@ const CandidateDashboardPage = () => {
     return (
         <div className="portal-page">
             <section className="portal-hero">
-                <span className="portal-hero__eyebrow">Tong quan ung vien</span>
+                <span className="portal-hero__eyebrow">Tổng quan ứng viên</span>
                 <Row gutter={[24, 24]} align="middle">
                     <Col xs={24} lg={15}>
                         <Title level={2}>
-                            Theo doi ho so va tim co hoi phu hop trong mot giao dien
-                            thong nhat
+                            Theo dõi hồ sơ và tìm cơ hội phù hợp trong một giao diện
+                            thống nhất
                         </Title>
                         <Paragraph style={{ maxWidth: 720, marginBottom: 24 }}>
-                            Dashboard candidate hien lay du lieu thuc tu backend de
-                            tong hop profile, ho so ung tuyen va danh sach viec lam dang
-                            mo trong cung mot man hinh.
+                            Dashboard ứng viên hiện lấy dữ liệu thực từ backend để
+                            tổng hợp hồ sơ cá nhân, hồ sơ ứng tuyển và danh sách việc
+                            làm đang mở trong cùng một màn hình.
                         </Paragraph>
                         <Space wrap size="middle">
                             <Link to={PATHS.CANDIDATE_JOBS}>
                                 <Button type="primary" size="large">
-                                    Kham pha vi tri
+                                    Khám phá vị trí
                                 </Button>
                             </Link>
                             <Link to={PATHS.CANDIDATE_APPLICATIONS}>
-                                <Button size="large">Theo doi ho so</Button>
+                                <Button size="large">Theo dõi hồ sơ</Button>
                             </Link>
                         </Space>
                     </Col>
@@ -162,14 +162,14 @@ const CandidateDashboardPage = () => {
                                     size={12}
                                     style={{ width: '100%' }}
                                 >
-                                    <Text className="portal-muted">Ho so cua ban</Text>
+                                    <Text className="portal-muted">Hồ sơ của bạn</Text>
                                     <Title level={4} style={{ margin: 0 }}>
                                         {profile.fullName}
                                     </Title>
                                     <Text>
                                         {profile.currentPosition ||
                                             profile.major ||
-                                            'Chua cap nhat vi tri hien tai'}
+                                            'Chưa cập nhật vị trí hiện tại'}
                                     </Text>
                                     <div className="portal-chip-row">
                                         {strengths.length ? (
@@ -183,13 +183,13 @@ const CandidateDashboardPage = () => {
                                             ))
                                         ) : (
                                             <Text className="portal-muted">
-                                                Chua co diem nhan ho so.
+                                                Chưa có điểm nhấn hồ sơ.
                                             </Text>
                                         )}
                                     </div>
                                 </Space>
                             ) : (
-                                <Empty description="Chua tim thay ho so candidate" />
+                                <Empty description="Chưa tìm thấy hồ sơ ứng viên" />
                             )}
                         </Card>
                     </Col>
@@ -222,14 +222,14 @@ const CandidateDashboardPage = () => {
             <Row gutter={[24, 24]}>
                 <Col xs={24} xl={15}>
                     <Card
-                        title="Tien do cac ho so gan day"
+                        title="Tiến độ các hồ sơ gần đây"
                         className="portal-section-card"
                     >
                         <List
                             loading={loading}
                             dataSource={recentApplications}
                             locale={{
-                                emptyText: 'Ban chua co ho so ung tuyen nao.',
+                                emptyText: 'Bạn chưa có hồ sơ ứng tuyển nào.',
                             }}
                             renderItem={(item) => {
                                 const label = getApplicationStatusLabel(item.status)
@@ -255,9 +255,9 @@ const CandidateDashboardPage = () => {
                                             <Paragraph
                                                 className="portal-muted"
                                                 style={{ marginTop: 12 }}
-                                            >
+                                                >
                                                 {item.note ||
-                                                    `${item.jobPositionName || 'Vi tri'} tai ${item.workLocation || 'he thong BCA'}.`}
+                                                    `${item.jobPositionName || 'Vị trí'} tại ${item.workLocation || 'hệ thống BCA'}.`}
                                             </Paragraph>
                                             <Progress
                                                 percent={getCandidateApplicationProgress(
@@ -275,7 +275,7 @@ const CandidateDashboardPage = () => {
                                                 }}
                                             >
                                                 <Text className="portal-muted">
-                                                    Nop ngay{' '}
+                                                    Nộp ngày{' '}
                                                     {dayjs(item.appliedTime).format(
                                                         'DD/MM/YYYY'
                                                     )}
@@ -296,7 +296,7 @@ const CandidateDashboardPage = () => {
                         style={{ width: '100%' }}
                     >
                         <Card
-                            title="Thong bao tu he thong"
+                            title="Thông báo từ hệ thống"
                             className="portal-section-card"
                         >
                             <List
@@ -319,16 +319,16 @@ const CandidateDashboardPage = () => {
                         </Card>
 
                         <Card
-                            title="Co hoi noi bat"
+                            title="Cơ hội nổi bật"
                             extra={
-                                <Link to={PATHS.CANDIDATE_JOBS}>Xem tat ca</Link>
+                                <Link to={PATHS.CANDIDATE_JOBS}>Xem tất cả</Link>
                             }
                             className="portal-section-card"
                         >
                             <List
                                 loading={loading}
                                 dataSource={highlightedJobs}
-                                locale={{ emptyText: 'Chua co vi tri dang mo.' }}
+                                locale={{ emptyText: 'Chưa có vị trí đang mở.' }}
                                 renderItem={(item) => (
                                     <List.Item>
                                         <div style={{ width: '100%' }}>
@@ -349,8 +349,8 @@ const CandidateDashboardPage = () => {
                                                 </div>
                                                 <Tag color={item.hasApplied ? 'blue' : 'green'}>
                                                     {item.hasApplied
-                                                        ? 'Da ung tuyen'
-                                                        : 'Dang mo'}
+                                                        ? 'Đã ứng tuyển'
+                                                        : 'Đang mở'}
                                                 </Tag>
                                             </Space>
                                             <Link to={PATHS.CANDIDATE_JOBS}>
@@ -360,7 +360,7 @@ const CandidateDashboardPage = () => {
                                                     icon={<RightOutlined />}
                                                     iconPosition="end"
                                                 >
-                                                    Xem chi tiet
+                                                    Xem chi tiết
                                                 </Button>
                                             </Link>
                                         </div>

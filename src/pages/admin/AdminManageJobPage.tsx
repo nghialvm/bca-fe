@@ -42,6 +42,9 @@ import styles from '../styles/AdminUi.module.css'
 
 const statColors = ['#2f54eb', '#d48806', '#389e0d', '#cf1322']
 
+const getPagedItems = <T,>(response: unknown) =>
+    (((response as { items?: T[] })?.items || []) as T[])
+
 const normalizeStatus = (value: string | number) =>
     String(value).trim().replace(/[\s_-]+/g, '').toLowerCase()
 
@@ -115,14 +118,13 @@ const AdminManageJobPage = () => {
                 }),
             ])
 
-            const recruitments = (recruitmentResponse?.items ||
-                []) as RecruitmentRequestDto[]
-            const departments = (departmentResponse?.items ||
-                []) as DepartmentDto[]
-            const jobPositions = (jobPositionResponse?.items ||
-                []) as JobPositionDto[]
-            const applications = (applicationResponse?.items ||
-                []) as ApplicationDto[]
+            const recruitments =
+                getPagedItems<RecruitmentRequestDto>(recruitmentResponse)
+            const departments = getPagedItems<DepartmentDto>(departmentResponse)
+            const jobPositions =
+                getPagedItems<JobPositionDto>(jobPositionResponse)
+            const applications =
+                getPagedItems<ApplicationDto>(applicationResponse)
 
             const departmentsById = new Map(
                 departments.map((item) => [item.id, item.name])
@@ -223,15 +225,20 @@ const AdminManageJobPage = () => {
         setActionLoadingId(record.id)
         try {
             await AdminService.approveRecruitmentRequest(record.id)
+            await AdminService.publishRecruitmentRequest(record.id)
             notification.success({
-                message: 'Đã phê duyệt tin tuyển dụng',
+                message: 'Đã duyệt và đăng tuyển tin tuyển dụng',
                 description: record.title,
             })
             await loadRecruitments()
-        } catch {
+        } catch (error) {
             notification.error({
                 message: 'Phê duyệt thất bại',
-                description: 'Backend không chấp nhận yêu cầu phê duyệt.',
+                description:
+                    (error as { response?: { data?: { error?: { message?: string } } }; message?: string })
+                        ?.response?.data?.error?.message ||
+                    (error as { message?: string })?.message ||
+                    'Backend không chấp nhận yêu cầu phê duyệt hoặc publish.',
             })
         } finally {
             setActionLoadingId(undefined)

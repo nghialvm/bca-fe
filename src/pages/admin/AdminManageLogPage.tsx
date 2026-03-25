@@ -242,7 +242,7 @@ const AdminManageLogPage = () => {
         }
     }, [filteredEntries])
 
-    const recentEntries = filteredEntries.slice(0, 12)
+    const recentEntries = filteredEntries.slice(0, 5)
 
     const handleExport = () => {
         downloadCsv('nhat-ky-van-hanh.csv', [

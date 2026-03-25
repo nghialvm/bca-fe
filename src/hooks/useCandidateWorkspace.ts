@@ -7,13 +7,12 @@ import CandidateService, {
     CandidatePortalApplicationDto,
     CandidatePortalJobDto,
     CandidatePortalProfileDto,
+    type CandidateWorkspaceUser,
 } from '@/services/candidate'
 
 type RootState = {
     auth: {
-        user?: {
-            id?: string
-        } | null
+        user?: CandidateWorkspaceUser | null
     }
 }
 
@@ -70,23 +69,21 @@ export const useCandidateWorkspace = () => {
 
         setLoading(true)
         try {
-            const [profile, jobs, applications] = await Promise.all([
-                CandidateService.getProfile(),
-                CandidateService.getJobs(),
-                CandidateService.getApplications(),
-            ])
+            const workspace = await CandidateService.loadWorkspace(user)
 
             setData({
-                profile,
-                jobs: Array.isArray(jobs) ? jobs : [],
-                applications: Array.isArray(applications) ? applications : [],
+                profile: workspace.profile,
+                jobs: Array.isArray(workspace.jobs) ? workspace.jobs : [],
+                applications: Array.isArray(workspace.applications)
+                    ? workspace.applications
+                    : [],
             })
         } catch (error) {
             notification.error({
-                message: 'Khong tai duoc du lieu ung vien',
+                message: 'Không tải được dữ liệu ứng viên',
                 description: getErrorDescription(
                     error,
-                    'Vui long kiem tra ket noi hoac quyen truy cap candidate portal API.'
+                    'Vui lòng kiểm tra kết nối hoặc quyền truy cập các API tuyển dụng hiện có.'
                 ),
             })
             setData(emptyWorkspace)
@@ -95,28 +92,34 @@ export const useCandidateWorkspace = () => {
         }
     }
 
-    const applyToJob = async (recruitmentRequestId: string) => {
+    const applyToJob = async (
+        recruitmentRequestId: string,
+        cvFile: File,
+        note?: string
+    ) => {
         setApplyingJobId(recruitmentRequestId)
         try {
-            await CandidateService.apply({
+            await CandidateService.apply(user, {
                 recruitmentRequestId,
-                source: 'CandidatePortal',
+                cvFile,
+                source: 'Candidate',
+                note,
             })
 
             notification.success({
-                message: 'Ung tuyen thanh cong',
+                message: 'Ứng tuyển thành công',
                 description:
-                    'Ho so cua ban da duoc ghi nhan tren he thong tuyen dung.',
+                    'Hồ sơ của bạn đã được ghi nhận trên hệ thống tuyển dụng.',
             })
 
             await loadData()
             return true
         } catch (error) {
             notification.error({
-                message: 'Khong the ung tuyen',
+                message: 'Không thể ứng tuyển',
                 description: getErrorDescription(
                     error,
-                    'Vui long thu lai sau hoac kiem tra ho so candidate hien tai.'
+                    'Vui lòng thử lại sau hoặc kiểm tra hồ sơ ứng viên hiện tại.'
                 ),
             })
             return false

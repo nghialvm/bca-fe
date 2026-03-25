@@ -346,6 +346,9 @@
 
 .permissionAction {
     padding-left: 24px;
+}
+
+.permissionAction .tableMainText {
     color: var(--ui-muted);
 }
 

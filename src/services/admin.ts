@@ -190,10 +190,53 @@ export interface CandidateDto {
     id: string
     candidateCode: string
     fullName: string
+    dateOfBirth?: string | null
+    gender?: string | number | null
     email: string
     phoneNumber?: string
+    address?: string | null
+    identityNumber?: string | null
+    currentCompany?: string | null
     currentPosition?: string
+    yearsOfExperience?: number | null
+    highestEducation?: string | null
+    universityName?: string | null
+    major?: string | null
     status?: string | number
+    source?: string | null
+    note?: string | null
+}
+
+export interface ApplicationScreeningDto {
+    id: string
+    applicationId: string
+    screenedByUserId: string
+    screeningTime: string
+    result: string | number
+    comment?: string | null
+    score?: number | null
+    criteriaSummary?: string | null
+    creationTime?: string
+}
+
+export interface ApplicationScreeningCreateDto {
+    applicationId: string
+    screenedByUserId: string
+    screeningTime: string
+    result: string | number
+    comment?: string | null
+    score?: number | null
+    criteriaSummary?: string | null
+}
+
+export interface ApplicationScreeningUpdateDto {
+    applicationId: string
+    screenedByUserId: string
+    screeningTime: string
+    result: string | number
+    comment?: string | null
+    score?: number | null
+    criteriaSummary?: string | null
 }
 
 export interface InterviewScheduleDto {
@@ -210,6 +253,34 @@ export interface InterviewScheduleDto {
     status: string | number
     createdByUserId?: string | null
     creationTime?: string
+}
+
+export interface InterviewScheduleCreateDto {
+    applicationId: string
+    roundNumber: number
+    interviewType: string | number
+    scheduledTime: string
+    durationMinutes: number
+    location?: string | null
+    meetingLink?: string | null
+    contactPerson?: string | null
+    note?: string | null
+    status: string | number
+    createdByUserId?: string | null
+}
+
+export interface InterviewScheduleUpdateDto {
+    applicationId: string
+    roundNumber: number
+    interviewType: string | number
+    scheduledTime: string
+    durationMinutes: number
+    location?: string | null
+    meetingLink?: string | null
+    contactPerson?: string | null
+    note?: string | null
+    status: string | number
+    createdByUserId?: string | null
 }
 
 export interface OfferDto {
@@ -449,11 +520,25 @@ export class AdminService {
     }
 
     async approveRecruitmentRequest(id: string) {
-        return await http.put(`app/recruitment-request/${id}/approve`, {})
+        return await http.post(`app/recruitment-request/${id}/approve`, {})
+    }
+
+    async submitRecruitmentRequestForApproval(id: string) {
+        return await http.post(`app/recruitment-request/${id}/submit-for-approval`, {})
     }
 
     async rejectRecruitmentRequest(id: string, reason: string) {
-        return await http.put(`app/recruitment-request/${id}/reject`, {
+        return await http.post(`app/recruitment-request/${id}/reject`, {
+            reason,
+        })
+    }
+
+    async publishRecruitmentRequest(id: string) {
+        return await http.post(`app/recruitment-request/${id}/publish`, {})
+    }
+
+    async closeRecruitmentRequest(id: string, reason = '') {
+        return await http.post(`app/recruitment-request/${id}/close`, {
             reason,
         })
     }
@@ -483,6 +568,41 @@ export class AdminService {
                 ...query,
             },
         })
+    }
+
+    async getInterviewSchedule(id: string) {
+        return await http.get(`app/interview-schedule/${id}`)
+    }
+
+    async createInterviewSchedule(input: InterviewScheduleCreateDto) {
+        return await http.post('app/interview-schedule', input)
+    }
+
+    async updateInterviewSchedule(
+        id: string,
+        input: InterviewScheduleUpdateDto
+    ) {
+        return await http.put(`app/interview-schedule/${id}`, input)
+    }
+
+    async getApplicationScreenings(query: PagedQuery = {}) {
+        return await http.get('app/application-screening', {
+            params: {
+                ...defaultPagedQuery,
+                ...query,
+            },
+        })
+    }
+
+    async createApplicationScreening(input: ApplicationScreeningCreateDto) {
+        return await http.post('app/application-screening', input)
+    }
+
+    async updateApplicationScreening(
+        id: string,
+        input: ApplicationScreeningUpdateDto
+    ) {
+        return await http.put(`app/application-screening/${id}`, input)
     }
 
     async getOffers(query: PagedQuery = {}) {

@@ -40,7 +40,7 @@ const LoginPage: FC = () => {
                     rememberMe: values.remember,
                 })
             )
-            if (loginAction.fulfilled.match(loginResponse)) {
+            if (loginAction.fulfilled.match(loginResponse) && loginResponse.payload?.result === 1) {
                 await initializeAntiforgeryToken(true)
                 const userResponse: any = await dispatch(getCurrentUserAction())
                 const currentUser = userResponse.payload
@@ -63,7 +63,15 @@ const LoginPage: FC = () => {
                             'Đã xác thực nhưng không tải được thông tin người dùng.',
                     })
                 }
-            } else if (loginAction.rejected.match(loginResponse)) {
+            }
+            else if (loginAction.fulfilled.match(loginResponse) && loginResponse.payload?.result === 2) {
+                notification.error({
+                    message: 'Đăng nhập thất bại',
+                    description:
+                        'Tên đăng nhập hoặc mật khẩu không chính xác.',
+                })
+            }
+            else if (loginAction.rejected.match(loginResponse)) {
                 notification.error({
                     message: 'Đăng nhập thất bại',
                     description: 'Tên đăng nhập hoặc mật khẩu không chính xác.',

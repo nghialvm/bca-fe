@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 
 import AdminService, {
     ApplicationDto,
+    ApplicationScreeningDto,
     CandidateDto,
     CandidateResponseDto,
     DepartmentDto,
@@ -42,6 +43,7 @@ export type EmployerWorkspaceData = {
     candidates: CandidateDto[]
     identityUsers: IdentityUserDto[]
     interviews: InterviewScheduleDto[]
+    applicationScreenings: ApplicationScreeningDto[]
     offers: OfferDto[]
     candidateResponses: CandidateResponseDto[]
     applicationRows: EmployerApplicationRow[]
@@ -58,10 +60,14 @@ const emptyWorkspace: EmployerWorkspaceData = {
     candidates: [],
     identityUsers: [],
     interviews: [],
+    applicationScreenings: [],
     offers: [],
     candidateResponses: [],
     applicationRows: [],
 }
+
+const getPagedItems = <T,>(response: unknown) =>
+    (((response as { items?: T[] })?.items || []) as T[])
 
 export const useEmployerWorkspace = () => {
     const user = useSelector((state: RootState) => state.auth.user)
@@ -82,6 +88,7 @@ export const useEmployerWorkspace = () => {
                 recruitmentResponse,
                 applicationResponse,
                 candidateResponse,
+                applicationScreeningResponse,
                 interviewResponse,
                 offerResponse,
                 candidateReplyResponse,
@@ -107,6 +114,10 @@ export const useEmployerWorkspace = () => {
                     Sorting: 'creationTime desc',
                     MaxResultCount: 1000,
                 }),
+                AdminService.getApplicationScreenings({
+                    Sorting: 'screeningTime desc',
+                    MaxResultCount: 1000,
+                }),
                 AdminService.getInterviewSchedules({
                     Sorting: 'scheduledTime desc',
                     MaxResultCount: 1000,
@@ -125,22 +136,25 @@ export const useEmployerWorkspace = () => {
                 }),
             ])
 
-            const departments = (departmentResponse?.items || []) as DepartmentDto[]
-            const jobPositions = (jobPositionResponse?.items ||
-                []) as JobPositionDto[]
-            const allRecruitmentRequests = (recruitmentResponse?.items ||
-                []) as RecruitmentRequestDto[]
-            const allApplications = (applicationResponse?.items ||
-                []) as ApplicationDto[]
-            const allCandidates = (candidateResponse?.items ||
-                []) as CandidateDto[]
-            const allInterviews = (interviewResponse?.items ||
-                []) as InterviewScheduleDto[]
-            const allOffers = (offerResponse?.items || []) as OfferDto[]
-            const allCandidateResponses = (candidateReplyResponse?.items ||
-                []) as CandidateResponseDto[]
-            const identityUsers = (identityUserResponse?.items ||
-                []) as IdentityUserDto[]
+            const departments = getPagedItems<DepartmentDto>(departmentResponse)
+            const jobPositions = getPagedItems<JobPositionDto>(jobPositionResponse)
+            const allRecruitmentRequests =
+                getPagedItems<RecruitmentRequestDto>(recruitmentResponse)
+            const allApplications =
+                getPagedItems<ApplicationDto>(applicationResponse)
+            const allCandidates = getPagedItems<CandidateDto>(candidateResponse)
+            const allApplicationScreenings = getPagedItems<ApplicationScreeningDto>(
+                applicationScreeningResponse
+            )
+            const allInterviews =
+                getPagedItems<InterviewScheduleDto>(interviewResponse)
+            const allOffers = getPagedItems<OfferDto>(offerResponse)
+            const allCandidateResponses = getPagedItems<CandidateResponseDto>(
+                candidateReplyResponse
+            )
+            const identityUsers = getPagedItems<IdentityUserDto>(
+                identityUserResponse
+            )
 
             let managedDepartments = departments.filter(
                 (department) => department.managerUserId === user.id
@@ -178,6 +192,9 @@ export const useEmployerWorkspace = () => {
             )
             const interviews = allInterviews.filter((interview) =>
                 applicationIds.has(interview.applicationId)
+            )
+            const applicationScreenings = allApplicationScreenings.filter(
+                (screening) => applicationIds.has(screening.applicationId)
             )
             const offers = allOffers.filter((offer) =>
                 applicationIds.has(offer.applicationId)
@@ -231,6 +248,7 @@ export const useEmployerWorkspace = () => {
                 candidates,
                 identityUsers,
                 interviews,
+                applicationScreenings,
                 offers,
                 candidateResponses,
                 applicationRows,

@@ -41,6 +41,7 @@ type PermissionMatrixRow = {
     key: string
     rowType: 'module' | 'action'
     label: string
+    subLabel?: string
     groupName?: string
     permissionName?: string
     displayName?: string
@@ -83,6 +84,23 @@ const formatGroupLabel = (group: PermissionGroupDto) => {
 
     const lastSegment = group.name.split('.').pop()
     return lastSegment || group.name
+}
+
+const renderDisplayWithName = (displayLabel: string, name?: string) => {
+    const normalizedDisplay = displayLabel?.trim()
+    const normalizedName = name?.trim()
+    const shouldShowName = Boolean(
+        normalizedName && normalizedName !== normalizedDisplay
+    )
+
+    return (
+        <span className={styles.tableNameCell}>
+            <span className={styles.tableMainText}>{displayLabel}</span>
+            {shouldShowName ? (
+                <span className={styles.tableSubText}>{normalizedName}</span>
+            ) : null}
+        </span>
+    )
 }
 
 const AdminManagePermissionPage = () => {
@@ -253,6 +271,7 @@ const AdminManagePermissionPage = () => {
                     key: `module-${groupName}`,
                     rowType: 'module' as const,
                     label: groupLabelByName[groupName] || groupName,
+                    subLabel: groupName,
                     grants: {},
                 },
                 ...actions.map(
@@ -260,6 +279,7 @@ const AdminManagePermissionPage = () => {
                         key: action.key,
                         rowType: 'action',
                         label: action.displayName,
+                        subLabel: action.permissionName,
                         groupName,
                         permissionName: action.permissionName,
                         displayName: action.displayName,
@@ -404,6 +424,9 @@ const AdminManagePermissionPage = () => {
                                         </span>
                                     </Space>
                                 </div>
+                                <div className={styles.tableSubText}>
+                                    {role.name}
+                                </div>
                                 <div className={styles.roleMeta}>
                                     {role.description}
                                 </div>
@@ -436,6 +459,7 @@ const AdminManagePermissionPage = () => {
                                 {getRoleDisplayName(selectedRole?.name) ||
                                     selectedRole?.name ||
                                     '-'}
+                                {selectedRole?.name ? ` (${selectedRole.name})` : ''}
                             </span>
                             <span className={styles.summaryPill}>
                                 {formatCount(selectedRole?.users)} người dùng
@@ -470,21 +494,26 @@ const AdminManagePermissionPage = () => {
                                         _: string,
                                         record: PermissionMatrixRow
                                     ) => (
-                                        <span
+                                        <div
                                             className={
                                                 record.rowType === 'module'
-                                                    ? styles.tableMainText
+                                                    ? ''
                                                     : styles.permissionAction
                                             }
                                         >
-                                            {record.label}
-                                        </span>
+                                            {renderDisplayWithName(
+                                                record.label,
+                                                record.subLabel
+                                            )}
+                                        </div>
                                     ),
                                 },
                                 ...roles.map((role) => ({
-                                    title:
+                                    title: renderDisplayWithName(
                                         getRoleDisplayName(role.name) ||
-                                        role.name,
+                                            role.name,
+                                        role.name
+                                    ),
                                     key: role.name,
                                     align: 'center' as const,
                                     render: (record: PermissionMatrixRow) =>

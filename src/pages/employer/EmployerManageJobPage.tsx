@@ -7,11 +7,14 @@ import {
     FilterOutlined,
     PlusOutlined,
     SearchOutlined,
+    SendOutlined,
+    StopOutlined,
 } from '@ant-design/icons'
 import {
     Button,
     Card,
     Input,
+    Popconfirm,
     Select,
     Space,
     Table,
@@ -42,10 +45,54 @@ import { formatCount, formatDisplayDate } from '@/utils/admin'
 
 const { Paragraph, Title } = Typography
 
+const normalizeStatus = (value: string | number) =>
+    String(value).trim().replace(/[\s_-]+/g, '').toLowerCase()
+
+const canSubmitRecruitment = (value: string | number) =>
+    ['0', 'draft', '3', 'rejected'].includes(normalizeStatus(value))
+
+const canCloseRecruitment = (value: string | number) =>
+    ['4', 'published'].includes(normalizeStatus(value))
+
+const canEditRecruitment = (value: string | number) =>
+    !['2', 'approved', '4', 'published', '5', 'closed'].includes(
+        normalizeStatus(value)
+    )
+
+const canDeleteRecruitment = (value: string | number) =>
+    !['4', 'published', '5', 'closed'].includes(normalizeStatus(value))
+
+const getErrorMessage = (error: unknown) => {
+    const message =
+        (error as {
+            response?: {
+                data?: {
+                    error?: {
+                        message?: string
+                    }
+                    message?: string
+                }
+            }
+            message?: string
+        })?.response?.data?.error?.message ||
+        (error as {
+            response?: {
+                data?: {
+                    message?: string
+                }
+            }
+            message?: string
+        })?.response?.data?.message ||
+        (error as { message?: string })?.message
+
+    return message || 'Vui lòng kiểm tra lại quyền truy cập hoặc trạng thái hiện tại của tin tuyển dụng.'
+}
+
 const EmployerManageJobPage = () => {
     const [search, setSearch] = useState('')
     const [status, setStatus] = useState<string | 'all'>('all')
     const [submitting, setSubmitting] = useState(false)
+    const [actionLoadingId, setActionLoadingId] = useState<string>()
     const [createOpen, setCreateOpen] = useState(false)
     const [viewingJob, setViewingJob] = useState<EmployerJobRecord | null>(null)
     const [editingJob, setEditingJob] = useState<EmployerJobRecord | null>(null)
@@ -123,21 +170,23 @@ const EmployerManageJobPage = () => {
     const handleCreateJob = async (values: EmployerJobFormValues) => {
         setSubmitting(true)
         try {
-            await AdminService.createRecruitmentRequest(
+            const createdRecruitment = await AdminService.createRecruitmentRequest(
                 mapEmployerJobFormToCreateDto(values)
             )
+            await AdminService.submitRecruitmentRequestForApproval(
+                (createdRecruitment as unknown as { id: string }).id
+            )
             notification.success({
-                message: 'Tạo tin tuyển dụng thành công',
+                message: 'Đã tạo và gửi duyệt tin tuyển dụng',
                 description:
-                    'Tin tuyển dụng mới đã được lưu vào hệ thống tuyển dụng.',
+                    'Tin tuyển dụng mới đã được chuyển sang trạng thái chờ admin duyệt.',
             })
             setCreateOpen(false)
             await reload()
-        } catch {
+        } catch (error) {
             notification.error({
                 message: 'Không thể tạo tin tuyển dụng',
-                description:
-                    'Vui lòng kiểm tra lại thông tin hoặc quyền truy cập rồi thử lại.',
+                description: getErrorMessage(error),
             })
         } finally {
             setSubmitting(false)
@@ -192,6 +241,44 @@ const EmployerManageJobPage = () => {
             })
         } finally {
             setSubmitting(false)
+        }
+    }
+
+    const handleSubmitJob = async (record: EmployerJobRecord) => {
+        setActionLoadingId(record.id)
+        try {
+            await AdminService.submitRecruitmentRequestForApproval(record.id)
+            notification.success({
+                message: 'Đã gửi yêu cầu duyệt tin tuyển dụng',
+                description: record.title,
+            })
+            await reload()
+        } catch (error) {
+            notification.error({
+                message: 'Không thể gửi duyệt tin tuyển dụng',
+                description: getErrorMessage(error),
+            })
+        } finally {
+            setActionLoadingId(undefined)
+        }
+    }
+
+    const handleCloseJob = async (record: EmployerJobRecord) => {
+        setActionLoadingId(record.id)
+        try {
+            await AdminService.closeRecruitmentRequest(record.id)
+            notification.success({
+                message: 'Đã đóng tin tuyển dụng',
+                description: record.title,
+            })
+            await reload()
+        } catch (error) {
+            notification.error({
+                message: 'Không thể đóng tin tuyển dụng',
+                description: getErrorMessage(error),
+            })
+        } finally {
+            setActionLoadingId(undefined)
         }
     }
 
@@ -260,16 +347,54 @@ const EmployerManageJobPage = () => {
                     <Button icon={<EyeOutlined />} onClick={() => setViewingJob(record)}>
                         Xem
                     </Button>
-                    <Button icon={<EditOutlined />} onClick={() => setEditingJob(record)}>
+                    <Button
+                        icon={<EditOutlined />}
+                        disabled={!canEditRecruitment(record.status)}
+                        onClick={() => setEditingJob(record)}
+                    >
                         Sửa
                     </Button>
                     <Button
                         danger
                         icon={<DeleteOutlined />}
+                        disabled={!canDeleteRecruitment(record.status)}
                         onClick={() => setDeletingJob(record)}
                     >
                         Xóa
                     </Button>
+                    {canSubmitRecruitment(record.status) ? (
+                        <Popconfirm
+                            title="Gửi duyệt tin này?"
+                            description="Tin sẽ chuyển sang trạng thái chờ admin duyệt."
+                            okText="Gửi duyệt"
+                            cancelText="Hủy"
+                            onConfirm={() => void handleSubmitJob(record)}
+                        >
+                            <Button
+                                type="primary"
+                                icon={<SendOutlined />}
+                                loading={actionLoadingId === record.id}
+                            >
+                                Gửi duyệt
+                            </Button>
+                        </Popconfirm>
+                    ) : null}
+                    {canCloseRecruitment(record.status) ? (
+                        <Popconfirm
+                            title="Đóng tin tuyển dụng?"
+                            description="Tin sẽ ngừng nhận hồ sơ mới."
+                            okText="Đóng tin"
+                            cancelText="Hủy"
+                            onConfirm={() => void handleCloseJob(record)}
+                        >
+                            <Button
+                                icon={<StopOutlined />}
+                                loading={actionLoadingId === record.id}
+                            >
+                                Đóng tin
+                            </Button>
+                        </Popconfirm>
+                    ) : null}
                 </Space>
             ),
         },
@@ -306,8 +431,10 @@ const EmployerManageJobPage = () => {
                         <Title level={2}>Quản lý tin tuyển dụng</Title>
                         <Paragraph style={{ maxWidth: 720 }}>
                             Danh sách tin tuyển dụng của đơn vị được lấy trực tiếp từ
-                            API tuyển dụng, hỗ trợ tạo mới, cập nhật, xem chi tiết và
-                            xóa ngay trên giao diện quản lý employer.
+                            API tuyển dụng, hỗ trợ tạo mới, cập nhật, xem chi tiết,
+                            gửi admin duyệt và đóng tin ngay trên giao diện quản lý
+                            employer. Candidate chỉ thấy tin sau khi admin duyệt và
+                            publish.
                         </Paragraph>
                     </div>
                     <Button

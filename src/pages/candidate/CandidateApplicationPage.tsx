@@ -41,11 +41,11 @@ const CandidateApplicationPage = () => {
     return (
         <div className="portal-page">
             <section className="portal-hero">
-                <span className="portal-hero__eyebrow">Theo doi ho so</span>
-                <Title level={2}>Theo doi tung ho so ung tuyen theo thoi gian</Title>
+                <span className="portal-hero__eyebrow">Theo dõi hồ sơ</span>
+                <Title level={2}>Theo dõi từng hồ sơ ứng tuyển theo thời gian</Title>
                 <Paragraph style={{ maxWidth: 760 }}>
-                    Danh sach ben duoi lay truc tiep tu candidate portal API va gom
-                    day du ma ho so, trang thai xu ly va thong tin vi tri tuyen dung.
+                    Danh sách bên dưới lấy trực tiếp từ candidate portal API và gồm
+                    đầy đủ mã hồ sơ, trạng thái xử lý và thông tin vị trí tuyển dụng.
                 </Paragraph>
             </section>
 
@@ -53,13 +53,13 @@ const CandidateApplicationPage = () => {
                 type="info"
                 showIcon
                 icon={<InfoCircleOutlined />}
-                message="Luu y"
-                description="Cac ho so dang o vong phong van hoac da gui offer se duoc uu tien hien thi trong muc viec can lam de ban thao tac nhanh hon."
+                message="Lưu ý"
+                description="Các hồ sơ đang ở vòng phỏng vấn hoặc đã gửi offer sẽ được ưu tiên hiển thị trong mục việc cần làm để bạn thao tác nhanh hơn."
             />
 
             <Row gutter={[24, 24]}>
                 <Col xs={24} xl={16}>
-                    <Card title="Danh sach ho so" className="portal-section-card">
+                    <Card title="Danh sách hồ sơ" className="portal-section-card">
                         {applications.length ? (
                             <List
                                 loading={loading}
@@ -98,11 +98,11 @@ const CandidateApplicationPage = () => {
                                                     style={{ marginTop: 16 }}
                                                 >
                                                     <Text>
-                                                        <FileTextOutlined /> Ma ho so:{' '}
+                                                        <FileTextOutlined /> Mã hồ sơ:{' '}
                                                         {item.applicationCode}
                                                     </Text>
                                                     <Text>
-                                                        <CalendarOutlined /> Nop:{' '}
+                                                        <CalendarOutlined /> Nộp:{' '}
                                                         {dayjs(item.appliedTime).format(
                                                             'DD/MM/YYYY'
                                                         )}
@@ -114,7 +114,7 @@ const CandidateApplicationPage = () => {
                                                     style={{ marginTop: 12 }}
                                                 >
                                                     {item.note ||
-                                                        `${item.jobPositionName || 'Vi tri'}${item.workLocation ? ` tai ${item.workLocation}` : ''}.`}
+                                                        `${item.jobPositionName || 'Vị trí'}${item.workLocation ? ` tại ${item.workLocation}` : ''}.`}
                                                 </Paragraph>
 
                                                 <Progress
@@ -130,7 +130,7 @@ const CandidateApplicationPage = () => {
                                 }}
                             />
                         ) : (
-                            <Empty description="Ban chua nop ho so ung tuyen nao" />
+                            <Empty description="Bạn chưa nộp hồ sơ ứng tuyển nào" />
                         )}
                     </Card>
                 </Col>
@@ -142,7 +142,7 @@ const CandidateApplicationPage = () => {
                         style={{ width: '100%' }}
                     >
                         <Card
-                            title="Trang thai xu ly"
+                            title="Trạng thái xử lý"
                             className="portal-section-card"
                         >
                             <Timeline
@@ -150,30 +150,30 @@ const CandidateApplicationPage = () => {
                                     {
                                         color: '#0B3D2E',
                                         dot: <ClockCircleOutlined />,
-                                        children: 'Tiep nhan va doi chieu ho so',
+                                        children: 'Tiếp nhận và đối chiếu hồ sơ',
                                     },
                                     {
                                         color: '#2E7D60',
                                         dot: <FileProtectOutlined />,
-                                        children: 'Sang loc va danh gia chuyen mon',
+                                        children: 'Sàng lọc và đánh giá chuyên môn',
                                     },
                                     {
                                         color: '#B7791F',
                                         dot: <SolutionOutlined />,
-                                        children: 'Phong van va xu ly offer',
+                                        children: 'Phỏng vấn và xử lý offer',
                                     },
                                     {
                                         color: '#166534',
                                         dot: <CheckCircleOutlined />,
                                         children:
-                                            'Thong bao ket qua va huong dan tiep theo',
+                                            'Thông báo kết quả và hướng dẫn tiếp theo',
                                     },
                                 ]}
                             />
                         </Card>
 
                         <Card
-                            title="Viec can lam"
+                            title="Việc cần làm"
                             className="portal-section-card"
                         >
                             {actionItems.length ? (
@@ -189,7 +189,7 @@ const CandidateApplicationPage = () => {
                                                     style={{ margin: '6px 0 0' }}
                                                 >
                                                     {item.note ||
-                                                        `${getApplicationStatusLabel(item.status)} - theo doi email va thong bao he thong.`}
+                                                        `${getApplicationStatusLabel(item.status)} - theo dõi email và thông báo hệ thống.`}
                                                 </Paragraph>
                                             </div>
                                         </List.Item>
@@ -198,7 +198,7 @@ const CandidateApplicationPage = () => {
                             ) : (
                                 <Empty
                                     image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                    description="Hien khong co tac vu can xu ly ngay"
+                                    description="Hiện không có tác vụ cần xử lý ngay"
                                 />
                             )}
                         </Card>

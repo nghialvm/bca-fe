@@ -45,14 +45,14 @@ const CandidateProfilePage = () => {
     return (
         <div className="portal-page">
             <section className="portal-hero">
-                <span className="portal-hero__eyebrow">Ho so ca nhan</span>
+                <span className="portal-hero__eyebrow">Hồ sơ cá nhân</span>
                 <Row gutter={[24, 24]} align="middle">
                     <Col xs={24} lg={16}>
-                        <Title level={2}>Thong tin ca nhan va nang luc ho so</Title>
+                        <Title level={2}>Thông tin cá nhân và năng lực hồ sơ</Title>
                         <Paragraph style={{ maxWidth: 720 }}>
-                            Trang ho so da ket noi truc tiep voi candidate portal API,
-                            hien thi thong tin contact, hoc van, kinh nghiem va cac diem
-                            nhan chinh cua ung vien hien tai.
+                            Trang hồ sơ đã kết nối trực tiếp với candidate portal API,
+                            hiển thị thông tin liên hệ, học vấn, kinh nghiệm và các
+                            điểm nhấn chính của ứng viên hiện tại.
                         </Paragraph>
                     </Col>
                     <Col xs={24} lg={8}>
@@ -73,7 +73,7 @@ const CandidateProfilePage = () => {
                                             {profile.fullName}
                                         </Title>
                                         <Text className="portal-muted">
-                                            {profile.currentPosition || 'Ung vien'}
+                                            {profile.currentPosition || 'Ứng viên'}
                                         </Text>
                                         <div style={{ marginTop: 16 }}>
                                             <Button
@@ -81,13 +81,13 @@ const CandidateProfilePage = () => {
                                                 icon={<EditOutlined />}
                                                 disabled
                                             >
-                                                Chinh sua ho so
+                                                Chỉnh sửa hồ sơ
                                             </Button>
                                         </div>
                                     </div>
                                 </Space>
                             ) : (
-                                <Empty description="Chua tim thay ho so candidate" />
+                                <Empty description="Chưa tìm thấy hồ sơ ứng viên" />
                             )}
                         </Card>
                     </Col>
@@ -97,7 +97,7 @@ const CandidateProfilePage = () => {
             <Row gutter={[24, 24]}>
                 <Col xs={24} xl={15}>
                     <Card
-                        title="Thong tin chi tiet"
+                        title="Thông tin chi tiết"
                         className="portal-section-card"
                         loading={loading}
                     >
@@ -117,7 +117,7 @@ const CandidateProfilePage = () => {
                                     label={
                                         <Space>
                                             <PhoneOutlined />
-                                            So dien thoai
+                                            Số điện thoại
                                         </Space>
                                     }
                                 >
@@ -127,7 +127,7 @@ const CandidateProfilePage = () => {
                                     label={
                                         <Space>
                                             <FileTextOutlined />
-                                            So CCCD
+                                            Số CCCD
                                         </Space>
                                     }
                                 >
@@ -137,7 +137,7 @@ const CandidateProfilePage = () => {
                                     label={
                                         <Space>
                                             <UserOutlined />
-                                            Ngay sinh
+                                            Ngày sinh
                                         </Space>
                                     }
                                 >
@@ -151,7 +151,7 @@ const CandidateProfilePage = () => {
                                     label={
                                         <Space>
                                             <EnvironmentOutlined />
-                                            Dia chi
+                                            Địa chỉ
                                         </Space>
                                     }
                                 >
@@ -159,7 +159,7 @@ const CandidateProfilePage = () => {
                                 </Descriptions.Item>
                             </Descriptions>
                         ) : (
-                            <Empty description="Khong co du lieu ho so" />
+                            <Empty description="Không có dữ liệu hồ sơ" />
                         )}
                     </Card>
                 </Col>
@@ -171,11 +171,11 @@ const CandidateProfilePage = () => {
                         style={{ width: '100%' }}
                     >
                         <Card
-                            title="Hoc van va kinh nghiem"
+                            title="Học vấn và kinh nghiệm"
                             className="portal-section-card"
                             loading={loading}
                         >
-                            <Text strong>Hoc van</Text>
+                            <Text strong>Học vấn</Text>
                             <Paragraph className="portal-muted">
                                 {profile
                                     ? [
@@ -184,29 +184,29 @@ const CandidateProfilePage = () => {
                                           profile.major,
                                       ]
                                           .filter(Boolean)
-                                          .join(' - ') || 'Chua cap nhat hoc van'
+                                          .join(' - ') || 'Chưa cập nhật học vấn'
                                     : '-'}
                             </Paragraph>
                             <Divider />
-                            <Text strong>Kinh nghiem</Text>
+                            <Text strong>Kinh nghiệm</Text>
                             <Paragraph className="portal-muted">
                                 {profile
                                     ? [
                                           profile.currentPosition,
                                           profile.currentCompany,
                                           profile.yearsOfExperience
-                                              ? `${profile.yearsOfExperience} nam kinh nghiem`
+                                              ? `${profile.yearsOfExperience} năm kinh nghiệm`
                                               : null,
                                       ]
                                           .filter(Boolean)
                                           .join(' - ') ||
-                                      'Chua cap nhat kinh nghiem lam viec'
+                                      'Chưa cập nhật kinh nghiệm làm việc'
                                     : '-'}
                             </Paragraph>
                         </Card>
 
                         <Card
-                            title="Nang luc noi bat"
+                            title="Năng lực nổi bật"
                             className="portal-section-card"
                             loading={loading}
                         >
@@ -221,7 +221,7 @@ const CandidateProfilePage = () => {
                             ) : (
                                 <Empty
                                     image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                    description="Chua co diem nhan ho so"
+                                    description="Chưa có điểm nhấn hồ sơ"
                                 />
                             )}
                         </Card>

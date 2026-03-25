@@ -56,14 +56,14 @@ export const formatSalaryRange = (
     }
 
     if (salaryMin) {
-        return `Tu ${formatter.format(salaryMin)} VND`
+        return `Từ ${formatter.format(salaryMin)} VND`
     }
 
     if (salaryMax) {
-        return `Den ${formatter.format(salaryMax)} VND`
+        return `Đến ${formatter.format(salaryMax)} VND`
     }
 
-    return 'Tho thuan'
+    return 'Thỏa thuận'
 }
 
 export const getCandidateProfileStrengths = (
@@ -77,7 +77,7 @@ export const getCandidateProfileStrengths = (
         profile.highestEducation,
         profile.currentCompany,
         profile.yearsOfExperience
-            ? `${profile.yearsOfExperience} nam kinh nghiem`
+            ? `${profile.yearsOfExperience} năm kinh nghiệm`
             : null,
     ].filter((item): item is string => Boolean(item && item.trim()))
 }
