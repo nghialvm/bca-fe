@@ -2,6 +2,7 @@ import {
     Alert,
     Card,
     Col,
+    Empty,
     List,
     Progress,
     Row,
@@ -22,61 +23,29 @@ import {
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 
+import { useCandidateWorkspace } from '@/hooks/useCandidateWorkspace'
+import { getApplicationStatusColor, getApplicationStatusLabel } from '@/utils/admin'
 import {
-    CandidateApplicationStatus,
-    candidateApplications,
-} from '@/mock/candidateData'
+    getCandidateApplicationProgress,
+    isCandidateActionRequired,
+} from '@/utils/candidate'
 
 const { Paragraph, Text, Title } = Typography
 
-const statusMeta: Record<
-    CandidateApplicationStatus,
-    { color: string; label: string; percent: number }
-> = {
-    pending: {
-        color: 'default',
-        label: 'Tiếp nhận',
-        percent: 25,
-    },
-    reviewing: {
-        color: 'processing',
-        label: 'Đang xét duyệt',
-        percent: 50,
-    },
-    interview: {
-        color: 'warning',
-        label: 'Mời phỏng vấn',
-        percent: 80,
-    },
-    accepted: {
-        color: 'success',
-        label: 'Đã trúng tuyển',
-        percent: 100,
-    },
-    rejected: {
-        color: 'error',
-        label: 'Không đạt',
-        percent: 100,
-    },
-    supplement: {
-        color: 'gold',
-        label: 'Cần bổ sung',
-        percent: 60,
-    },
-}
-
 const CandidateApplicationPage = () => {
+    const { applications, loading } = useCandidateWorkspace()
+    const actionItems = applications.filter((item) =>
+        isCandidateActionRequired(item.status)
+    )
+
     return (
         <div className="portal-page">
             <section className="portal-hero">
-                <span className="portal-hero__eyebrow">Theo dõi hồ sơ</span>
-                <Title level={2}>
-                    Theo dõi từng hồ sơ ứng tuyển theo thời gian
-                </Title>
+                <span className="portal-hero__eyebrow">Theo doi ho so</span>
+                <Title level={2}>Theo doi tung ho so ung tuyen theo thoi gian</Title>
                 <Paragraph style={{ maxWidth: 760 }}>
-                    Bố cục trang ưu tiên khả năng theo dõi trạng thái nhanh, gần
-                    hơn với design candidate qua cách dùng thẻ trạng thái, thanh
-                    tiến độ và timeline xử lý ngay trên cùng một màn hình.
+                    Danh sach ben duoi lay truc tiep tu candidate portal API va gom
+                    day du ma ho so, trang thai xu ly va thong tin vi tri tuyen dung.
                 </Paragraph>
             </section>
 
@@ -84,77 +53,85 @@ const CandidateApplicationPage = () => {
                 type="info"
                 showIcon
                 icon={<InfoCircleOutlined />}
-                message="Lưu ý"
-                description="Hồ sơ cần bổ sung sẽ được ưu tiên hiển thị ở đầu danh sách. Bạn nên cập nhật trước ngày hẹn trong thông báo để không ảnh hưởng kết quả."
+                message="Luu y"
+                description="Cac ho so dang o vong phong van hoac da gui offer se duoc uu tien hien thi trong muc viec can lam de ban thao tac nhanh hon."
             />
 
             <Row gutter={[24, 24]}>
                 <Col xs={24} xl={16}>
-                    <Card
-                        title="Danh sách hồ sơ"
-                        className="portal-section-card"
-                    >
-                        <List
-                            dataSource={candidateApplications}
-                            renderItem={(item) => {
-                                const meta = statusMeta[item.status]
+                    <Card title="Danh sach ho so" className="portal-section-card">
+                        {applications.length ? (
+                            <List
+                                loading={loading}
+                                dataSource={applications}
+                                renderItem={(item) => {
+                                    const label = getApplicationStatusLabel(
+                                        item.status
+                                    )
+                                    const color = getApplicationStatusColor(
+                                        item.status
+                                    )
 
-                                return (
-                                    <List.Item>
-                                        <div style={{ width: '100%' }}>
-                                            <div className="portal-split">
-                                                <div>
-                                                    <Title
-                                                        level={5}
-                                                        style={{
-                                                            marginBottom: 4,
-                                                        }}
-                                                    >
-                                                        {item.title}
-                                                    </Title>
-                                                    <Text className="portal-muted">
-                                                        {item.department}
-                                                    </Text>
+                                    return (
+                                        <List.Item>
+                                            <div style={{ width: '100%' }}>
+                                                <div className="portal-split">
+                                                    <div>
+                                                        <Title
+                                                            level={5}
+                                                            style={{
+                                                                marginBottom: 4,
+                                                            }}
+                                                        >
+                                                            {item.title}
+                                                        </Title>
+                                                        <Text className="portal-muted">
+                                                            {item.departmentName}
+                                                        </Text>
+                                                    </div>
+                                                    <Tag color={color}>{label}</Tag>
                                                 </div>
-                                                <Tag color={meta.color}>
-                                                    {meta.label}
-                                                </Tag>
+
+                                                <Space
+                                                    wrap
+                                                    size="large"
+                                                    style={{ marginTop: 16 }}
+                                                >
+                                                    <Text>
+                                                        <FileTextOutlined /> Ma ho so:{' '}
+                                                        {item.applicationCode}
+                                                    </Text>
+                                                    <Text>
+                                                        <CalendarOutlined /> Nop:{' '}
+                                                        {dayjs(item.appliedTime).format(
+                                                            'DD/MM/YYYY'
+                                                        )}
+                                                    </Text>
+                                                </Space>
+
+                                                <Paragraph
+                                                    className="portal-muted"
+                                                    style={{ marginTop: 12 }}
+                                                >
+                                                    {item.note ||
+                                                        `${item.jobPositionName || 'Vi tri'}${item.workLocation ? ` tai ${item.workLocation}` : ''}.`}
+                                                </Paragraph>
+
+                                                <Progress
+                                                    percent={getCandidateApplicationProgress(
+                                                        item.status
+                                                    )}
+                                                    strokeColor="#0B3D2E"
+                                                    showInfo={false}
+                                                />
                                             </div>
-
-                                            <Space
-                                                wrap
-                                                size="large"
-                                                style={{ marginTop: 16 }}
-                                            >
-                                                <Text>
-                                                    <FileTextOutlined /> Mã hồ
-                                                    sơ: {item.id}
-                                                </Text>
-                                                <Text>
-                                                    <CalendarOutlined /> Nộp:{' '}
-                                                    {dayjs(
-                                                        item.submittedDate
-                                                    ).format('DD/MM/YYYY')}
-                                                </Text>
-                                            </Space>
-
-                                            <Paragraph
-                                                className="portal-muted"
-                                                style={{ marginTop: 12 }}
-                                            >
-                                                {item.note}
-                                            </Paragraph>
-
-                                            <Progress
-                                                percent={meta.percent}
-                                                strokeColor="#0B3D2E"
-                                                showInfo={false}
-                                            />
-                                        </div>
-                                    </List.Item>
-                                )
-                            }}
-                        />
+                                        </List.Item>
+                                    )
+                                }}
+                            />
+                        ) : (
+                            <Empty description="Ban chua nop ho so ung tuyen nao" />
+                        )}
                     </Card>
                 </Col>
 
@@ -165,7 +142,7 @@ const CandidateApplicationPage = () => {
                         style={{ width: '100%' }}
                     >
                         <Card
-                            title="Trạng thái xử lý"
+                            title="Trang thai xu ly"
                             className="portal-section-card"
                         >
                             <Timeline
@@ -173,55 +150,57 @@ const CandidateApplicationPage = () => {
                                     {
                                         color: '#0B3D2E',
                                         dot: <ClockCircleOutlined />,
-                                        children:
-                                            'Tiếp nhận và đối chiếu hồ sơ',
+                                        children: 'Tiep nhan va doi chieu ho so',
                                     },
                                     {
                                         color: '#2E7D60',
                                         dot: <FileProtectOutlined />,
-                                        children:
-                                            'Đánh giá chuyên môn và xét duyệt',
+                                        children: 'Sang loc va danh gia chuyen mon',
                                     },
                                     {
                                         color: '#B7791F',
                                         dot: <SolutionOutlined />,
-                                        children:
-                                            'Phỏng vấn, sát hạch, thông báo bổ sung',
+                                        children: 'Phong van va xu ly offer',
                                     },
                                     {
                                         color: '#166534',
                                         dot: <CheckCircleOutlined />,
                                         children:
-                                            'Thông báo kết quả và hướng dẫn tiếp theo',
+                                            'Thong bao ket qua va huong dan tiep theo',
                                     },
                                 ]}
                             />
                         </Card>
 
                         <Card
-                            title="Việc cần làm"
+                            title="Viec can lam"
                             className="portal-section-card"
                         >
-                            <List
-                                dataSource={candidateApplications.filter(
-                                    (item) =>
-                                        item.status === 'supplement' ||
-                                        item.status === 'interview'
-                                )}
-                                renderItem={(item) => (
-                                    <List.Item>
-                                        <div>
-                                            <Text strong>{item.title}</Text>
-                                            <Paragraph
-                                                className="portal-muted"
-                                                style={{ margin: '6px 0 0' }}
-                                            >
-                                                {item.note}
-                                            </Paragraph>
-                                        </div>
-                                    </List.Item>
-                                )}
-                            />
+                            {actionItems.length ? (
+                                <List
+                                    loading={loading}
+                                    dataSource={actionItems}
+                                    renderItem={(item) => (
+                                        <List.Item>
+                                            <div>
+                                                <Text strong>{item.title}</Text>
+                                                <Paragraph
+                                                    className="portal-muted"
+                                                    style={{ margin: '6px 0 0' }}
+                                                >
+                                                    {item.note ||
+                                                        `${getApplicationStatusLabel(item.status)} - theo doi email va thong bao he thong.`}
+                                                </Paragraph>
+                                            </div>
+                                        </List.Item>
+                                    )}
+                                />
+                            ) : (
+                                <Empty
+                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                    description="Hien khong co tac vu can xu ly ngay"
+                                />
+                            )}
                         </Card>
                     </Space>
                 </Col>

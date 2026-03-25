@@ -16,13 +16,13 @@ import {
 import {
     EnvironmentOutlined,
     FilterOutlined,
-    FireOutlined,
     SearchOutlined,
     TeamOutlined,
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 
-import { candidateJobs } from '@/mock/candidateData'
+import { useCandidateWorkspace } from '@/hooks/useCandidateWorkspace'
+import { formatSalaryRange } from '@/utils/candidate'
 
 const { Paragraph, Text, Title } = Typography
 
@@ -30,82 +30,90 @@ const CandidateJobPage = () => {
     const [search, setSearch] = useState('')
     const [department, setDepartment] = useState<string>('all')
     const [location, setLocation] = useState<string>('all')
+    const { jobs, loading, applyToJob, applyingJobId } = useCandidateWorkspace()
 
     const departments = useMemo(
         () => [
-            { label: 'Tất cả đơn vị', value: 'all' },
-            ...Array.from(
-                new Set(candidateJobs.map((job) => job.department))
-            ).map((item) => ({
-                label: item,
-                value: item,
-            })),
+            { label: 'Tat ca don vi', value: 'all' },
+            ...Array.from(new Set(jobs.map((job) => job.departmentName)))
+                .filter(Boolean)
+                .map((item) => ({
+                    label: item,
+                    value: item,
+                })),
         ],
-        []
+        [jobs]
     )
 
     const locations = useMemo(
         () => [
-            { label: 'Tất cả địa điểm', value: 'all' },
+            { label: 'Tat ca dia diem', value: 'all' },
             ...Array.from(
-                new Set(candidateJobs.map((job) => job.location))
+                new Set(jobs.map((job) => job.workLocation || 'Chua cap nhat'))
             ).map((item) => ({
                 label: item,
                 value: item,
             })),
         ],
-        []
+        [jobs]
     )
 
     const filteredJobs = useMemo(
         () =>
-            candidateJobs.filter((job) => {
+            jobs.filter((job) => {
                 const normalized = search.trim().toLowerCase()
-                const matchesSearch =
-                    !normalized ||
-                    job.title.toLowerCase().includes(normalized) ||
-                    job.department.toLowerCase().includes(normalized) ||
-                    job.summary.toLowerCase().includes(normalized)
+                const haystack = [
+                    job.title,
+                    job.departmentName,
+                    job.jobPositionName,
+                    job.description,
+                    job.requirement,
+                    job.workLocation,
+                    job.requestCode,
+                ]
+                    .filter(Boolean)
+                    .join(' ')
+                    .toLowerCase()
 
+                const matchesSearch = !normalized || haystack.includes(normalized)
                 const matchesDepartment =
-                    department === 'all' || job.department === department
+                    department === 'all' || job.departmentName === department
+                const jobLocation = job.workLocation || 'Chua cap nhat'
                 const matchesLocation =
-                    location === 'all' || job.location === location
+                    location === 'all' || jobLocation === location
 
                 return matchesSearch && matchesDepartment && matchesLocation
             }),
-        [department, location, search]
+        [department, jobs, location, search]
     )
 
     return (
         <div className="portal-page">
             <section className="portal-hero">
-                <span className="portal-hero__eyebrow">Việc làm phù hợp</span>
-                <Title level={2}>
-                    Danh sách vị trí phù hợp với hồ sơ của bạn
-                </Title>
+                <span className="portal-hero__eyebrow">Viec lam phu hop</span>
+                <Title level={2}>Danh sach vi tri dang mo cho ung vien</Title>
                 <Paragraph style={{ maxWidth: 720 }}>
-                    Trang danh sách việc làm được làm gọn theo tinh thần design
-                    candidate: đầu trang rõ ràng, khối lọc nổi bật và các job
-                    card thống nhất với hệ màu chủ đạo `#0B3D2E`.
+                    Trang viec lam da duoc noi API candidate portal, tu dong dong bo
+                    danh sach recruitment request dang publish va trang thai da ung
+                    tuyen cua ban.
                 </Paragraph>
             </section>
 
             <Card className="portal-section-card">
                 <Row gutter={[16, 16]} align="bottom">
                     <Col xs={24} md={12}>
-                        <Text strong>Tìm kiếm</Text>
+                        <Text strong>Tim kiem</Text>
                         <Input
                             allowClear
                             size="large"
                             prefix={<SearchOutlined />}
-                            placeholder="Nhập từ khóa, phòng ban, kỹ năng..."
+                            placeholder="Nhap tu khoa, don vi, ma phieu..."
                             value={search}
                             onChange={(event) => setSearch(event.target.value)}
                         />
                     </Col>
                     <Col xs={24} md={6}>
-                        <Text strong>Đơn vị</Text>
+                        <Text strong>Don vi</Text>
                         <Select
                             size="large"
                             options={departments}
@@ -115,7 +123,7 @@ const CandidateJobPage = () => {
                         />
                     </Col>
                     <Col xs={24} md={6}>
-                        <Text strong>Địa điểm</Text>
+                        <Text strong>Dia diem</Text>
                         <Select
                             size="large"
                             options={locations}
@@ -133,24 +141,24 @@ const CandidateJobPage = () => {
                     }}
                 >
                     <Text className="portal-muted">
-                        Tìm thấy {filteredJobs.length} vị trí tuyển dụng
+                        Tim thay {filteredJobs.length} vi tri tuyen dung dang mo
                     </Text>
-                    <Button icon={<FilterOutlined />}>Bộ lọc nâng cao</Button>
+                    <Button icon={<FilterOutlined />}>Bo loc nhanh</Button>
                 </Space>
             </Card>
 
             {filteredJobs.length ? (
                 <Row gutter={[24, 24]}>
                     {filteredJobs.map((job) => {
-                        const daysRemaining = dayjs(job.deadline).diff(
-                            dayjs(),
-                            'day'
-                        )
+                        const daysRemaining = job.applicationDeadline
+                            ? dayjs(job.applicationDeadline).diff(dayjs(), 'day')
+                            : null
 
                         return (
                             <Col xs={24} md={12} xl={8} key={job.id}>
                                 <Card
                                     hoverable
+                                    loading={loading}
                                     className="portal-section-card"
                                     style={{ height: '100%' }}
                                 >
@@ -167,44 +175,42 @@ const CandidateJobPage = () => {
                                             align="start"
                                         >
                                             <div>
-                                                {job.featured ? (
-                                                    <Tag
-                                                        className="portal-tag-soft"
-                                                        color="gold"
-                                                    >
-                                                        <FireOutlined /> Nổi bật
-                                                    </Tag>
-                                                ) : null}
+                                                <Tag className="portal-tag-soft">
+                                                    {job.requestCode}
+                                                </Tag>
                                                 <Title
                                                     level={4}
-                                                    style={{
-                                                        margin: '12px 0 8px',
-                                                    }}
+                                                    style={{ margin: '12px 0 8px' }}
                                                 >
                                                     {job.title}
                                                 </Title>
                                                 <Text className="portal-muted">
-                                                    {job.department}
+                                                    {job.departmentName}
                                                 </Text>
                                             </div>
-                                            <Tag color="green">
-                                                {job.matchScore}% phù hợp
+                                            <Tag color={job.hasApplied ? 'blue' : 'green'}>
+                                                {job.hasApplied
+                                                    ? 'Da ung tuyen'
+                                                    : job.employmentType}
                                             </Tag>
                                         </Space>
 
                                         <Paragraph className="portal-muted">
-                                            {job.summary}
+                                            {job.description ||
+                                                job.requirement ||
+                                                'Chua co mo ta chi tiet cho vi tri nay.'}
                                         </Paragraph>
 
                                         <Space wrap>
-                                            {job.tags.map((tag) => (
-                                                <Tag
-                                                    key={tag}
-                                                    className="portal-tag-soft"
-                                                >
-                                                    {tag}
-                                                </Tag>
-                                            ))}
+                                            <Tag className="portal-tag-soft">
+                                                {job.jobPositionName}
+                                            </Tag>
+                                            <Tag className="portal-tag-soft">
+                                                {job.employmentType}
+                                            </Tag>
+                                            <Tag className="portal-tag-soft">
+                                                {job.headcount} chi tieu
+                                            </Tag>
                                         </Space>
 
                                         <Space
@@ -214,13 +220,18 @@ const CandidateJobPage = () => {
                                         >
                                             <Text>
                                                 <EnvironmentOutlined />{' '}
-                                                {job.location}
+                                                {job.workLocation || 'Chua cap nhat'}
                                             </Text>
                                             <Text>
-                                                <TeamOutlined /> Số lượng:{' '}
-                                                {job.quantity} người
+                                                <TeamOutlined /> So luong: {job.headcount}{' '}
+                                                nguoi
                                             </Text>
-                                            <Text strong>{job.salary}</Text>
+                                            <Text strong>
+                                                {formatSalaryRange(
+                                                    job.salaryMin,
+                                                    job.salaryMax
+                                                )}
+                                            </Text>
                                         </Space>
 
                                         <Space
@@ -233,19 +244,32 @@ const CandidateJobPage = () => {
                                             }}
                                         >
                                             <Text
-                                                strong={daysRemaining <= 7}
+                                                strong={
+                                                    daysRemaining !== null &&
+                                                    daysRemaining <= 7
+                                                }
                                                 type={
+                                                    daysRemaining !== null &&
                                                     daysRemaining <= 7
                                                         ? 'danger'
                                                         : undefined
                                                 }
                                             >
-                                                {daysRemaining > 0
-                                                    ? `Còn ${daysRemaining} ngày`
-                                                    : 'Đã hết hạn'}
+                                                {daysRemaining === null
+                                                    ? 'Khong gioi han han nop'
+                                                    : daysRemaining >= 0
+                                                      ? `Con ${daysRemaining} ngay`
+                                                      : 'Da het han'}
                                             </Text>
-                                            <Button type="primary">
-                                                Ứng tuyển ngay
+                                            <Button
+                                                type={job.hasApplied ? 'default' : 'primary'}
+                                                disabled={job.hasApplied}
+                                                loading={applyingJobId === job.id}
+                                                onClick={() => void applyToJob(job.id)}
+                                            >
+                                                {job.hasApplied
+                                                    ? 'Da ung tuyen'
+                                                    : 'Ung tuyen ngay'}
                                             </Button>
                                         </Space>
                                     </Space>
@@ -255,9 +279,9 @@ const CandidateJobPage = () => {
                     })}
                 </Row>
             ) : (
-                <Card className="portal-section-card portal-empty">
+                <Card className="portal-section-card portal-empty" loading={loading}>
                     <Empty
-                        description="Không tìm thấy vị trí phù hợp với bộ lọc hiện tại"
+                        description="Khong tim thay vi tri phu hop voi bo loc hien tai"
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                     />
                 </Card>
