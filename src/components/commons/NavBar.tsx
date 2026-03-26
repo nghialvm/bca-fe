@@ -71,6 +71,11 @@ const NavBar: React.FC<NavBarProps> = ({ collapsed, onNavigate }) => {
             label: 'Quản lý tuyển dụng',
         },
         {
+            key: PATHS.ADMIN_MANAGE_JOB_POSITIONS,
+            icon: <ProfileOutlined />,
+            label: 'Vị trí công việc',
+        },
+        {
             key: PATHS.ADMIN_MANAGE_CV_TEMPLATES,
             icon: <FileTextOutlined />,
             label: 'Mẫu hồ sơ',

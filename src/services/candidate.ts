@@ -13,9 +13,11 @@ import http from '@/services/http'
 export interface CandidatePortalProfileDto {
     id: string
     candidateCode: string
+    candidateType?: string | number | null
+    employeeId?: string | null
     fullName: string
     dateOfBirth?: string | null
-    gender?: string | number
+    gender?: string | number | null
     phoneNumber?: string | null
     email?: string | null
     address?: string | null
@@ -26,7 +28,7 @@ export interface CandidatePortalProfileDto {
     highestEducation?: string | null
     universityName?: string | null
     major?: string | null
-    status?: string | number
+    status?: string | number | null
     source?: string | null
     note?: string | null
 }
@@ -78,6 +80,20 @@ export interface CreateCandidatePortalApplicationDto {
     cvDescription?: string
     source?: string
     note?: string
+    profile: CandidatePortalApplicationProfileInput
+}
+
+export interface CandidatePortalApplicationProfileInput {
+    fullName: string
+    email: string
+    phoneNumber: string
+    address: string
+    currentCompany?: string
+    currentPosition: string
+    yearsOfExperience: number
+    highestEducation: string
+    universityName?: string
+    major?: string
 }
 
 export interface CandidateCvUploadResultDto {
@@ -108,11 +124,6 @@ const defaultPagedQuery = {
     MaxResultCount: 1000,
 }
 
-const normalize = (value?: string | null) =>
-    String(value || '')
-        .trim()
-        .toLowerCase()
-
 const normalizeStatus = (value: unknown) =>
     String(value ?? '')
         .trim()
@@ -128,22 +139,24 @@ const isActiveDeadline = (value?: string | null) =>
 const toProfileDto = (candidate: CandidateDto): CandidatePortalProfileDto => ({
     id: candidate.id,
     candidateCode: candidate.candidateCode,
+    candidateType: candidate.candidateType,
+    employeeId: candidate.employeeId ?? null,
     fullName: candidate.fullName,
-    dateOfBirth: null,
-    gender: undefined,
+    dateOfBirth: candidate.dateOfBirth ?? null,
+    gender: candidate.gender,
     phoneNumber: candidate.phoneNumber,
     email: candidate.email,
-    address: null,
-    identityNumber: null,
-    currentCompany: null,
+    address: candidate.address ?? null,
+    identityNumber: candidate.identityNumber ?? null,
+    currentCompany: candidate.currentCompany ?? null,
     currentPosition: candidate.currentPosition,
-    yearsOfExperience: null,
-    highestEducation: null,
-    universityName: null,
-    major: null,
+    yearsOfExperience: candidate.yearsOfExperience ?? null,
+    highestEducation: candidate.highestEducation ?? null,
+    universityName: candidate.universityName ?? null,
+    major: candidate.major ?? null,
     status: candidate.status,
-    source: null,
-    note: null,
+    source: candidate.source ?? null,
+    note: candidate.note ?? null,
 })
 
 const buildDepartmentMap = (items: DepartmentDto[]) =>
@@ -163,23 +176,6 @@ const getPagedItems = <T>(response: PagedResult<T> | T[] | undefined): T[] => {
     return Array.isArray(response?.items) ? response.items : []
 }
 
-const findCurrentCandidate = (
-    candidates: CandidateDto[],
-    user?: CandidateWorkspaceUser | null
-) => {
-    const userEmail = normalize(user?.email)
-    const userName = normalize(user?.userName)
-    const fullName = normalize(user?.full_name)
-
-    return (
-        candidates.find((item) => normalize(item.email) === userEmail) ||
-        candidates.find((item) => normalize(item.candidateCode) === userName) ||
-        candidates.find((item) => normalize(item.email) === userName) ||
-        candidates.find((item) => normalize(item.fullName) === fullName) ||
-        null
-    )
-}
-
 const mapJobDto = (
     item: RecruitmentRequestDto,
     departmentMap: Map<string, string>,
@@ -192,8 +188,7 @@ const mapJobDto = (
     departmentId: item.departmentId,
     departmentName: departmentMap.get(item.departmentId) || 'Chưa cập nhật',
     jobPositionId: item.jobPositionId,
-    jobPositionName:
-        jobPositionMap.get(item.jobPositionId) || 'Chưa cập nhật',
+    jobPositionName: jobPositionMap.get(item.jobPositionId) || 'Chưa cập nhật',
     headcount: item.headcount,
     employmentType: item.employmentType || 'Toàn thời gian',
     workLocation: item.workLocation,
@@ -274,7 +269,9 @@ export class CandidateService {
             jobPositionResponse as unknown as PagedResult<JobPositionDto>
         )
 
-        const currentCandidate = findCurrentCandidate(candidates, user)
+        const currentCandidate = user?.id
+            ? candidates.find((item) => item.id === user.id) || null
+            : null
         const departmentMap = buildDepartmentMap(departments)
         const jobPositionMap = buildJobPositionMap(jobPositions)
         const recruitmentMap = buildRecruitmentMap(recruitmentRequests)
@@ -294,14 +291,27 @@ export class CandidateService {
         )
 
         const jobs = recruitmentRequests
-            .filter((item) => isPublishedRecruitment(item) && isActiveDeadline(item.applicationDeadline))
+            .filter(
+                (item) =>
+                    isPublishedRecruitment(item) &&
+                    isActiveDeadline(item.applicationDeadline)
+            )
             .sort((left, right) => {
-                const leftTime = dayjs(left.publishedTime || left.creationTime).valueOf()
-                const rightTime = dayjs(right.publishedTime || right.creationTime).valueOf()
+                const leftTime = dayjs(
+                    left.publishedTime || left.creationTime
+                ).valueOf()
+                const rightTime = dayjs(
+                    right.publishedTime || right.creationTime
+                ).valueOf()
                 return rightTime - leftTime
             })
             .map((item) =>
-                mapJobDto(item, departmentMap, jobPositionMap, appliedRecruitmentIds)
+                mapJobDto(
+                    item,
+                    departmentMap,
+                    jobPositionMap,
+                    appliedRecruitmentIds
+                )
             )
 
         return {
@@ -322,19 +332,39 @@ export class CandidateService {
         user: CandidateWorkspaceUser | null | undefined,
         input: CreateCandidatePortalApplicationDto
     ) {
-        const candidateResponse = await http.get('app/candidate', {
-            params: defaultPagedQuery,
-        })
-        const candidates = getPagedItems<CandidateDto>(
-            candidateResponse as unknown as PagedResult<CandidateDto>
-        )
-        const currentCandidate = findCurrentCandidate(candidates, user)
+        const candidateId = user?.id
 
-        if (!currentCandidate) {
-            throw new Error('Không tìm thấy hồ sơ ứng viên phù hợp.')
+        if (!candidateId) {
+            throw new Error(
+                'Không xác định được hồ sơ ứng viên từ phiên đăng nhập.'
+            )
         }
 
-        const uploadResult = await this.uploadCv(currentCandidate.id, input.cvFile, {
+        const profile = await this.getCandidateProfile(candidateId)
+
+        await this.updateCandidateProfile(candidateId, {
+            candidateCode: profile.candidateCode,
+            candidateType: Number(profile.candidateType ?? 2),
+            employeeId: profile.employeeId ?? null,
+            fullName: input.profile.fullName.trim(),
+            dateOfBirth: profile.dateOfBirth ?? null,
+            gender: Number(profile.gender ?? 1),
+            phoneNumber: input.profile.phoneNumber.trim(),
+            email: input.profile.email.trim(),
+            address: input.profile.address.trim(),
+            identityNumber: profile.identityNumber?.trim() || '',
+            currentCompany: input.profile.currentCompany?.trim() || '',
+            currentPosition: input.profile.currentPosition.trim(),
+            yearsOfExperience: input.profile.yearsOfExperience,
+            highestEducation: input.profile.highestEducation.trim(),
+            universityName: input.profile.universityName?.trim() || '',
+            major: input.profile.major?.trim() || '',
+            status: Number(profile.status ?? 1),
+            source: profile.source?.trim() || 'Candidate',
+            note: profile.note?.trim() || '',
+        })
+
+        const uploadResult = await this.uploadCv(candidateId, input.cvFile, {
             description: input.cvDescription,
         })
 
@@ -347,7 +377,7 @@ export class CandidateService {
         return await http.post('app/application', {
             applicationCode,
             recruitmentRequestId: input.recruitmentRequestId,
-            candidateId: currentCandidate.id,
+            candidateId,
             appliedTime: now.toISOString(),
             cvFileId: uploadResult.documentId,
             submittedCvUrl: uploadResult.fileUrl,
@@ -355,6 +385,38 @@ export class CandidateService {
             note: input.note,
             finalResult: null,
         })
+    }
+
+    async getCandidateProfile(candidateId: string): Promise<CandidatePortalProfileDto> {
+        const candidate = (await http.get(`app/candidate/${candidateId}`)) as CandidateDto
+        return toProfileDto(candidate)
+    }
+
+    async updateCandidateProfile(
+        candidateId: string,
+        input: {
+            candidateCode: string
+            candidateType: number
+            employeeId?: string | null
+            fullName: string
+            dateOfBirth?: string | null
+            gender: number
+            phoneNumber: string
+            email: string
+            address: string
+            identityNumber: string
+            currentCompany: string
+            currentPosition: string
+            yearsOfExperience: number
+            highestEducation: string
+            universityName: string
+            major: string
+            status: number
+            source: string
+            note: string
+        }
+    ) {
+        return await http.put(`app/candidate/${candidateId}`, input)
     }
 
     async uploadCv(

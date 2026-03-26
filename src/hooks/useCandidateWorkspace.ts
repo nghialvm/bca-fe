@@ -4,6 +4,7 @@ import { notification } from 'antd'
 import { useSelector } from 'react-redux'
 
 import CandidateService, {
+    CandidatePortalApplicationProfileInput,
     CandidatePortalApplicationDto,
     CandidatePortalJobDto,
     CandidatePortalProfileDto,
@@ -95,6 +96,7 @@ export const useCandidateWorkspace = () => {
     const applyToJob = async (
         recruitmentRequestId: string,
         cvFile: File,
+        profile: CandidatePortalApplicationProfileInput,
         note?: string
     ) => {
         setApplyingJobId(recruitmentRequestId)
@@ -102,6 +104,7 @@ export const useCandidateWorkspace = () => {
             await CandidateService.apply(user, {
                 recruitmentRequestId,
                 cvFile,
+                profile,
                 source: 'Candidate',
                 note,
             })
@@ -115,6 +118,7 @@ export const useCandidateWorkspace = () => {
             await loadData()
             return true
         } catch (error) {
+            console.log(error)
             notification.error({
                 message: 'Không thể ứng tuyển',
                 description: getErrorDescription(

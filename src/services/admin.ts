@@ -100,6 +100,22 @@ export interface JobPositionDto {
     isActive: boolean
 }
 
+export interface JobPositionCreateDto {
+    code: string
+    name: string
+    departmentId: string
+    description?: string
+    isActive: boolean
+}
+
+export interface JobPositionUpdateDto {
+    code: string
+    name: string
+    departmentId: string
+    description?: string
+    isActive: boolean
+}
+
 export interface DepartmentCreateDto {
     code: string
     name: string
@@ -189,6 +205,8 @@ export interface ApplicationDto {
 export interface CandidateDto {
     id: string
     candidateCode: string
+    candidateType?: string | number | null
+    employeeId?: string | null
     fullName: string
     dateOfBirth?: string | null
     gender?: string | number | null
@@ -475,6 +493,10 @@ export class AdminService {
         })
     }
 
+    async getJobPosition(id: string) {
+        return await http.get(`app/job-position/${id}`)
+    }
+
     async getDepartment(id: string) {
         return await http.get(`app/department/${id}`)
     }
@@ -489,6 +511,18 @@ export class AdminService {
 
     async deleteDepartment(id: string) {
         return await http.delete(`app/department/${id}`)
+    }
+
+    async createJobPosition(input: JobPositionCreateDto) {
+        return await http.post('app/job-position', input)
+    }
+
+    async updateJobPosition(id: string, input: JobPositionUpdateDto) {
+        return await http.put(`app/job-position/${id}`, input)
+    }
+
+    async deleteJobPosition(id: string) {
+        return await http.delete(`app/job-position/${id}`)
     }
 
     async getRecruitmentRequests(query: PagedQuery = {}) {

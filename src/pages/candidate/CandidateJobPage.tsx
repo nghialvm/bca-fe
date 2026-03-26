@@ -7,6 +7,7 @@ import {
     Empty,
     Form,
     Input,
+    InputNumber,
     Modal,
     notification,
     Row,
@@ -34,6 +35,16 @@ import { formatSalaryRange } from '@/utils/candidate'
 const { Paragraph, Text, Title } = Typography
 
 type ApplyFormValues = {
+    fullName: string
+    email: string
+    phoneNumber: string
+    address: string
+    currentCompany?: string
+    currentPosition: string
+    yearsOfExperience: number
+    highestEducation: string
+    universityName?: string
+    major?: string
     note?: string
 }
 
@@ -44,7 +55,8 @@ const CandidateJobPage = () => {
     const [applyingJob, setApplyingJob] = useState<CandidatePortalJobDto | null>(null)
     const [cvFileList, setCvFileList] = useState<UploadFile[]>([])
     const [form] = Form.useForm<ApplyFormValues>()
-    const { jobs, loading, applyToJob, applyingJobId } = useCandidateWorkspace()
+    const { jobs, loading, profile, applyToJob, applyingJobId } =
+        useCandidateWorkspace()
 
     const departments = useMemo(
         () => [
@@ -109,6 +121,19 @@ const CandidateJobPage = () => {
 
     const handleOpenApplyModal = (job: CandidatePortalJobDto) => {
         setApplyingJob(job)
+        form.setFieldsValue({
+            fullName: profile?.fullName || '',
+            email: profile?.email || '',
+            phoneNumber: profile?.phoneNumber || '',
+            address: profile?.address || '',
+            currentCompany: profile?.currentCompany || '',
+            currentPosition: profile?.currentPosition || '',
+            yearsOfExperience: profile?.yearsOfExperience ?? 0,
+            highestEducation: profile?.highestEducation || '',
+            universityName: profile?.universityName || '',
+            major: profile?.major || '',
+            note: '',
+        })
     }
 
     const handleSubmitApplication = async () => {
@@ -124,7 +149,23 @@ const CandidateJobPage = () => {
         }
 
         const values = await form.validateFields()
-        const success = await applyToJob(applyingJob.id, cvFile, values.note)
+        const success = await applyToJob(
+            applyingJob.id,
+            cvFile,
+            {
+                fullName: values.fullName,
+                email: values.email,
+                phoneNumber: values.phoneNumber,
+                address: values.address,
+                currentCompany: values.currentCompany,
+                currentPosition: values.currentPosition,
+                yearsOfExperience: values.yearsOfExperience,
+                highestEducation: values.highestEducation,
+                universityName: values.universityName,
+                major: values.major,
+            },
+            values.note
+        )
 
         if (success) {
             resetApplyModal()
@@ -339,7 +380,7 @@ const CandidateJobPage = () => {
                 okText="Gửi hồ sơ"
                 cancelText="Hủy"
                 confirmLoading={Boolean(applyingJob && applyingJobId === applyingJob.id)}
-                destroyOnClose
+                destroyOnHidden
             >
                 {applyingJob ? (
                     <Space direction="vertical" size={16} style={{ width: '100%' }}>
@@ -397,6 +438,152 @@ const CandidateJobPage = () => {
                                         Chọn file CV PDF
                                     </Button>
                                 </Upload>
+                            </Form.Item>
+
+                            <Row gutter={16}>
+                                <Col xs={24} md={12}>
+                                    <Form.Item
+                                        label="Họ và tên"
+                                        name="fullName"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: 'Vui lòng nhập họ và tên',
+                                            },
+                                        ]}
+                                    >
+                                        <Input placeholder="Nguyễn Văn A" />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} md={12}>
+                                    <Form.Item
+                                        label="Email"
+                                        name="email"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: 'Vui lòng nhập email',
+                                            },
+                                            {
+                                                type: 'email',
+                                                message: 'Email không hợp lệ',
+                                            },
+                                        ]}
+                                    >
+                                        <Input placeholder="candidate@example.com" />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            <Row gutter={16}>
+                                <Col xs={24} md={12}>
+                                    <Form.Item
+                                        label="Số điện thoại"
+                                        name="phoneNumber"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: 'Vui lòng nhập số điện thoại',
+                                            },
+                                        ]}
+                                    >
+                                        <Input placeholder="0901234567" />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} md={12}>
+                                    <Form.Item
+                                        label="Kinh nghiệm (năm)"
+                                        name="yearsOfExperience"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: 'Vui lòng nhập số năm kinh nghiệm',
+                                            },
+                                        ]}
+                                    >
+                                        <InputNumber
+                                            min={0}
+                                            max={50}
+                                            precision={0}
+                                            style={{ width: '100%' }}
+                                            placeholder="Ví dụ: 2"
+                                        />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            <Form.Item
+                                label="Địa chỉ"
+                                name="address"
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: 'Vui lòng nhập địa chỉ',
+                                    },
+                                ]}
+                            >
+                                <Input placeholder="Quận 1, TP.HCM" />
+                            </Form.Item>
+
+                            <Row gutter={16}>
+                                <Col xs={24} md={12}>
+                                    <Form.Item
+                                        label="Công ty hiện tại"
+                                        name="currentCompany"
+                                    >
+                                        <Input placeholder="Công ty hiện tại của bạn" />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} md={12}>
+                                    <Form.Item
+                                        label="Vị trí hiện tại"
+                                        name="currentPosition"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: 'Vui lòng nhập vị trí hiện tại',
+                                            },
+                                        ]}
+                                    >
+                                        <Input placeholder="Frontend Developer" />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            <Row gutter={16}>
+                                <Col xs={24} md={12}>
+                                    <Form.Item
+                                        label="Trình độ học vấn"
+                                        name="highestEducation"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: 'Vui lòng chọn trình độ học vấn',
+                                            },
+                                        ]}
+                                    >
+                                        <Select
+                                            placeholder="Chọn trình độ"
+                                            options={[
+                                                { label: 'THPT', value: 'THPT' },
+                                                { label: 'Trung cấp', value: 'Trung cấp' },
+                                                { label: 'Cao đẳng', value: 'Cao đẳng' },
+                                                { label: 'Đại học', value: 'Đại học' },
+                                                { label: 'Thạc sĩ', value: 'Thạc sĩ' },
+                                                { label: 'Tiến sĩ', value: 'Tiến sĩ' },
+                                            ]}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} md={12}>
+                                    <Form.Item label="Trường" name="universityName">
+                                        <Input placeholder="Tên trường / cơ sở đào tạo" />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            <Form.Item label="Chuyên ngành" name="major">
+                                <Input placeholder="Công nghệ thông tin" />
                             </Form.Item>
 
                             <Form.Item label="Ghi chú" name="note">

@@ -8,6 +8,7 @@ import NotAuthenticatedLayout from '@/layouts/NotAuthenticatedLayout'
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
 import AdminManageCvTemplatePage from '@/pages/admin/AdminManageCvTemplatePage'
 import AdminManageJobPage from '@/pages/admin/AdminManageJobPage'
+import AdminManageJobPositionPage from '@/pages/admin/AdminManageJobPositionPage'
 import AdminManageLogPage from '@/pages/admin/AdminManageLogPage'
 import AdminManageNotificationPage from '@/pages/admin/AdminManageNotificationPage'
 import AdminManageOrganizationPage from '@/pages/admin/AdminManageOrganizationPage'
@@ -85,6 +86,10 @@ const AppRouter = [
         <Route
             path={PATHS.ADMIN_MANAGE_JOBS}
             element={<AdminManageJobPage />}
+        />
+        <Route
+            path={PATHS.ADMIN_MANAGE_JOB_POSITIONS}
+            element={<AdminManageJobPositionPage />}
         />
         <Route
             path={PATHS.ADMIN_MANAGE_CV_TEMPLATES}

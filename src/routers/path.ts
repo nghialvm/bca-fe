@@ -14,6 +14,7 @@ export const PATHS = {
     ADMIN_MANAGE_NOTIFICATIONS: '/admin/notifications',
     ADMIN_MANAGE_LOGS: '/admin/logs',
     ADMIN_MANAGE_JOBS: '/admin/jobs',
+    ADMIN_MANAGE_JOB_POSITIONS: '/admin/job-positions',
     ADMIN_MANAGE_CV_TEMPLATES: '/admin/cv-templates',
     ADMIN_REPORT: '/admin/reports',
 
