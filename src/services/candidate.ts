@@ -88,12 +88,15 @@ export interface CandidatePortalApplicationProfileInput {
     email: string
     phoneNumber: string
     address: string
+    dateOfBirth?: string | null
+    identityNumber: string
     currentCompany?: string
     currentPosition: string
     yearsOfExperience: number
     highestEducation: string
     universityName?: string
     major?: string
+    gender?: number | null
 }
 
 export interface CandidateCvUploadResultDto {
@@ -347,12 +350,15 @@ export class CandidateService {
             candidateType: Number(profile.candidateType ?? 2),
             employeeId: profile.employeeId ?? null,
             fullName: input.profile.fullName.trim(),
-            dateOfBirth: profile.dateOfBirth ?? null,
-            gender: Number(profile.gender ?? 1),
+            dateOfBirth: input.profile.dateOfBirth ?? profile.dateOfBirth ?? null,
+            gender: Number(input.profile.gender ?? profile.gender ?? 1),
             phoneNumber: input.profile.phoneNumber.trim(),
             email: input.profile.email.trim(),
             address: input.profile.address.trim(),
-            identityNumber: profile.identityNumber?.trim() || '',
+            identityNumber:
+                input.profile.identityNumber.trim() ||
+                profile.identityNumber?.trim() ||
+                '',
             currentCompany: input.profile.currentCompany?.trim() || '',
             currentPosition: input.profile.currentPosition.trim(),
             yearsOfExperience: input.profile.yearsOfExperience,

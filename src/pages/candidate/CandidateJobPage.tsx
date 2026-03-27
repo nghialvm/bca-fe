@@ -4,6 +4,7 @@ import {
     Button,
     Card,
     Col,
+    DatePicker,
     Empty,
     Form,
     Input,
@@ -26,7 +27,7 @@ import {
     TeamOutlined,
     UploadOutlined,
 } from '@ant-design/icons'
-import dayjs from 'dayjs'
+import dayjs, { type Dayjs } from 'dayjs'
 
 import { useCandidateWorkspace } from '@/hooks/useCandidateWorkspace'
 import type { CandidatePortalJobDto } from '@/services/candidate'
@@ -39,6 +40,8 @@ type ApplyFormValues = {
     email: string
     phoneNumber: string
     address: string
+    dateOfBirth?: Dayjs | null
+    identityNumber: string
     currentCompany?: string
     currentPosition: string
     yearsOfExperience: number
@@ -46,6 +49,7 @@ type ApplyFormValues = {
     universityName?: string
     major?: string
     note?: string
+    gender?: number | null
 }
 
 const CandidateJobPage = () => {
@@ -126,6 +130,8 @@ const CandidateJobPage = () => {
             email: profile?.email || '',
             phoneNumber: profile?.phoneNumber || '',
             address: profile?.address || '',
+            dateOfBirth: profile?.dateOfBirth ? dayjs(profile.dateOfBirth) : null,
+            identityNumber: profile?.identityNumber || '',
             currentCompany: profile?.currentCompany || '',
             currentPosition: profile?.currentPosition || '',
             yearsOfExperience: profile?.yearsOfExperience ?? 0,
@@ -133,6 +139,7 @@ const CandidateJobPage = () => {
             universityName: profile?.universityName || '',
             major: profile?.major || '',
             note: '',
+            gender: null,
         })
     }
 
@@ -157,6 +164,9 @@ const CandidateJobPage = () => {
                 email: values.email,
                 phoneNumber: values.phoneNumber,
                 address: values.address,
+                dateOfBirth: values.dateOfBirth?.toISOString() ?? null,
+                gender: values.gender,
+                identityNumber: values.identityNumber,
                 currentCompany: values.currentCompany,
                 currentPosition: values.currentPosition,
                 yearsOfExperience: values.yearsOfExperience,
@@ -478,6 +488,41 @@ const CandidateJobPage = () => {
                             <Row gutter={16}>
                                 <Col xs={24} md={12}>
                                     <Form.Item
+                                        label="Ngày sinh"
+                                        name="dateOfBirth"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: 'Vui lòng chọn ngày sinh',
+                                            },
+                                        ]}
+                                    >
+                                        <DatePicker
+                                            format="DD/MM/YYYY"
+                                            placeholder="Chọn ngày sinh"
+                                            style={{ width: '100%' }}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} md={12}>
+                                    <Form.Item
+                                        label="CCCD"
+                                        name="identityNumber"
+                                        rules={[
+                                            {
+                                                required: true,
+                                                message: 'Vui lòng nhập số CCCD',
+                                            },
+                                        ]}
+                                    >
+                                        <Input placeholder="012345678901" />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+
+                            <Row gutter={16}>
+                                <Col xs={24} md={12}>
+                                    <Form.Item
                                         label="Số điện thoại"
                                         name="phoneNumber"
                                         rules={[
@@ -511,6 +556,26 @@ const CandidateJobPage = () => {
                                     </Form.Item>
                                 </Col>
                             </Row>
+
+                            <Form.Item
+                                label="Giới tính"
+                                name="gender"
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: 'Vui lòng chọn giới tính',
+                                    },
+                                ]}
+                            >
+                                <Select
+                                    placeholder="Chọn giới tính"
+                                    options={[
+                                        { label: 'Nam', value: 1 },
+                                        { label: 'Nữ', value: 2 },
+                                        { label: 'Khác', value: 3 },
+                                    ]}
+                                />
+                            </Form.Item>
 
                             <Form.Item
                                 label="Địa chỉ"
