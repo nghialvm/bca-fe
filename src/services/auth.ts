@@ -2,10 +2,13 @@ import axios from 'axios'
 
 import { AUTH_API } from '@/constants/api'
 import {
+    ChangePasswordDto,
+    ForgotPasswordDto,
     LoginDto,
     LoginResult,
     RegisterDto,
     RegisterResult,
+    ResetPasswordDto,
 } from '@/interfaces/auth/auth.interface'
 import http, { getBackendBaseUrl } from '@/services/http'
 
@@ -16,6 +19,18 @@ export class AuthService {
 
     async register(payload: RegisterDto): Promise<RegisterResult> {
         return await http.post(AUTH_API.REGISTER, payload)
+    }
+
+    async changePassword(payload: ChangePasswordDto): Promise<void> {
+        await http.post(AUTH_API.CHANGE_PASSWORD, payload)
+    }
+
+    async forgotPassword(payload: ForgotPasswordDto): Promise<void> {
+        await http.post(AUTH_API.FORGOT_PASSWORD, payload)
+    }
+
+    async resetPassword(payload: ResetPasswordDto): Promise<void> {
+        await http.post(AUTH_API.RESET_PASSWORD, payload)
     }
 
     async logout(): Promise<void> {

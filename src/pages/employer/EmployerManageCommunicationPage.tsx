@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 
+import dayjs from 'dayjs'
+
 import {
     Button,
     Card,
@@ -21,9 +23,13 @@ import {
     SendOutlined,
 } from '@ant-design/icons'
 
-import { useEmployerWorkspace } from '@/hooks/useEmployerWorkspace'
-import AdminService from '@/services/admin'
+import {
+    useEmployerWorkspace,
+    type EmployerApplicationRow,
+} from '@/hooks/useEmployerWorkspace'
+import AdminService, { type InterviewScheduleDto } from '@/services/admin'
 import { formatDisplayDateTime } from '@/utils/admin'
+import { getInterviewTypeLabel } from '@/utils/employer'
 
 const { Paragraph, Text, Title } = Typography
 
@@ -49,6 +55,30 @@ type RecentMessage = {
     tone: 'default' | 'success'
 }
 
+type MessageFormValues = {
+    recipients: string[]
+    subject: string
+    content: string
+}
+
+type RecipientOption = {
+    label: string
+    value: string
+}
+
+const templateVariables = [
+    '[Tên ứng viên]',
+    '[Email ứng viên]',
+    '[Mã hồ sơ]',
+    '[Vị trí ứng tuyển]',
+    '[Phòng ban]',
+    '[Ngày giờ phỏng vấn]',
+    '[Địa điểm phỏng vấn]',
+    '[Hình thức phỏng vấn]',
+    '[Người phụ trách]',
+    '[Link họp]',
+]
+
 const messageTemplates: MessageTemplate[] = [
     {
         id: '1',
@@ -56,31 +86,31 @@ const messageTemplates: MessageTemplate[] = [
         subject: 'Thư mời phỏng vấn - [Vị trí ứng tuyển]',
         type: 'invitation',
         content:
-            'Kính gửi [Tên ứng viên],\n\nHồ sơ của bạn đã được chọn cho vòng phỏng vấn tiếp theo. Vui lòng xác nhận lịch hẹn trước thời hạn quy định.\n\nTrân trọng,\nBộ phận tuyển dụng',
+            'Kính gửi [Tên ứng viên],\n\nHồ sơ [Mã hồ sơ] của bạn đã được chọn cho vòng phỏng vấn tiếp theo cho vị trí [Vị trí ứng tuyển]. Thời gian dự kiến: [Ngày giờ phỏng vấn]. Địa điểm: [Địa điểm phỏng vấn]. Người phụ trách: [Người phụ trách].\n\nTrân trọng,\nBộ phận tuyển dụng',
     },
     {
         id: '2',
         title: 'Thông báo từ chối',
-        subject: 'Thông báo kết quả tuyển dụng',
+        subject: 'Thông báo kết quả tuyển dụng - [Vị trí ứng tuyển]',
         type: 'rejection',
         content:
-            'Kính gửi [Tên ứng viên],\n\nCảm ơn bạn đã tham gia ứng tuyển. Sau khi xem xét, chúng tôi xin phép chưa thể tiếp tục với hồ sơ ở đợt này.\n\nTrân trọng,\nBộ phận tuyển dụng',
+            'Kính gửi [Tên ứng viên],\n\nCảm ơn bạn đã tham gia ứng tuyển vị trí [Vị trí ứng tuyển] tại [Phòng ban]. Sau khi xem xét, chúng tôi xin phép chưa thể tiếp tục với hồ sơ [Mã hồ sơ] ở đợt này.\n\nTrân trọng,\nBộ phận tuyển dụng',
     },
     {
         id: '3',
         title: 'Thư chấp nhận tuyển dụng',
-        subject: 'Chúc mừng bạn đã trúng tuyển',
+        subject: 'Chúc mừng bạn đã trúng tuyển - [Vị trí ứng tuyển]',
         type: 'acceptance',
         content:
-            'Kính gửi [Tên ứng viên],\n\nChúc mừng bạn đã được lựa chọn cho vị trí [Vị trí ứng tuyển]. Vui lòng kiểm tra email này để nắm các bước tiếp theo.\n\nTrân trọng,\nBộ phận tuyển dụng',
+            'Kính gửi [Tên ứng viên],\n\nChúc mừng bạn đã được lựa chọn cho vị trí [Vị trí ứng tuyển] tại [Phòng ban]. Chúng tôi sẽ liên hệ tới email [Email ứng viên] để hướng dẫn các bước tiếp theo.\n\nTrân trọng,\nBộ phận tuyển dụng',
     },
     {
         id: '4',
         title: 'Nhắc lịch phỏng vấn',
-        subject: 'Nhắc nhở lịch phỏng vấn sắp tới',
+        subject: 'Nhắc lịch phỏng vấn - [Vị trí ứng tuyển]',
         type: 'reminder',
         content:
-            'Kính gửi [Tên ứng viên],\n\nĐây là thư nhắc lịch phỏng vấn của bạn vào [Ngày giờ] tại [Địa điểm]. Vui lòng có mặt đúng giờ.\n\nTrân trọng,\nBộ phận tuyển dụng',
+            'Kính gửi [Tên ứng viên],\n\nĐây là thư nhắc lịch phỏng vấn của bạn cho vị trí [Vị trí ứng tuyển] vào [Ngày giờ phỏng vấn]. Địa điểm: [Địa điểm phỏng vấn]. Hình thức: [Hình thức phỏng vấn]. Người phụ trách: [Người phụ trách]. Link họp: [Link họp].\n\nTrân trọng,\nBộ phận tuyển dụng',
     },
 ]
 
@@ -94,14 +124,52 @@ const templateTypeLabel: Record<MessageTemplateType, string> = {
 const buildMessageHistoryKey = (scopeKey?: string) =>
     `employer.communication.history.${scopeKey || 'default'}`
 
+const getTextValue = (value?: string | null, fallback = 'Chưa cập nhật') =>
+    value?.trim() || fallback
+
+const pickRelevantInterview = (items: InterviewScheduleDto[]) => {
+    if (!items.length) {
+        return undefined
+    }
+
+    const now = dayjs()
+    const upcoming = items
+        .filter((item) => dayjs(item.scheduledTime).isAfter(now))
+        .sort(
+            (left, right) =>
+                dayjs(left.scheduledTime).valueOf() -
+                dayjs(right.scheduledTime).valueOf()
+        )
+
+    if (upcoming.length) {
+        return upcoming[0]
+    }
+
+    return [...items].sort(
+        (left, right) =>
+            dayjs(right.scheduledTime).valueOf() -
+            dayjs(left.scheduledTime).valueOf()
+    )[0]
+}
+
+const renderTemplateText = (
+    template: string,
+    variables: Record<string, string>
+) =>
+    Object.entries(variables).reduce(
+        (content, [placeholder, value]) =>
+            content.replaceAll(placeholder, value),
+        template
+    )
+
 const EmployerManageCommunicationPage = () => {
-    const { applicationRows, currentDepartment } = useEmployerWorkspace()
+    const { applicationRows, currentDepartment, interviews } = useEmployerWorkspace()
     const [selectedTemplate, setSelectedTemplate] = useState<MessageTemplate>(
         messageTemplates[0]
     )
     const [sending, setSending] = useState(false)
     const [recentMessages, setRecentMessages] = useState<RecentMessage[]>([])
-    const [form] = Form.useForm()
+    const [form] = Form.useForm<MessageFormValues>()
 
     const historyStorageKey = buildMessageHistoryKey(currentDepartment?.id)
 
@@ -120,19 +188,39 @@ const EmployerManageCommunicationPage = () => {
         }
     }, [historyStorageKey])
 
-    const recipientOptions = useMemo(
+    const applicationRowById = useMemo(
+        () => new Map(applicationRows.map((row) => [row.application.id, row])),
+        [applicationRows]
+    )
+
+    const interviewByApplicationId = useMemo(() => {
+        const grouped = new Map<string, InterviewScheduleDto[]>()
+
+        interviews.forEach((item) => {
+            const currentItems = grouped.get(item.applicationId) || []
+            currentItems.push(item)
+            grouped.set(item.applicationId, currentItems)
+        })
+
+        return new Map(
+            Array.from(grouped.entries()).map(([applicationId, items]) => [
+                applicationId,
+                pickRelevantInterview(items),
+            ])
+        )
+    }, [interviews])
+
+    const recipientOptions = useMemo<RecipientOption[]>(
         () =>
             applicationRows
                 .filter((row) => row.candidate?.email)
                 .map((row) => ({
-                    label: `${row.candidate?.fullName || 'Ứng viên'} (${row.candidate?.email})`,
-                    value: row.candidate?.email as string,
+                    label: `${row.candidate?.fullName || 'Ứng viên'} • ${
+                        row.recruitmentRequest?.title || row.jobPosition?.name || '-'
+                    } • ${row.candidate?.email}`,
+                    value: row.application.id,
                 }))
-                .filter(
-                    (option, index, array) =>
-                        array.findIndex((item) => item.value === option.value) ===
-                        index
-                ),
+                .sort((left, right) => left.label.localeCompare(right.label, 'vi')),
         [applicationRows]
     )
 
@@ -147,6 +235,27 @@ const EmployerManageCommunicationPage = () => {
             subject: template.subject,
             content: template.content,
         })
+    }
+
+    const buildTemplateVariables = (row: EmployerApplicationRow) => {
+        const interview = interviewByApplicationId.get(row.application.id)
+
+        return {
+            '[Tên ứng viên]': getTextValue(row.candidate?.fullName, 'Ứng viên'),
+            '[Email ứng viên]': getTextValue(row.candidate?.email),
+            '[Mã hồ sơ]': getTextValue(row.application.applicationCode),
+            '[Vị trí ứng tuyển]': getTextValue(
+                row.recruitmentRequest?.title || row.jobPosition?.name
+            ),
+            '[Phòng ban]': getTextValue(row.department?.name),
+            '[Ngày giờ phỏng vấn]': formatDisplayDateTime(interview?.scheduledTime),
+            '[Địa điểm phỏng vấn]': getTextValue(interview?.location),
+            '[Hình thức phỏng vấn]': getTextValue(
+                interview ? getInterviewTypeLabel(interview.interviewType) : undefined
+            ),
+            '[Người phụ trách]': getTextValue(interview?.contactPerson),
+            '[Link họp]': getTextValue(interview?.meetingLink),
+        }
     }
 
     const handleSaveDraft = async () => {
@@ -171,26 +280,65 @@ const EmployerManageCommunicationPage = () => {
 
     const handleSendEmail = async () => {
         const values = await form.validateFields()
-        const recipients = values.recipients as string[]
+        const resolvedRecipients = values.recipients
+            .map((applicationId) => {
+                const row = applicationRowById.get(applicationId)
+                const email = row?.candidate?.email?.trim()
+
+                if (!row || !email) {
+                    return null
+                }
+
+                const variables = buildTemplateVariables(row)
+
+                return {
+                    email,
+                    receiver: `${getTextValue(
+                        row.candidate?.fullName,
+                        'Ứng viên'
+                    )} (${email})`,
+                    subject: renderTemplateText(values.subject, variables),
+                    body: renderTemplateText(values.content, variables),
+                }
+            })
+            .filter(
+                (
+                    recipient
+                ): recipient is {
+                    email: string
+                    receiver: string
+                    subject: string
+                    body: string
+                } => Boolean(recipient)
+            )
+
+        if (!resolvedRecipients.length) {
+            notification.warning({
+                message: 'Không có người nhận hợp lệ',
+                description:
+                    'Các hồ sơ đã chọn hiện không có email hoặc không đủ dữ liệu để gửi.',
+            })
+            return
+        }
 
         setSending(true)
         try {
             await Promise.all(
-                recipients.map((recipient) =>
+                resolvedRecipients.map((recipient) =>
                     AdminService.sendEmail({
-                        to: recipient,
-                        subject: values.subject,
-                        body: values.content,
+                        to: recipient.email,
+                        subject: recipient.subject,
+                        body: recipient.body,
                         isBodyHtml: false,
                     })
                 )
             )
 
             const nextMessages = [
-                ...recipients.map((recipient) => ({
+                ...resolvedRecipients.map((recipient) => ({
                     id: crypto.randomUUID(),
-                    title: values.subject,
-                    receiver: recipient,
+                    title: recipient.subject,
+                    receiver: recipient.receiver,
                     sentAt: new Date().toISOString(),
                     tone: 'success' as const,
                 })),
@@ -200,7 +348,7 @@ const EmployerManageCommunicationPage = () => {
             persistRecentMessages(nextMessages)
             notification.success({
                 message: 'Gửi email thành công',
-                description: `Đã gửi ${recipients.length} email cho ứng viên.`,
+                description: `Đã gửi ${resolvedRecipients.length} email cho ứng viên.`,
             })
             form.setFieldValue('recipients', [])
         } catch {
@@ -220,9 +368,9 @@ const EmployerManageCommunicationPage = () => {
                 <span className="portal-hero__eyebrow">Giao tiếp</span>
                 <Title level={2}>Soạn và gửi thông điệp cho ứng viên</Title>
                 <Paragraph style={{ maxWidth: 760 }}>
-                    Danh sách người nhận được lấy từ API ứng viên của đơn vị.
-                    Bạn có thể chọn nhiều ứng viên, dùng mẫu thư có sẵn và gửi
-                    email trực tiếp qua hệ thống.
+                    Danh sách người nhận được lấy từ hồ sơ ứng tuyển của đơn vị.
+                    Biến trong tiêu đề và nội dung email sẽ được thay bằng dữ liệu
+                    thật của từng hồ sơ đã chọn trước khi gửi.
                 </Paragraph>
             </section>
 
@@ -279,7 +427,7 @@ const EmployerManageCommunicationPage = () => {
                                     {
                                         required: true,
                                         message:
-                                            'Vui lòng chọn ít nhất một ứng viên nhận email',
+                                            'Vui lòng chọn ít nhất một hồ sơ ứng tuyển để gửi email',
                                     },
                                 ]}
                             >
@@ -289,7 +437,7 @@ const EmployerManageCommunicationPage = () => {
                                     showSearch
                                     optionFilterProp="label"
                                     size="large"
-                                    placeholder="Chọn ứng viên theo email..."
+                                    placeholder="Chọn hồ sơ ứng tuyển theo ứng viên, vị trí hoặc email..."
                                     options={recipientOptions}
                                 />
                             </Form.Item>
@@ -323,13 +471,7 @@ const EmployerManageCommunicationPage = () => {
                                     className="portal-chip-row"
                                     style={{ marginTop: 12 }}
                                 >
-                                    {[
-                                        '[Tên ứng viên]',
-                                        '[Vị trí ứng tuyển]',
-                                        '[Ngày giờ]',
-                                        '[Địa điểm]',
-                                        '[Tên người phỏng vấn]',
-                                    ].map((variable) => (
+                                    {templateVariables.map((variable) => (
                                         <Tag key={variable}>{variable}</Tag>
                                     ))}
                                 </div>
@@ -352,7 +494,7 @@ const EmployerManageCommunicationPage = () => {
                             </Space>
                         </Form>
                     </Card>
-
+                    <div style={{ height: 24 }}></div>
                     <Card
                         title="Email đã gửi gần đây"
                         className="portal-section-card"

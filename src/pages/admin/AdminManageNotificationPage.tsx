@@ -385,11 +385,6 @@ const AdminManageNotificationPage = () => {
                         <Typography.Title level={2}>
                             Gửi thông báo hệ thống
                         </Typography.Title>
-                        <Typography.Paragraph style={{ maxWidth: 720 }}>
-                            Chọn nhóm người nhận từ backend, xem trước phạm vi gửi
-                            và lưu lại lịch sử gửi trên giao diện admin khi backend
-                            chưa có notification history riêng.
-                        </Typography.Paragraph>
                     </div>
                     <Button
                         type="primary"
@@ -463,10 +458,6 @@ const AdminManageNotificationPage = () => {
                         </span>
                     }
                 >
-                    <div className={styles.sectionHint}>
-                        Bảng này được đồng bộ từ candidate, identity users và
-                        department manager.
-                    </div>
                     <Table
                         rowKey="key"
                         loading={loading}
@@ -644,38 +635,6 @@ const AdminManageNotificationPage = () => {
                         },
                     ]}
                 />
-            </Card>
-
-            <Card
-                variant="borderless"
-                className={styles.sectionCard}
-                title={
-                    <span className={styles.sectionTitle}>
-                        Trạng thái backend
-                    </span>
-                }
-            >
-                <div className={styles.detailList}>
-                    <div className={styles.detailItem}>
-                        <MailOutlined className={styles.detailIcon} />
-                        <span>
-                            API gửi email sử dụng endpoint `app/email/send`.
-                        </span>
-                    </div>
-                    <div className={styles.detailItem}>
-                        <BellOutlined className={styles.detailIcon} />
-                        <span>
-                            Lịch sử bên dưới được lưu phía frontend để hỗ trợ vận hành
-                            khi backend chưa có notification history riêng.
-                        </span>
-                    </div>
-                    <div className={styles.detailItem}>
-                        <UserOutlined className={styles.detailIcon} />
-                        <span>
-                            Người tạo hiện tại: {currentUser?.email || currentUser?.userName || '-'}.
-                        </span>
-                    </div>
-                </div>
             </Card>
 
             <Modal

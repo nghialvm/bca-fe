@@ -19,6 +19,7 @@ import type { MenuProps, ThemeConfig } from 'antd'
 import {
     BellOutlined,
     LogoutOutlined,
+    LockOutlined,
     MenuOutlined,
     SettingOutlined,
     UserOutlined,
@@ -159,9 +160,9 @@ const useProfileMenu = (role: SiteRole) => {
                 label: <Link to={profilePath}>Thông tin tài khoản</Link>,
             },
             {
-                key: 'settings',
-                icon: <SettingOutlined />,
-                label: 'Cài đặt cá nhân',
+                key: 'change-password',
+                icon: <LockOutlined />,
+                label: <Link to={PATHS.CHANGE_PASSWORD}>Đổi mật khẩu</Link>,
             },
             {
                 key: 'logout',

@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import {
     Button,
     Card,
+    DatePicker,
     Descriptions,
     Empty,
     Form,
@@ -16,7 +17,6 @@ import {
     Typography,
     notification,
 } from 'antd'
-import dayjs from 'dayjs'
 
 import {
     FileTextOutlined,
@@ -26,6 +26,7 @@ import {
     SearchOutlined,
 } from '@ant-design/icons'
 import type { ColumnsType } from 'antd/es/table'
+import dayjs, { type Dayjs } from 'dayjs'
 import { useSelector } from 'react-redux'
 
 import { useEmployerWorkspace } from '@/hooks/useEmployerWorkspace'
@@ -34,7 +35,10 @@ import type {
     ApplicationScreeningCreateDto,
     ApplicationScreeningDto,
     ApplicationScreeningUpdateDto,
+    ApplicationUpdateDto,
     CandidateDto,
+    CreateOfferDto,
+    OfferDto,
 } from '@/services/admin'
 import AdminService from '@/services/admin'
 import {
@@ -43,6 +47,7 @@ import {
     getApplicationStatusColor,
     getApplicationStatusLabel,
 } from '@/utils/admin'
+import { getOfferStatusColor, getOfferStatusLabel } from '@/utils/employer'
 
 const { Paragraph, Text, Title } = Typography
 
@@ -69,19 +74,38 @@ type EmployerCandidateRow = {
     candidate?: CandidateDto
     application: ApplicationDto
     latestScreening?: ApplicationScreeningDto
+    offer?: OfferDto
 }
 
 type EvaluationFormValues = {
     result: number
+    applicationStatus: string | number
     score?: number
     criteriaSummary?: string
     comment?: string
+}
+
+type OfferFormValues = {
+    salary: number
+    startDate?: Dayjs
+    probationMonths?: number
+    workLocation?: string
+    benefit?: string
+    note?: string
+    expiredTime?: Dayjs
 }
 
 const screeningResultOptions = [
     { label: 'Đạt sàng lọc', value: 1 },
     { label: 'Không đạt', value: 2 },
 ]
+
+const applicationStatusOptions = [
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+].map((value) => ({
+    label: getApplicationStatusLabel(value),
+    value,
+}))
 
 const normalizeValue = (value: unknown) =>
     String(value ?? '')
@@ -141,30 +165,52 @@ const getTextValue = (value?: string | null) => {
     return trimmed || '-'
 }
 
+const buildApplicationUpdatePayload = (
+    application: ApplicationDto,
+    status: string | number
+): ApplicationUpdateDto => ({
+    applicationCode: application.applicationCode,
+    recruitmentRequestId: application.recruitmentRequestId,
+    candidateId: application.candidateId,
+    appliedTime: application.appliedTime,
+    status,
+    cvFileId: application.cvFileId ?? null,
+    submittedCvUrl: application.submittedCvUrl?.trim() || null,
+    source: application.source?.trim() || null,
+    note: application.note?.trim() || null,
+    finalResult: application.finalResult?.trim() || null,
+})
+
 const getErrorMessage = (error: unknown) => {
     const message =
-        (error as {
-            response?: {
-                data?: {
-                    error?: {
+        (
+            error as {
+                response?: {
+                    data?: {
+                        error?: {
+                            message?: string
+                        }
                         message?: string
                     }
-                    message?: string
                 }
+                message?: string
             }
-            message?: string
-        })?.response?.data?.error?.message ||
-        (error as {
-            response?: {
-                data?: {
-                    message?: string
+        )?.response?.data?.error?.message ||
+        (
+            error as {
+                response?: {
+                    data?: {
+                        message?: string
+                    }
                 }
+                message?: string
             }
-            message?: string
-        })?.response?.data?.message ||
+        )?.response?.data?.message ||
         (error as { message?: string })?.message
 
-    return message || 'Vui lòng kiểm tra lại quyền truy cập hoặc dữ liệu đầu vào.'
+    return (
+        message || 'Vui lòng kiểm tra lại quyền truy cập hoặc dữ liệu đầu vào.'
+    )
 }
 
 const EmployerManageCandidatePage = () => {
@@ -175,9 +221,13 @@ const EmployerManageCandidatePage = () => {
         useState<EmployerCandidateRow | null>(null)
     const [evaluationCandidate, setEvaluationCandidate] =
         useState<EmployerCandidateRow | null>(null)
+    const [offerCandidate, setOfferCandidate] =
+        useState<EmployerCandidateRow | null>(null)
     const [submitting, setSubmitting] = useState(false)
+    const [offerSubmitting, setOfferSubmitting] = useState(false)
     const [form] = Form.useForm<EvaluationFormValues>()
-    const { applicationRows, applicationScreenings, loading, reload } =
+    const [offerForm] = Form.useForm<OfferFormValues>()
+    const { applicationRows, applicationScreenings, offers, loading, reload } =
         useEmployerWorkspace()
 
     const latestScreeningByApplicationId = useMemo(() => {
@@ -192,6 +242,18 @@ const EmployerManageCandidatePage = () => {
         return map
     }, [applicationScreenings])
 
+    const offerByApplicationId = useMemo(() => {
+        const map = new Map<string, OfferDto>()
+
+        offers.forEach((offer) => {
+            if (!map.has(offer.applicationId)) {
+                map.set(offer.applicationId, offer)
+            }
+        })
+
+        return map
+    }, [offers])
+
     const candidateRows = useMemo<EmployerCandidateRow[]>(
         () =>
             applicationRows.map((row) => ({
@@ -201,7 +263,10 @@ const EmployerManageCandidatePage = () => {
                 name: row.candidate?.fullName || 'Ứng viên',
                 email: row.candidate?.email || '-',
                 phone: row.candidate?.phoneNumber || '-',
-                position: row.recruitmentRequest?.title || row.jobPosition?.name || '-',
+                position:
+                    row.recruitmentRequest?.title ||
+                    row.jobPosition?.name ||
+                    '-',
                 department: row.department?.name || '-',
                 status: row.application.status,
                 appliedTime: row.application.appliedTime,
@@ -211,8 +276,9 @@ const EmployerManageCandidatePage = () => {
                 latestScreening: latestScreeningByApplicationId.get(
                     row.application.id
                 ),
+                offer: offerByApplicationId.get(row.application.id),
             })),
-        [applicationRows, latestScreeningByApplicationId]
+        [applicationRows, latestScreeningByApplicationId, offerByApplicationId]
     )
 
     const filteredCandidates = useMemo(
@@ -246,7 +312,7 @@ const EmployerManageCandidatePage = () => {
                             value: String(row.status),
                         },
                     ])
-                ).values(),
+                ).values()
             ),
         ],
         [candidateRows]
@@ -259,6 +325,7 @@ const EmployerManageCandidatePage = () => {
 
         form.setFieldsValue({
             result: existingResult || 1,
+            applicationStatus: candidate.application.status,
             score: candidate.latestScreening?.score ?? undefined,
             criteriaSummary: candidate.latestScreening?.criteriaSummary || '',
             comment: candidate.latestScreening?.comment || '',
@@ -269,6 +336,24 @@ const EmployerManageCandidatePage = () => {
     const closeEvaluationModal = () => {
         setEvaluationCandidate(null)
         form.resetFields()
+    }
+
+    const openOfferModal = (candidate: EmployerCandidateRow) => {
+        offerForm.setFieldsValue({
+            salary: undefined,
+            startDate: undefined,
+            probationMonths: undefined,
+            workLocation: '',
+            benefit: '',
+            note: '',
+            expiredTime: undefined,
+        })
+        setOfferCandidate(candidate)
+    }
+
+    const closeOfferModal = () => {
+        setOfferCandidate(null)
+        offerForm.resetFields()
     }
 
     const handleSubmitEvaluation = async () => {
@@ -283,6 +368,32 @@ const EmployerManageCandidatePage = () => {
             return
         }
 
+        let screeningSaved = false
+        const error: unknown = undefined
+
+        if (!currentUser?.id) {
+            if (screeningSaved) {
+                notification.warning({
+                    message:
+                        'Đã lưu đánh giá nhưng chưa cập nhật được trạng thái hồ sơ',
+                    description: getErrorMessage(error),
+                })
+
+                closeEvaluationModal()
+                await reload()
+                return
+            }
+
+            notification.error({
+                message: 'Không xác định được người đánh giá',
+                description:
+                    'Phiên đăng nhập hiện tại không có thông tin người dùng để ghi nhận kết quả sàng lọc.',
+            })
+            return
+        }
+
+        screeningSaved = false
+
         try {
             const values = await form.validateFields()
             const payloadBase: ApplicationScreeningCreateDto = {
@@ -294,6 +405,9 @@ const EmployerManageCandidatePage = () => {
                 criteriaSummary: values.criteriaSummary?.trim() || null,
                 comment: values.comment?.trim() || null,
             }
+            const hasStatusChanged =
+                String(values.applicationStatus) !==
+                String(evaluationCandidate.application.status)
 
             setSubmitting(true)
 
@@ -308,6 +422,18 @@ const EmployerManageCandidatePage = () => {
                 )
             } else {
                 await AdminService.createApplicationScreening(payloadBase)
+            }
+
+            screeningSaved = true
+
+            if (hasStatusChanged) {
+                await AdminService.updateApplication(
+                    evaluationCandidate.application.id,
+                    buildApplicationUpdatePayload(
+                        evaluationCandidate.application,
+                        values.applicationStatus
+                    )
+                )
             }
 
             notification.success({
@@ -326,12 +452,77 @@ const EmployerManageCandidatePage = () => {
                 return
             }
 
+            if (screeningSaved) {
+                notification.warning({
+                    message:
+                        'Đã lưu đánh giá nhưng chưa cập nhật được trạng thái hồ sơ',
+                    description: getErrorMessage(error),
+                })
+
+                closeEvaluationModal()
+                await reload()
+                return
+            }
+
             notification.error({
                 message: 'Không lưu được đánh giá ứng viên',
                 description: getErrorMessage(error),
             })
         } finally {
             setSubmitting(false)
+        }
+    }
+
+    const handleSubmitOffer = async () => {
+        if (!offerCandidate) return
+        if (offerCandidate.offer) {
+            notification.info({
+                message: 'Hồ sơ này đã có offer',
+                description:
+                    'Mỗi hồ sơ hiện chỉ hỗ trợ một offer. Vui lòng kiểm tra thông tin offer hiện có.',
+            })
+            return
+        }
+
+        try {
+            const values = await offerForm.validateFields()
+            const payload: CreateOfferDto = {
+                applicationId: offerCandidate.applicationId,
+                salary: values.salary,
+                startDate: values.startDate?.toISOString() || null,
+                probationMonths: values.probationMonths ?? null,
+                workLocation: values.workLocation?.trim() || null,
+                benefit: values.benefit?.trim() || null,
+                note: values.note?.trim() || null,
+                sentTime: dayjs().toISOString(),
+                expiredTime: values.expiredTime?.toISOString() || null,
+            }
+
+            setOfferSubmitting(true)
+            await AdminService.createOffer(payload)
+
+            notification.success({
+                message: 'Đã gửi offer',
+                description: `Offer cho ứng viên ${offerCandidate.name} đã được tạo và gửi thành công.`,
+            })
+
+            closeOfferModal()
+            await reload()
+        } catch (error) {
+            if (
+                typeof error === 'object' &&
+                error !== null &&
+                'errorFields' in error
+            ) {
+                return
+            }
+
+            notification.error({
+                message: 'Không gửi được offer',
+                description: getErrorMessage(error),
+            })
+        } finally {
+            setOfferSubmitting(false)
         }
     }
 
@@ -380,6 +571,23 @@ const EmployerManageCandidatePage = () => {
                     {getApplicationStatusLabel(value)}
                 </Tag>
             ),
+        },
+        {
+            title: 'Offer',
+            key: 'offer',
+            render: (_, candidate) =>
+                candidate.offer ? (
+                    <Space direction="vertical" size={4}>
+                        <Tag color={getOfferStatusColor(candidate.offer.status)}>
+                            {getOfferStatusLabel(candidate.offer.status)}
+                        </Tag>
+                        <Text type="secondary">
+                            {formatDisplayDateTime(candidate.offer.sentTime)}
+                        </Text>
+                    </Space>
+                ) : (
+                    <Text type="secondary">Chưa gửi offer</Text>
+                ),
         },
         {
             title: 'Đánh giá gần nhất',
@@ -437,7 +645,15 @@ const EmployerManageCandidatePage = () => {
                         type="primary"
                         onClick={() => openEvaluationModal(candidate)}
                     >
-                        {candidate.latestScreening ? 'Đánh giá lại' : 'Đánh giá'}
+                        {candidate.latestScreening
+                            ? 'Đánh giá lại'
+                            : 'Đánh giá'}
+                    </Button>
+                    <Button
+                        onClick={() => openOfferModal(candidate)}
+                        disabled={Boolean(candidate.offer)}
+                    >
+                        {candidate.offer ? 'Đã có offer' : 'Gửi offer'}
                     </Button>
                 </Space>
             ),
@@ -450,9 +666,9 @@ const EmployerManageCandidatePage = () => {
                 <span className="portal-hero__eyebrow">Ứng viên</span>
                 <Title level={2}>Quản lý danh sách ứng viên</Title>
                 <Paragraph style={{ maxWidth: 760 }}>
-                    Danh sách ứng viên được đồng bộ từ hồ sơ ứng tuyển thực tế. Nhà
-                    tuyển dụng có thể mở hồ sơ chi tiết, xem CV đã nộp và ghi nhận
-                    kết quả sàng lọc ngay tại đây.
+                    Theo dõi toàn bộ ứng viên đã nộp hồ sơ vào đơn vị, xem chi
+                    tiết từng hồ sơ, CV đính kèm và cập nhật kết quả xử lý ngay
+                    tại đây.
                 </Paragraph>
             </section>
 
@@ -506,21 +722,34 @@ const EmployerManageCandidatePage = () => {
                 open={Boolean(profileCandidate)}
                 onCancel={() => setProfileCandidate(null)}
                 footer={[
-                    <Button key="close" onClick={() => setProfileCandidate(null)}>
+                    <Button
+                        key="close"
+                        onClick={() => setProfileCandidate(null)}
+                    >
                         Đóng
                     </Button>,
                 ]}
                 width={820}
             >
                 {profileCandidate ? (
-                    <Space direction="vertical" size={20} style={{ width: '100%' }}>
+                    <Space
+                        direction="vertical"
+                        size={20}
+                        style={{ width: '100%' }}
+                    >
                         <div>
                             <Title level={4} style={{ marginBottom: 4 }}>
                                 {profileCandidate.name}
                             </Title>
                             <Space wrap size={[8, 8]}>
-                                <Tag color={getApplicationStatusColor(profileCandidate.status)}>
-                                    {getApplicationStatusLabel(profileCandidate.status)}
+                                <Tag
+                                    color={getApplicationStatusColor(
+                                        profileCandidate.status
+                                    )}
+                                >
+                                    {getApplicationStatusLabel(
+                                        profileCandidate.status
+                                    )}
                                 </Tag>
                                 <Tag
                                     color={getScreeningResultColor(
@@ -548,7 +777,9 @@ const EmployerManageCandidatePage = () => {
                                 )}
                             </Descriptions.Item>
                             <Descriptions.Item label="Giới tính">
-                                {getGenderLabel(profileCandidate.candidate?.gender)}
+                                {getGenderLabel(
+                                    profileCandidate.candidate?.gender
+                                )}
                             </Descriptions.Item>
                             <Descriptions.Item label="Vị trí ứng tuyển">
                                 {profileCandidate.position}
@@ -565,8 +796,8 @@ const EmployerManageCandidatePage = () => {
                                 )}
                             </Descriptions.Item>
                             <Descriptions.Item label="Số năm kinh nghiệm">
-                                {profileCandidate.candidate?.yearsOfExperience ??
-                                    '-'}
+                                {profileCandidate.candidate
+                                    ?.yearsOfExperience ?? '-'}
                             </Descriptions.Item>
                             <Descriptions.Item label="Học vấn cao nhất">
                                 {getTextValue(
@@ -587,10 +818,14 @@ const EmployerManageCandidatePage = () => {
                                 )}
                             </Descriptions.Item>
                             <Descriptions.Item label="Địa chỉ">
-                                {getTextValue(profileCandidate.candidate?.address)}
+                                {getTextValue(
+                                    profileCandidate.candidate?.address
+                                )}
                             </Descriptions.Item>
                             <Descriptions.Item label="Ngày nộp hồ sơ">
-                                {formatDisplayDateTime(profileCandidate.appliedTime)}
+                                {formatDisplayDateTime(
+                                    profileCandidate.appliedTime
+                                )}
                             </Descriptions.Item>
                             <Descriptions.Item label="Nguồn hồ sơ">
                                 {getTextValue(
@@ -601,7 +836,10 @@ const EmployerManageCandidatePage = () => {
                             <Descriptions.Item label="CV đã nộp">
                                 {profileCandidate.application.submittedCvUrl ? (
                                     <a
-                                        href={profileCandidate.application.submittedCvUrl}
+                                        href={
+                                            profileCandidate.application
+                                                .submittedCvUrl
+                                        }
                                         target="_blank"
                                         rel="noreferrer"
                                     >
@@ -615,14 +853,90 @@ const EmployerManageCandidatePage = () => {
                                 {getTextValue(profileCandidate.candidate?.note)}
                             </Descriptions.Item>
                             <Descriptions.Item label="Ghi chú hồ sơ">
-                                {getTextValue(profileCandidate.application.note)}
+                                {getTextValue(
+                                    profileCandidate.application.note
+                                )}
+                            </Descriptions.Item>
+                            <Descriptions.Item label="Offer">
+                                {profileCandidate.offer ? (
+                                    <Space direction="vertical" size={4}>
+                                        <Tag
+                                            color={getOfferStatusColor(
+                                                profileCandidate.offer.status
+                                            )}
+                                        >
+                                            {getOfferStatusLabel(
+                                                profileCandidate.offer.status
+                                            )}
+                                        </Tag>
+                                        <Text>
+                                            Lương:{' '}
+                                            {formatScore(
+                                                Number(
+                                                    profileCandidate.offer.salary
+                                                )
+                                            )}{' '}
+                                            VND
+                                        </Text>
+                                        <Text>
+                                            Bắt đầu:{' '}
+                                            {formatDisplayDate(
+                                                profileCandidate.offer.startDate
+                                            )}
+                                        </Text>
+                                        <Text>
+                                            Thử việc:{' '}
+                                            {profileCandidate.offer
+                                                .probationMonths !== null &&
+                                            profileCandidate.offer
+                                                .probationMonths !== undefined
+                                                ? `${profileCandidate.offer.probationMonths} tháng`
+                                                : '-'}
+                                        </Text>
+                                        <Text>
+                                            Địa điểm:{' '}
+                                            {getTextValue(
+                                                profileCandidate.offer
+                                                    .workLocation
+                                            )}
+                                        </Text>
+                                        <Text>
+                                            Phúc lợi:{' '}
+                                            {getTextValue(
+                                                profileCandidate.offer.benefit
+                                            )}
+                                        </Text>
+                                        <Text>
+                                            Ghi chú:{' '}
+                                            {getTextValue(
+                                                profileCandidate.offer.note
+                                            )}
+                                        </Text>
+                                        <Text>
+                                            Gửi lúc:{' '}
+                                            {formatDisplayDateTime(
+                                                profileCandidate.offer.sentTime
+                                            )}
+                                        </Text>
+                                        <Text>
+                                            Hết hạn:{' '}
+                                            {formatDisplayDateTime(
+                                                profileCandidate.offer
+                                                    .expiredTime
+                                            )}
+                                        </Text>
+                                    </Space>
+                                ) : (
+                                    'Chưa gửi offer'
+                                )}
                             </Descriptions.Item>
                             <Descriptions.Item label="Đánh giá gần nhất">
                                 {profileCandidate.latestScreening ? (
                                     <Space direction="vertical" size={4}>
                                         <Tag
                                             color={getScreeningResultColor(
-                                                profileCandidate.latestScreening.result
+                                                profileCandidate.latestScreening
+                                                    .result
                                             )}
                                         >
                                             {getScreeningResultLabel(
@@ -669,6 +983,113 @@ const EmployerManageCandidatePage = () => {
             </Modal>
 
             <Modal
+                title="Gửi offer cho ứng viên"
+                open={Boolean(offerCandidate)}
+                onCancel={closeOfferModal}
+                onOk={() => void handleSubmitOffer()}
+                okText="Gửi offer"
+                cancelText="Hủy"
+                confirmLoading={offerSubmitting}
+                destroyOnClose
+                width={720}
+            >
+                {offerCandidate ? (
+                    <Space
+                        direction="vertical"
+                        size={16}
+                        style={{ width: '100%' }}
+                    >
+                        <Card size="small">
+                            <Space direction="vertical" size={4}>
+                                <Text strong>{offerCandidate.name}</Text>
+                                <Text type="secondary">
+                                    {offerCandidate.position} •{' '}
+                                    {offerCandidate.department}
+                                </Text>
+                                <Text type="secondary">
+                                    Mã hồ sơ: {offerCandidate.applicationCode}
+                                </Text>
+                            </Space>
+                        </Card>
+
+                        <Form form={offerForm} layout="vertical">
+                            <Form.Item
+                                label="Mức lương đề xuất"
+                                name="salary"
+                                rules={[
+                                    {
+                                        required: true,
+                                        message:
+                                            'Nhập mức lương cho offer.',
+                                    },
+                                ]}
+                            >
+                                <InputNumber
+                                    min={1}
+                                    style={{ width: '100%' }}
+                                    placeholder="Ví dụ: 25000000"
+                                />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Ngày bắt đầu"
+                                name="startDate"
+                            >
+                                <DatePicker
+                                    style={{ width: '100%' }}
+                                    format="DD/MM/YYYY"
+                                />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Thời gian thử việc (tháng)"
+                                name="probationMonths"
+                            >
+                                <InputNumber
+                                    min={0}
+                                    max={24}
+                                    style={{ width: '100%' }}
+                                    placeholder="Ví dụ: 2"
+                                />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Địa điểm làm việc"
+                                name="workLocation"
+                            >
+                                <Input placeholder="Nhập địa điểm làm việc" />
+                            </Form.Item>
+
+                            <Form.Item label="Phúc lợi" name="benefit">
+                                <Input.TextArea
+                                    rows={3}
+                                    placeholder="Mô tả ngắn các phúc lợi chính của offer."
+                                />
+                            </Form.Item>
+
+                            <Form.Item label="Ghi chú" name="note">
+                                <Input.TextArea
+                                    rows={3}
+                                    placeholder="Ghi chú thêm cho ứng viên."
+                                />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Hạn phản hồi offer"
+                                name="expiredTime"
+                            >
+                                <DatePicker
+                                    showTime
+                                    style={{ width: '100%' }}
+                                    format="DD/MM/YYYY HH:mm"
+                                />
+                            </Form.Item>
+                        </Form>
+                    </Space>
+                ) : null}
+            </Modal>
+
+            <Modal
                 title={
                     evaluationCandidate?.latestScreening
                         ? 'Cập nhật đánh giá ứng viên'
@@ -684,7 +1105,11 @@ const EmployerManageCandidatePage = () => {
                 width={720}
             >
                 {evaluationCandidate ? (
-                    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                    <Space
+                        direction="vertical"
+                        size={16}
+                        style={{ width: '100%' }}
+                    >
                         <Card size="small">
                             <Space direction="vertical" size={4}>
                                 <Text strong>{evaluationCandidate.name}</Text>
@@ -693,12 +1118,29 @@ const EmployerManageCandidatePage = () => {
                                     {evaluationCandidate.department}
                                 </Text>
                                 <Text type="secondary">
-                                    Mã hồ sơ: {evaluationCandidate.applicationCode}
+                                    Mã hồ sơ:{' '}
+                                    {evaluationCandidate.applicationCode}
                                 </Text>
                             </Space>
                         </Card>
 
                         <Form form={form} layout="vertical">
+                            <Form.Item
+                                label="Trạng thái hồ sơ"
+                                name="applicationStatus"
+                                rules={[
+                                    {
+                                        required: true,
+                                        message:
+                                            'Chọn trạng thái hồ sơ cần cập nhật cho ứng viên.',
+                                    },
+                                ]}
+                            >
+                                <Select
+                                    options={applicationStatusOptions}
+                                    placeholder="Chọn trạng thái hồ sơ"
+                                />
+                            </Form.Item>
                             <Form.Item
                                 label="Kết quả sàng lọc"
                                 name="result"

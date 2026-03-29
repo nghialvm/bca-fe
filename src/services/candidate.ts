@@ -3,8 +3,10 @@ import dayjs from 'dayjs'
 import type {
     ApplicationDto,
     CandidateDto,
+    CandidateResponseDto,
     DepartmentDto,
     JobPositionDto,
+    OfferDto,
     PagedResult,
     RecruitmentRequestDto,
 } from '@/services/admin'
@@ -72,6 +74,8 @@ export interface CandidatePortalApplicationDto {
     source?: string | null
     note?: string | null
     finalResult?: string | null
+    offer?: OfferDto | null
+    latestOfferResponse?: CandidateResponseDto | null
 }
 
 export interface CreateCandidatePortalApplicationDto {
@@ -97,6 +101,28 @@ export interface CandidatePortalApplicationProfileInput {
     universityName?: string
     major?: string
     gender?: number | null
+}
+
+export interface UpdateCandidatePortalProfileDto {
+    candidateCode: string
+    candidateType: number
+    employeeId?: string | null
+    fullName: string
+    dateOfBirth?: string | null
+    gender: number
+    phoneNumber: string
+    email: string
+    address: string
+    identityNumber: string
+    currentCompany: string
+    currentPosition: string
+    yearsOfExperience: number
+    highestEducation: string
+    universityName: string
+    major: string
+    status: number
+    source: string
+    note: string
 }
 
 export interface CandidateCvUploadResultDto {
@@ -171,6 +197,9 @@ const buildJobPositionMap = (items: JobPositionDto[]) =>
 const buildRecruitmentMap = (items: RecruitmentRequestDto[]) =>
     new Map(items.map((item) => [item.id, item]))
 
+const isOfferResponseType = (value: unknown) =>
+    ['4', 'offeraccepted', '5', 'offerdeclined'].includes(normalizeStatus(value))
+
 const getPagedItems = <T>(response: PagedResult<T> | T[] | undefined): T[] => {
     if (Array.isArray(response)) {
         return response
@@ -210,7 +239,9 @@ const mapApplicationDto = (
     item: ApplicationDto,
     recruitmentMap: Map<string, RecruitmentRequestDto>,
     departmentMap: Map<string, string>,
-    jobPositionMap: Map<string, string>
+    jobPositionMap: Map<string, string>,
+    offer?: OfferDto | null,
+    latestOfferResponse?: CandidateResponseDto | null
 ): CandidatePortalApplicationDto => {
     const recruitment = recruitmentMap.get(item.recruitmentRequestId)
 
@@ -235,6 +266,8 @@ const mapApplicationDto = (
         source: item.source,
         note: item.note,
         finalResult: item.finalResult,
+        offer: offer ?? null,
+        latestOfferResponse: latestOfferResponse ?? null,
     }
 }
 
@@ -248,12 +281,16 @@ export class CandidateService {
             applicationResponse,
             departmentResponse,
             jobPositionResponse,
+            offerResponse,
+            candidateReplyResponse,
         ] = await Promise.all([
             http.get('app/candidate', { params: defaultPagedQuery }),
             http.get('app/recruitment-request', { params: defaultPagedQuery }),
             http.get('app/application', { params: defaultPagedQuery }),
             http.get('app/department', { params: defaultPagedQuery }),
             http.get('app/job-position', { params: defaultPagedQuery }),
+            http.get('app/offer', { params: defaultPagedQuery }),
+            http.get('app/candidate-response', { params: defaultPagedQuery }),
         ])
 
         const candidates = getPagedItems<CandidateDto>(
@@ -270,6 +307,12 @@ export class CandidateService {
         )
         const jobPositions = getPagedItems<JobPositionDto>(
             jobPositionResponse as unknown as PagedResult<JobPositionDto>
+        )
+        const offers = getPagedItems<OfferDto>(
+            offerResponse as unknown as PagedResult<OfferDto>
+        )
+        const candidateResponses = getPagedItems<CandidateResponseDto>(
+            candidateReplyResponse as unknown as PagedResult<CandidateResponseDto>
         )
 
         const currentCandidate = user?.id
@@ -292,6 +335,41 @@ export class CandidateService {
         const appliedRecruitmentIds = new Set(
             candidateApplications.map((item) => item.recruitmentRequestId)
         )
+        const applicationIds = new Set(
+            candidateApplications.map((item) => item.id)
+        )
+        const candidateOffers = offers.filter((item) =>
+            applicationIds.has(item.applicationId)
+        )
+        const offerByApplicationId = new Map(
+            candidateOffers.map((item) => [item.applicationId, item])
+        )
+        const offerIds = new Set(candidateOffers.map((item) => item.id))
+        const latestOfferResponseByApplicationId = new Map<
+            string,
+            CandidateResponseDto
+        >()
+
+        candidateResponses
+            .filter(
+                (item) =>
+                    isOfferResponseType(item.responseType) &&
+                    applicationIds.has(item.applicationId) &&
+                    (item.offerId ? offerIds.has(item.offerId) : true)
+            )
+            .sort(
+                (left, right) =>
+                    dayjs(right.responseTime).valueOf() -
+                    dayjs(left.responseTime).valueOf()
+            )
+            .forEach((item) => {
+                if (!latestOfferResponseByApplicationId.has(item.applicationId)) {
+                    latestOfferResponseByApplicationId.set(
+                        item.applicationId,
+                        item
+                    )
+                }
+            })
 
         const jobs = recruitmentRequests
             .filter(
@@ -325,7 +403,9 @@ export class CandidateService {
                     item,
                     recruitmentMap,
                     departmentMap,
-                    jobPositionMap
+                    jobPositionMap,
+                    offerByApplicationId.get(item.id),
+                    latestOfferResponseByApplicationId.get(item.id)
                 )
             ),
         }
@@ -400,27 +480,7 @@ export class CandidateService {
 
     async updateCandidateProfile(
         candidateId: string,
-        input: {
-            candidateCode: string
-            candidateType: number
-            employeeId?: string | null
-            fullName: string
-            dateOfBirth?: string | null
-            gender: number
-            phoneNumber: string
-            email: string
-            address: string
-            identityNumber: string
-            currentCompany: string
-            currentPosition: string
-            yearsOfExperience: number
-            highestEducation: string
-            universityName: string
-            major: string
-            status: number
-            source: string
-            note: string
-        }
+        input: UpdateCandidatePortalProfileDto
     ) {
         return await http.put(`app/candidate/${candidateId}`, input)
     }
@@ -444,6 +504,24 @@ export class CandidateService {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
+        })
+    }
+
+    async respondToOffer(input: {
+        applicationId: string
+        offerId: string
+        responseType: number
+        responseContent: string
+        note?: string
+    }) {
+        return await http.post('app/candidate-response', {
+            applicationId: input.applicationId,
+            offerId: input.offerId,
+            responseType: input.responseType,
+            responseChannel: 1,
+            responseTime: dayjs().toISOString(),
+            responseContent: input.responseContent,
+            note: input.note?.trim() || null,
         })
     }
 }

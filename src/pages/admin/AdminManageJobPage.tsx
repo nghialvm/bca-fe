@@ -289,11 +289,6 @@ const AdminManageJobPage = () => {
                         <Typography.Title level={2}>
                             Quản lý tin tuyển dụng
                         </Typography.Title>
-                        <Typography.Paragraph style={{ maxWidth: 720 }}>
-                            Theo dõi chiến dịch, phê duyệt tin tuyển dụng và
-                            giám sát lượng hồ sơ theo từng đơn vị từ dữ liệu
-                            backend.
-                        </Typography.Paragraph>
                     </div>
                 </Space>
             </section>

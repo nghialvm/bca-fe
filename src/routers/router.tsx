@@ -6,7 +6,6 @@ import { SITE_ROLES } from '@/constants/role'
 import MainLayout from '@/layouts/MainLayout'
 import NotAuthenticatedLayout from '@/layouts/NotAuthenticatedLayout'
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
-import AdminManageCvTemplatePage from '@/pages/admin/AdminManageCvTemplatePage'
 import AdminManageJobPage from '@/pages/admin/AdminManageJobPage'
 import AdminManageJobPositionPage from '@/pages/admin/AdminManageJobPositionPage'
 import AdminManageLogPage from '@/pages/admin/AdminManageLogPage'
@@ -20,8 +19,11 @@ import CandidateApplicationPage from '@/pages/candidate/CandidateApplicationPage
 import CandidateDashboardPage from '@/pages/candidate/CandidateDashboardPage'
 import CandidateJobPage from '@/pages/candidate/CandidateJobPage'
 import CandidateProfilePage from '@/pages/candidate/CandidateProfilePage'
+import ChangePasswordPage from '@/pages/commons/ChangePasswordPage'
+import ForgotPasswordPage from '@/pages/commons/ForgotPasswordPage'
 import LoginPage from '@/pages/commons/LoginPage'
 import RegisterPage from '@/pages/commons/RegisterPage'
+import ResetPasswordPage from '@/pages/commons/ResetPasswordPage'
 import EmployerDashboardPage from '@/pages/employer/EmployerDashboardPage'
 import EmployerManageCandidatePage from '@/pages/employer/EmployerManageCandidatePage'
 import EmployerManageCommunicationPage from '@/pages/employer/EmployerManageCommunicationPage'
@@ -43,6 +45,21 @@ const AppRouter = [
     <Route element={<NotAuthenticatedLayout />} key="not-auth">
         <Route path={PATHS.LOGIN} element={<LoginPage />} />
         <Route path={PATHS.REGISTER} element={<RegisterPage />} />
+        <Route path={PATHS.FORGOT_PASSWORD} element={<ForgotPasswordPage />} />
+        <Route path={PATHS.RESET_PASSWORD} element={<ResetPasswordPage />} />
+    </Route>,
+    <Route
+        element={
+            <RouteGuard>
+                <MainLayout />
+            </RouteGuard>
+        }
+        key="shared-authenticated"
+    >
+        <Route
+            path={PATHS.CHANGE_PASSWORD}
+            element={<ChangePasswordPage />}
+        />
     </Route>,
     <Route
         element={
@@ -90,10 +107,6 @@ const AppRouter = [
         <Route
             path={PATHS.ADMIN_MANAGE_JOB_POSITIONS}
             element={<AdminManageJobPositionPage />}
-        />
-        <Route
-            path={PATHS.ADMIN_MANAGE_CV_TEMPLATES}
-            element={<AdminManageCvTemplatePage />}
         />
         <Route path={PATHS.ADMIN_REPORT} element={<AdminReportPage />} />
     </Route>,

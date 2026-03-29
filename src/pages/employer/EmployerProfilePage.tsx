@@ -1,4 +1,5 @@
 import {
+    Button,
     Card,
     Col,
     Descriptions,
@@ -12,19 +13,23 @@ import {
 
 import {
     EnvironmentOutlined,
+    LockOutlined,
     MailOutlined,
     PhoneOutlined,
     TeamOutlined,
     UserOutlined,
 } from '@ant-design/icons'
+import { useNavigate } from 'react-router-dom'
 
 import { useEmployerWorkspace } from '@/hooks/useEmployerWorkspace'
+import { PATHS } from '@/routers/path'
 import { formatCount } from '@/utils/admin'
 import { isRecruitmentRequestPublished } from '@/utils/employer'
 
 const { Paragraph, Text, Title } = Typography
 
 const EmployerProfilePage = () => {
+    const navigate = useNavigate()
     const { applicationRows, currentDepartment, managerUser, recruitmentRequests } =
         useEmployerWorkspace()
 
@@ -55,11 +60,26 @@ const EmployerProfilePage = () => {
         <div className="portal-page">
             <section className="portal-hero portal-hero--light">
                 <span className="portal-hero__eyebrow">Thông tin đơn vị</span>
-                <Title level={2}>Thông tin đơn vị tuyển dụng</Title>
-                <Paragraph style={{ maxWidth: 760 }}>
-                    Trang hồ sơ employer hiện được đồng bộ từ dữ liệu đơn vị,
-                    người quản lý và các chỉ số tuyển dụng thực tế của hệ thống.
-                </Paragraph>
+                <Space
+                    style={{ width: '100%', justifyContent: 'space-between' }}
+                    align="start"
+                    wrap
+                >
+                    <div>
+                        <Title level={2}>Thông tin đơn vị tuyển dụng</Title>
+                        <Paragraph style={{ maxWidth: 760 }}>
+                            Trang hồ sơ employer hiện được đồng bộ từ dữ liệu đơn vị,
+                            người quản lý và các chỉ số tuyển dụng thực tế của hệ thống.
+                        </Paragraph>
+                    </div>
+                    <Button
+                        size="large"
+                        icon={<LockOutlined />}
+                        onClick={() => navigate(PATHS.CHANGE_PASSWORD)}
+                    >
+                        Đổi mật khẩu
+                    </Button>
+                </Space>
             </section>
 
             <Row gutter={[24, 24]}>

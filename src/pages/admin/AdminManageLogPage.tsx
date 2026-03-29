@@ -271,11 +271,6 @@ const AdminManageLogPage = () => {
                         <Typography.Title level={2}>
                             Nhật ký vận hành hệ thống
                         </Typography.Title>
-                        <Typography.Paragraph style={{ maxWidth: 720 }}>
-                            Trang này tổng hợp sự kiện vận hành từ tuyển dụng, hồ sơ
-                            và tài khoản để hỗ trợ theo dõi nhanh khi backend chưa
-                            expose audit log endpoint riêng.
-                        </Typography.Paragraph>
                     </div>
                     <Button
                         type="primary"
@@ -387,44 +382,6 @@ const AdminManageLogPage = () => {
                     ) : (
                         <Empty description="Không có sự kiện phù hợp bộ lọc" />
                     )}
-                </Card>
-
-                <Card
-                    variant="borderless"
-                    className={styles.sectionCard}
-                    title={
-                        <span className={styles.sectionTitle}>
-                            Ghi chú nguồn dữ liệu
-                        </span>
-                    }
-                >
-                    <div className={styles.detailList}>
-                        <div className={styles.detailItem}>
-                            <FileTextOutlined className={styles.detailIcon} />
-                            <span>
-                                `app/recruitment-request`: tạo, đăng và đóng tin tuyển dụng.
-                            </span>
-                        </div>
-                        <div className={styles.detailItem}>
-                            <ClockCircleOutlined className={styles.detailIcon} />
-                            <span>
-                                `app/application`: thời điểm ứng viên nộp hồ sơ.
-                            </span>
-                        </div>
-                        <div className={styles.detailItem}>
-                            <UserOutlined className={styles.detailIcon} />
-                            <span>
-                                `identity/users`: thời điểm tạo tài khoản nội bộ.
-                            </span>
-                        </div>
-                        <div className={styles.detailItem}>
-                            <WarningOutlined className={styles.detailIcon} />
-                            <span>
-                                Đây chưa phải audit log chuẩn. Khi backend expose endpoint riêng,
-                                trang này có thể chuyển sang log mức request/security đầy đủ.
-                            </span>
-                        </div>
-                    </div>
                 </Card>
             </div>
 

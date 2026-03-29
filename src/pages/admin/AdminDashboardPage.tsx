@@ -303,9 +303,6 @@ const AdminDashboardPage = () => {
                         </span>
                     }
                 >
-                    <div className={styles.sectionHint}>
-                        Theo dõi số lượng hồ sơ và tin tuyển dụng theo tháng.
-                    </div>
                     <div className={styles.chart}>
                         {loading || !chartsReady ? (
                             <Skeleton active paragraph={{ rows: 8 }} />
@@ -321,6 +318,12 @@ const AdminDashboardPage = () => {
                                     size: 4,
                                     shape: 'circle',
                                 }}
+                                meta={{
+                                    month: { alias: 'Tháng' },
+                                    type: { alias: 'Nhóm dữ liệu' },
+                                    value: { alias: 'Số lượng' },
+                                }}
+                                tooltip={{ title: 'month' }}
                                 axis={{
                                     y: {
                                         labelFormatter: '~s',
@@ -342,9 +345,6 @@ const AdminDashboardPage = () => {
                         </span>
                     }
                 >
-                    <div className={styles.sectionHint}>
-                        Phân bố hồ sơ theo các bước xử lý hiện tại.
-                    </div>
                     <div className={styles.chart}>
                         {loading || !chartsReady ? (
                             <Skeleton active paragraph={{ rows: 8 }} />
@@ -357,6 +357,11 @@ const AdminDashboardPage = () => {
                                 label={{
                                     position: 'top',
                                 }}
+                                meta={{
+                                    name: { alias: 'Trạng thái' },
+                                    value: { alias: 'Số lượng' },
+                                }}
+                                tooltip={{ title: 'name' }}
                                 axis={{
                                     x: {
                                         labelAutoHide: true,
@@ -378,9 +383,6 @@ const AdminDashboardPage = () => {
                     <span className={styles.sectionTitle}>Hồ sơ mới nhất</span>
                 }
             >
-                <div className={styles.sectionHint}>
-                    Danh sách hồ sơ cần quản trị viên theo dõi nhanh.
-                </div>
                 <Table
                     rowKey="key"
                     loading={loading}

@@ -257,7 +257,7 @@ export const useEmployerWorkspace = () => {
             notification.error({
                 message: 'Không tải được dữ liệu nhà tuyển dụng',
                 description:
-                    'Vui lòng kiểm tra kết nối hoặc quyền truy cập các API tuyển dụng.',
+                    'Vui lòng kiểm tra kết nối hoặc thử lại sau ít phút.',
             })
             setData(emptyWorkspace)
         } finally {

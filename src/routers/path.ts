@@ -4,6 +4,9 @@ export const PATHS = {
     // Common Paths
     LOGIN: '/login',
     REGISTER: '/register',
+    FORGOT_PASSWORD: '/forgot-password',
+    RESET_PASSWORD: '/reset-password',
+    CHANGE_PASSWORD: '/change-password',
 
     // Admin Paths
     ADMIN_DASHBOARD: '/admin',

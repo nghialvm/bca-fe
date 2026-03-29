@@ -378,11 +378,6 @@ const AdminManagePermissionPage = () => {
                         <Typography.Title level={2}>
                             Quản lý vai trò và quyền hạn
                         </Typography.Title>
-                        <Typography.Paragraph style={{ maxWidth: 720 }}>
-                            Đồng bộ role từ Identity và grant permission thực tế
-                            từ Permission Management để admin chỉnh sửa trực
-                            tiếp.
-                        </Typography.Paragraph>
                     </div>
                 </Space>
             </section>
@@ -424,12 +419,6 @@ const AdminManagePermissionPage = () => {
                                         </span>
                                     </Space>
                                 </div>
-                                <div className={styles.tableSubText}>
-                                    {role.name}
-                                </div>
-                                <div className={styles.roleMeta}>
-                                    {role.description}
-                                </div>
                                 <div className={styles.roleMeta}>
                                     {formatCount(role.users)} người dùng đang
                                     gán
@@ -448,10 +437,6 @@ const AdminManagePermissionPage = () => {
                         </span>
                     }
                 >
-                    <div className={styles.sectionHint}>
-                        {selectedRole?.name || 'Role'} đang được chọn để rà soát
-                        và cập nhật grant permission.
-                    </div>
                     <div style={{ marginTop: 16, marginBottom: 20 }}>
                         <Space wrap>
                             <span className={styles.summaryPill}>

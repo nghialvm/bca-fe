@@ -325,10 +325,6 @@ const AdminManageUserPage = () => {
                         <Typography.Title level={2}>
                             Quản lý danh sách người dùng
                         </Typography.Title>
-                        <Typography.Paragraph style={{ maxWidth: 720 }}>
-                            Đồng bộ tài khoản, vai trò và trạng thái hoạt động từ
-                            hệ thống Identity để quản trị tập trung.
-                        </Typography.Paragraph>
                     </div>
                     <Button
                         type="primary"

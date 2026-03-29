@@ -12,6 +12,21 @@ export interface LoginResult {
     user?: any
 }
 
+export interface ChangePasswordDto {
+    currentPassword: string
+    newPassword: string
+}
+
+export interface ForgotPasswordDto {
+    email: string
+}
+
+export interface ResetPasswordDto {
+    userId: string
+    token: string
+    newPassword: string
+}
+
 export interface RegisterDto {
     userName: string
     emailAddress: string

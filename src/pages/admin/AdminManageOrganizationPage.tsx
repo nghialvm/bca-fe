@@ -238,7 +238,9 @@ const AdminManageOrganizationPage = () => {
     return (
         <div className={styles.page}>
             <section className="portal-hero portal-hero--light">
-                <span className={styles.portalEyebrow}>Đơn vị</span>
+                <span className="portal-hero__eyebrow">
+                    Đơn vị
+                </span>
                 <Space
                     style={{ width: '100%', justifyContent: 'space-between' }}
                     align="start"
@@ -248,11 +250,6 @@ const AdminManageOrganizationPage = () => {
                         <Typography.Title level={2}>
                             Quản lý danh sách đơn vị
                         </Typography.Title>
-                        <Typography.Paragraph style={{ maxWidth: 720 }}>
-                            Đồng bộ danh mục phòng ban từ backend, đồng thời cho
-                            phép admin thêm, cập nhật và xóa đơn vị ngay trên
-                            giao diện quản trị.
-                        </Typography.Paragraph>
                     </div>
                     <Button
                         type="primary"

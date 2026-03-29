@@ -315,7 +315,9 @@ const AdminManageJobPositionPage = () => {
     return (
         <div className={styles.page}>
             <section className="portal-hero portal-hero--light">
-                <span className={styles.portalEyebrow}>Vị trí công việc</span>
+                <span className="portal-hero__eyebrow">
+                    Vị trí công việc
+                </span>
                 <Space
                     style={{ width: '100%', justifyContent: 'space-between' }}
                     align="start"
@@ -325,11 +327,6 @@ const AdminManageJobPositionPage = () => {
                         <Typography.Title level={2}>
                             Quản lý danh sách vị trí công việc
                         </Typography.Title>
-                        <Typography.Paragraph style={{ maxWidth: 720 }}>
-                            Đồng bộ danh mục vị trí công việc từ backend và cho
-                            phép admin tạo, cập nhật, xóa ngay trên giao diện
-                            quản trị.
-                        </Typography.Paragraph>
                     </div>
                     <Button
                         type="primary"

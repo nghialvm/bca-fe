@@ -202,6 +202,19 @@ export interface ApplicationDto {
     finalResult?: string | null
 }
 
+export interface ApplicationUpdateDto {
+    applicationCode: string
+    recruitmentRequestId: string
+    candidateId: string
+    appliedTime: string
+    status: string | number
+    cvFileId?: string | null
+    submittedCvUrl?: string | null
+    source?: string | null
+    note?: string | null
+    finalResult?: string | null
+}
+
 export interface CandidateDto {
     id: string
     candidateCode: string
@@ -316,6 +329,22 @@ export interface OfferDto {
     creationTime?: string
 }
 
+export interface CreateOfferDto {
+    applicationId: string
+    salary: number
+    startDate?: string | null
+    probationMonths?: number | null
+    workLocation?: string | null
+    benefit?: string | null
+    note?: string | null
+    sentTime?: string | null
+    expiredTime?: string | null
+}
+
+export interface UpdateOfferDto extends CreateOfferDto {
+    status: string | number
+}
+
 export interface CandidateResponseDto {
     id: string
     applicationId: string
@@ -326,6 +355,16 @@ export interface CandidateResponseDto {
     responseContent: string
     note?: string | null
     creationTime?: string
+}
+
+export interface CreateCandidateResponseDto {
+    applicationId: string
+    offerId?: string | null
+    responseType: string | number
+    responseChannel: string | number
+    responseTime: string
+    responseContent: string
+    note?: string | null
 }
 
 export interface IdentityRoleDto {
@@ -558,7 +597,10 @@ export class AdminService {
     }
 
     async submitRecruitmentRequestForApproval(id: string) {
-        return await http.post(`app/recruitment-request/${id}/submit-for-approval`, {})
+        return await http.post(
+            `app/recruitment-request/${id}/submit-for-approval`,
+            {}
+        )
     }
 
     async rejectRecruitmentRequest(id: string, reason: string) {
@@ -584,6 +626,10 @@ export class AdminService {
                 ...query,
             },
         })
+    }
+
+    async updateApplication(id: string, input: ApplicationUpdateDto) {
+        return await http.put(`app/application/${id}`, input)
     }
 
     async getCandidates(query: PagedQuery = {}) {
@@ -648,6 +694,14 @@ export class AdminService {
         })
     }
 
+    async createOffer(input: CreateOfferDto) {
+        return await http.post('app/offer', input)
+    }
+
+    async updateOffer(id: string, input: UpdateOfferDto) {
+        return await http.put(`app/offer/${id}`, input)
+    }
+
     async getCandidateResponses(query: CandidateResponseQuery = {}) {
         return await http.get('app/candidate-response', {
             params: {
@@ -655,6 +709,10 @@ export class AdminService {
                 ...query,
             },
         })
+    }
+
+    async createCandidateResponse(input: CreateCandidateResponseDto) {
+        return await http.post('app/candidate-response', input)
     }
 
     async getIdentityUsers(query: PagedQuery = {}) {

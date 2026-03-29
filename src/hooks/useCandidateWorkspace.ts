@@ -8,6 +8,7 @@ import CandidateService, {
     CandidatePortalApplicationDto,
     CandidatePortalJobDto,
     CandidatePortalProfileDto,
+    UpdateCandidatePortalProfileDto,
     type CandidateWorkspaceUser,
 } from '@/services/candidate'
 
@@ -61,6 +62,7 @@ export const useCandidateWorkspace = () => {
     const [data, setData] = useState<CandidateWorkspaceData>(emptyWorkspace)
     const [loading, setLoading] = useState(false)
     const [applyingJobId, setApplyingJobId] = useState<string | null>(null)
+    const [savingProfile, setSavingProfile] = useState(false)
 
     const loadData = async () => {
         if (!user?.id) {
@@ -84,7 +86,7 @@ export const useCandidateWorkspace = () => {
                 message: 'Không tải được dữ liệu ứng viên',
                 description: getErrorDescription(
                     error,
-                    'Vui lòng kiểm tra kết nối hoặc quyền truy cập các API tuyển dụng hiện có.'
+                    'Vui lòng kiểm tra kết nối hoặc thử lại sau ít phút.'
                 ),
             })
             setData(emptyWorkspace)
@@ -112,7 +114,7 @@ export const useCandidateWorkspace = () => {
             notification.success({
                 message: 'Ứng tuyển thành công',
                 description:
-                    'Hồ sơ của bạn đã được ghi nhận trên hệ thống tuyển dụng.',
+                    'Hồ sơ của bạn đã được ghi nhận thành công.',
             })
 
             await loadData()
@@ -132,6 +134,42 @@ export const useCandidateWorkspace = () => {
         }
     }
 
+    const updateProfile = async (input: UpdateCandidatePortalProfileDto) => {
+        if (!user?.id) {
+            notification.error({
+                message: 'Không xác định được hồ sơ ứng viên',
+                description:
+                    'Phiên đăng nhập hiện tại không có thông tin ứng viên để cập nhật hồ sơ.',
+            })
+            return false
+        }
+
+        setSavingProfile(true)
+        try {
+            await CandidateService.updateCandidateProfile(user.id, input)
+
+            notification.success({
+                message: 'Đã cập nhật hồ sơ',
+                description:
+                    'Thông tin hồ sơ ứng viên của bạn đã được lưu trên hệ thống.',
+            })
+
+            await loadData()
+            return true
+        } catch (error) {
+            notification.error({
+                message: 'Không thể cập nhật hồ sơ',
+                description: getErrorDescription(
+                    error,
+                    'Vui lòng kiểm tra lại thông tin hồ sơ và thử lại.'
+                ),
+            })
+            return false
+        } finally {
+            setSavingProfile(false)
+        }
+    }
+
     useEffect(() => {
         void loadData()
     }, [user?.id])
@@ -140,7 +178,9 @@ export const useCandidateWorkspace = () => {
         ...data,
         loading,
         applyingJobId,
+        savingProfile,
         applyToJob,
+        updateProfile,
         reload: loadData,
     }
 }

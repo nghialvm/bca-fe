@@ -28,7 +28,7 @@ import dayjs from 'dayjs'
 import { useEmployerWorkspace } from '@/hooks/useEmployerWorkspace'
 import { formatCount, formatPercent } from '@/utils/admin'
 import {
-    buildApplicationStageStats,
+    buildRecruitmentFunnelStats,
     isApplicationHired,
     isRecruitmentRequestPublished,
 } from '@/utils/employer'
@@ -49,8 +49,15 @@ type PerformanceRow = {
 
 const EmployerReportPage = () => {
     const [chartsReady, setChartsReady] = useState(false)
-    const { applicationRows, currentDepartment, interviews, loading, recruitmentRequests } =
-        useEmployerWorkspace()
+    const {
+        applicationRows,
+        applicationScreenings,
+        currentDepartment,
+        interviews,
+        loading,
+        offers,
+        recruitmentRequests,
+    } = useEmployerWorkspace()
 
     useEffect(() => {
         let frameId = 0
@@ -76,9 +83,16 @@ const EmployerReportPage = () => {
         ? Number(((hiredApplications / totalApplications) * 100).toFixed(1))
         : 0
     const scheduledInterviews = interviews.filter((item) =>
-        ['1', '2', '3', '5', 'pending', 'confirmed', 'rescheduled', 'completed'].includes(
-            String(item.status).toLowerCase()
-        )
+        [
+            '1',
+            '2',
+            '3',
+            '5',
+            'pending',
+            'confirmed',
+            'rescheduled',
+            'completed',
+        ].includes(String(item.status).toLowerCase())
     ).length
     const activeJobs = recruitmentRequests.filter((item) =>
         isRecruitmentRequestPublished(item.status)
@@ -87,7 +101,9 @@ const EmployerReportPage = () => {
     const monthlyTrend = useMemo(() => {
         const grouped = applicationRows.reduce(
             (accumulator, row) => {
-                const monthKey = dayjs(row.application.appliedTime).format('MM/YYYY')
+                const monthKey = dayjs(row.application.appliedTime).format(
+                    'MM/YYYY'
+                )
 
                 if (!accumulator[monthKey]) {
                     accumulator[monthKey] = {
@@ -104,21 +120,29 @@ const EmployerReportPage = () => {
 
                 return accumulator
             },
-            {} as Record<string, { month: string; applications: number; hired: number }>
+            {} as Record<
+                string,
+                { month: string; applications: number; hired: number }
+            >
         )
 
-        return Object.values(grouped).sort((left, right) =>
-            dayjs(`01/${left.month}`, 'DD/MM/YYYY').valueOf() -
-            dayjs(`01/${right.month}`, 'DD/MM/YYYY').valueOf()
+        return Object.values(grouped).sort(
+            (left, right) =>
+                dayjs(`01/${left.month}`, 'DD/MM/YYYY').valueOf() -
+                dayjs(`01/${right.month}`, 'DD/MM/YYYY').valueOf()
         )
     }, [applicationRows])
 
-    const conversionRates = buildApplicationStageStats(
-        applicationRows.map((item) => item.application.status)
-    ).map((item) => ({
-        stage: item.type,
-        count: item.value,
-    }))
+    const conversionRates = useMemo(
+        () =>
+            buildRecruitmentFunnelStats(
+                applicationRows.map((item) => item.application),
+                applicationScreenings,
+                interviews,
+                offers
+            ),
+        [applicationRows, applicationScreenings, interviews, offers]
+    )
 
     const jobPerformance = useMemo(
         () =>
@@ -146,7 +170,9 @@ const EmployerReportPage = () => {
                     (row) => row.application.recruitmentRequestId === job.id
                 )
                 const interviewed = applicants.filter((row) =>
-                    ['4', '5', '6', '7'].includes(String(row.application.status))
+                    ['4', '5', '6', '7'].includes(
+                        String(row.application.status)
+                    )
                 )
                 const hired = applicants.filter((row) =>
                     isApplicationHired(row.application.status)
@@ -220,9 +246,8 @@ const EmployerReportPage = () => {
                     <div>
                         <Title level={2}>Báo cáo và thống kê tuyển dụng</Title>
                         <Paragraph style={{ maxWidth: 760 }}>
-                            Báo cáo employer đã được chuyển sang dùng dữ liệu API
-                            thực tế, giúp theo dõi xu hướng ứng tuyển, tỷ lệ
-                            tuyển dụng và hiệu suất từng vị trí của đơn vị.
+                            Theo dõi xu hướng ứng tuyển, hiệu suất từng vị trí và
+                            tiến độ tuyển dụng để điều chỉnh kế hoạch của đơn vị.
                         </Paragraph>
                     </div>
                     <Button
@@ -260,7 +285,9 @@ const EmployerReportPage = () => {
                             value={hiringSuccessRate}
                             suffix="%"
                             prefix={<RiseOutlined />}
-                            formatter={(value) => formatPercent(Number(value)).replace('%', '')}
+                            formatter={(value) =>
+                                formatPercent(Number(value)).replace('%', '')
+                            }
                         />
                     </Card>
                 </Col>
@@ -302,6 +329,11 @@ const EmployerReportPage = () => {
                                     yField="applications"
                                     color="#0B3D2E"
                                     point={{ size: 4 }}
+                                    meta={{
+                                        month: { alias: 'Tháng' },
+                                        applications: { alias: 'Số hồ sơ' },
+                                    }}
+                                    tooltip={{ title: 'month' }}
                                 />
                             ) : (
                                 <Empty description="Chưa có dữ liệu xu hướng theo tháng" />
@@ -325,6 +357,11 @@ const EmployerReportPage = () => {
                                     yField="applications"
                                     color="#166534"
                                     label={{ position: 'top' }}
+                                    meta={{
+                                        name: { alias: 'Vị trí' },
+                                        applications: { alias: 'Số hồ sơ' },
+                                    }}
+                                    tooltip={{ title: 'name' }}
                                 />
                             ) : (
                                 <Empty description="Chưa có dữ liệu hiệu suất theo vị trí" />
@@ -343,15 +380,17 @@ const EmployerReportPage = () => {
                     >
                         {conversionRates.map((item, index) => {
                             const base = conversionRates[0]?.count || 1
-                            const percent = Math.round((item.count / base) * 100)
+                            const percent = Math.round(
+                                (item.count / base) * 100
+                            )
 
                             return (
                                 <div key={item.stage}>
                                     <div className="portal-split">
                                         <span>{item.stage}</span>
                                         <span>
-                                            {formatCount(item.count)} ứng viên ({percent}
-                                            %)
+                                            {formatCount(item.count)} ứng viên (
+                                            {percent}%)
                                         </span>
                                     </div>
                                     <Progress

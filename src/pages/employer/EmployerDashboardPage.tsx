@@ -88,9 +88,10 @@ const EmployerDashboardPage = () => {
                         String(item.status).toLowerCase()
                     )
                 )
-                .sort((left, right) =>
-                    dayjs(left.scheduledTime).valueOf() -
-                    dayjs(right.scheduledTime).valueOf()
+                .sort(
+                    (left, right) =>
+                        dayjs(left.scheduledTime).valueOf() -
+                        dayjs(right.scheduledTime).valueOf()
                 ),
         [interviews]
     )
@@ -117,13 +118,10 @@ const EmployerDashboardPage = () => {
                 <span className="portal-hero__eyebrow">
                     Tổng quan tuyển dụng
                 </span>
-                <Title level={2}>
-                    Tổng quan hệ thống tuyển dụng của đơn vị
-                </Title>
+                <Title level={2}>Bức tranh tuyển dụng của đơn vị</Title>
                 <Paragraph style={{ maxWidth: 760 }}>
-                    Dữ liệu tại trang này được đồng bộ trực tiếp từ các API
-                    tuyển dụng của hệ thống, giúp đơn vị theo dõi vị trí đang
-                    tuyển, hồ sơ ứng viên và lịch phỏng vấn theo thời gian thực.
+                    Theo dõi nhanh các vị trí đang mở, số lượng hồ sơ, lịch
+                    phỏng vấn sắp tới và tiến độ tuyển dụng của đơn vị.
                 </Paragraph>
             </section>
 
@@ -166,11 +164,7 @@ const EmployerDashboardPage = () => {
                                 title="Lịch phỏng vấn"
                                 value={stats.upcomingInterviews}
                                 formatter={(value) => formatCount(Number(value))}
-                                suffix={
-                                    <Text className="portal-muted">
-                                        Sắp tới
-                                    </Text>
-                                }
+                                suffix={<Text className="portal-muted">Sắp tới</Text>}
                             />
                         </Space>
                     </Card>
@@ -192,7 +186,7 @@ const EmployerDashboardPage = () => {
             </Row>
 
             <Row gutter={[24, 24]}>
-                <Col xs={24} xl={14}>
+                <Col xs={24} xl={12}>
                     <Card
                         title="Ứng viên theo vị trí"
                         className="portal-section-card"
@@ -213,6 +207,11 @@ const EmployerDashboardPage = () => {
                                             labelAutoRotate: false,
                                         },
                                     }}
+                                    meta={{
+                                        name: { alias: 'Vị trí' },
+                                        applicants: { alias: 'Số ứng viên' },
+                                    }}
+                                    tooltip={{ title: 'name' }}
                                 />
                             ) : (
                                 <Empty description="Chưa có dữ liệu ứng viên theo vị trí" />
@@ -220,9 +219,9 @@ const EmployerDashboardPage = () => {
                         </div>
                     </Card>
                 </Col>
-                <Col xs={24} xl={10}>
+                <Col xs={24} xl={12}>
                     <Card
-                        title="Phân bổ theo giai đoạn"
+                        title="Phân bố theo giai đoạn"
                         className="portal-section-card"
                     >
                         {loading ? (
@@ -233,8 +232,8 @@ const EmployerDashboardPage = () => {
                                 data={stageData}
                                 angleField="value"
                                 colorField="type"
-                                innerRadius={0.58}
-                                label={{ text: 'type', position: 'outside' }}
+                                label={{ text: 'type' }}
+                                legend={{ color: { position: 'right' } }}
                                 scale={{
                                     color: {
                                         range: [
@@ -246,6 +245,11 @@ const EmployerDashboardPage = () => {
                                         ],
                                     },
                                 }}
+                                meta={{
+                                    type: { alias: 'Giai đoạn' },
+                                    value: { alias: 'Số lượng' },
+                                }}
+                                tooltip={{ title: 'type' }}
                             />
                         ) : (
                             <Empty description="Chưa có dữ liệu giai đoạn tuyển dụng" />

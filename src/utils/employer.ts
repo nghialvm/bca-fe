@@ -1,3 +1,9 @@
+import type {
+    ApplicationDto,
+    ApplicationScreeningDto,
+    InterviewScheduleDto,
+    OfferDto,
+} from '@/services/admin'
 import {
     formatCount,
     getApplicationStatusColor,
@@ -84,10 +90,7 @@ export const getEmploymentTypeLabel = (value?: string | null) => {
     return value?.trim() || '-'
 }
 
-export const formatSalaryRange = (
-    min?: number | null,
-    max?: number | null
-) => {
+export const formatSalaryRange = (min?: number | null, max?: number | null) => {
     const formatter = new Intl.NumberFormat('vi-VN')
 
     if (min && max) {
@@ -114,6 +117,74 @@ export const isApplicationHired = (status: unknown) =>
 export const isApplicationSelected = (status: unknown) =>
     ['9', 'offeraccepted', '11', 'hired'].includes(normalizeKey(status))
 
+export const isApplicationScreened = (status: unknown) =>
+    [
+        '2',
+        'screening',
+        '3',
+        'screeningrejected',
+        '4',
+        'interviewscheduled',
+        '5',
+        'interviewing',
+        '6',
+        'passedinterview',
+        '7',
+        'failedinterview',
+        '8',
+        'offered',
+        '9',
+        'offeraccepted',
+        '10',
+        'offerdeclined',
+        '11',
+        'hired',
+        '12',
+        'rejected',
+        '13',
+        'cancelled',
+    ].includes(normalizeKey(status))
+
+export const isApplicationInterviewed = (status: unknown) =>
+    [
+        '4',
+        'interviewscheduled',
+        '5',
+        'interviewing',
+        '6',
+        'passedinterview',
+        '7',
+        'failedinterview',
+        '8',
+        'offered',
+        '9',
+        'offeraccepted',
+        '10',
+        'offerdeclined',
+        '11',
+        'hired',
+        '12',
+        'rejected',
+        '13',
+        'cancelled',
+    ].includes(normalizeKey(status))
+
+export const isApplicationOffered = (status: unknown) =>
+    [
+        '8',
+        'offered',
+        '9',
+        'offeraccepted',
+        '10',
+        'offerdeclined',
+        '11',
+        'hired',
+        '12',
+        'rejected',
+        '13',
+        'cancelled',
+    ].includes(normalizeKey(status))
+
 export const getApplicationStageBucket = (status: unknown) => {
     const key = normalizeKey(status)
 
@@ -122,13 +193,24 @@ export const getApplicationStageBucket = (status: unknown) => {
         return 'Sàng lọc'
     }
     if (
-        ['4', 'interviewscheduled', '5', 'interviewing', '6', 'passedinterview', '7', 'failedinterview'].includes(
-            key
-        )
+        [
+            '4',
+            'interviewscheduled',
+            '5',
+            'interviewing',
+            '6',
+            'passedinterview',
+            '7',
+            'failedinterview',
+        ].includes(key)
     ) {
         return 'Phỏng vấn'
     }
-    if (['8', 'offered', '9', 'offeraccepted', '10', 'offerdeclined'].includes(key)) {
+    if (
+        ['8', 'offered', '9', 'offeraccepted', '10', 'offerdeclined'].includes(
+            key
+        )
+    ) {
         return 'Offer'
     }
     if (['11', 'hired'].includes(key)) return 'Đã tuyển'
@@ -154,6 +236,93 @@ export const buildApplicationStageStats = (
         type: bucket,
         value: counts[bucket] || 0,
     }))
+}
+
+export const buildRecruitmentFunnelStats = (
+    applications: ApplicationDto[],
+    screenings: ApplicationScreeningDto[],
+    interviews: InterviewScheduleDto[],
+    offers: OfferDto[]
+) => {
+    const applicationIds = new Set(applications.map((item) => item.id))
+    const screenedIds = new Set<string>()
+    const interviewedIds = new Set<string>()
+    const offeredIds = new Set<string>()
+    const hiredIds = new Set<string>()
+
+    applications.forEach((application) => {
+        if (isApplicationScreened(application.status)) {
+            screenedIds.add(application.id)
+        }
+
+        if (isApplicationInterviewed(application.status)) {
+            interviewedIds.add(application.id)
+        }
+
+        if (isApplicationOffered(application.status)) {
+            offeredIds.add(application.id)
+        }
+
+        if (isApplicationHired(application.status)) {
+            hiredIds.add(application.id)
+        }
+    })
+
+    screenings.forEach((screening) => {
+        if (applicationIds.has(screening.applicationId)) {
+            screenedIds.add(screening.applicationId)
+        }
+    })
+
+    interviews.forEach((interview) => {
+        if (applicationIds.has(interview.applicationId)) {
+            interviewedIds.add(interview.applicationId)
+        }
+    })
+
+    offers.forEach((offer) => {
+        if (applicationIds.has(offer.applicationId)) {
+            offeredIds.add(offer.applicationId)
+        }
+    })
+
+    offeredIds.forEach((applicationId) => {
+        interviewedIds.add(applicationId)
+        screenedIds.add(applicationId)
+    })
+
+    interviewedIds.forEach((applicationId) => {
+        screenedIds.add(applicationId)
+    })
+
+    hiredIds.forEach((applicationId) => {
+        offeredIds.add(applicationId)
+        interviewedIds.add(applicationId)
+        screenedIds.add(applicationId)
+    })
+
+    return [
+        {
+            stage: 'Đã nộp',
+            count: applications.length,
+        },
+        {
+            stage: 'Đã sàng lọc',
+            count: screenedIds.size,
+        },
+        {
+            stage: 'Có lịch phỏng vấn',
+            count: interviewedIds.size,
+        },
+        {
+            stage: 'Đã gửi offer',
+            count: offeredIds.size,
+        },
+        {
+            stage: 'Đã tuyển',
+            count: hiredIds.size,
+        },
+    ]
 }
 
 export const formatRecruitmentStatus = (status: unknown) => ({

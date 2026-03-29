@@ -1,10 +1,10 @@
 import { FC, useEffect, useState } from 'react'
 
-import { Button, Checkbox, Form, Input, Typography, notification } from 'antd'
+import { Button, Checkbox, Form, Input, Space, Typography, notification } from 'antd'
 
 import { LockOutlined, UserOutlined } from '@ant-design/icons'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { PATHS } from '@/routers/path'
 import { initializeAntiforgeryToken } from '@/services/http'
@@ -13,7 +13,13 @@ import { getDefaultPathByRole, getSiteRole } from '@/utils/role'
 
 import styles from '../styles/LoginPage.module.css'
 
-const { Title } = Typography
+const { Paragraph, Title } = Typography
+
+type LoginFormValues = {
+    username: string
+    password: string
+    remember: boolean
+}
 
 const LoginPage: FC = () => {
     const navigate = useNavigate()
@@ -30,7 +36,7 @@ const LoginPage: FC = () => {
         }
     }, [isAuthenticated, navigate, user])
 
-    const onLoginFinish = async (values: any) => {
+    const onLoginFinish = async (values: LoginFormValues) => {
         setLoginLoading(true)
         try {
             const loginResponse: any = await dispatch(
@@ -40,7 +46,11 @@ const LoginPage: FC = () => {
                     rememberMe: values.remember,
                 })
             )
-            if (loginAction.fulfilled.match(loginResponse) && loginResponse.payload?.result === 1) {
+
+            if (
+                loginAction.fulfilled.match(loginResponse) &&
+                loginResponse.payload?.result === 1
+            ) {
                 await initializeAntiforgeryToken(true)
                 const userResponse: any = await dispatch(getCurrentUserAction())
                 const currentUser = userResponse.payload
@@ -51,32 +61,25 @@ const LoginPage: FC = () => {
                 ) {
                     notification.success({
                         message: 'Đăng nhập thành công',
-                        description: 'Chào mừng bạn quay trở lại hệ thống.',
+                        description: 'Chào mừng bạn quay lại hệ thống.',
                     })
                     navigate(getDefaultPathByRole(getSiteRole(currentUser)), {
                         replace: true,
                     })
-                } else {
-                    notification.error({
-                        message: 'Đăng nhập thất bại',
-                        description:
-                            'Đã xác thực nhưng không tải được thông tin người dùng.',
-                    })
+                    return
                 }
-            }
-            else if (loginAction.fulfilled.match(loginResponse) && loginResponse.payload?.result === 2) {
+
                 notification.error({
                     message: 'Đăng nhập thất bại',
-                    description:
-                        'Tên đăng nhập hoặc mật khẩu không chính xác.',
+                    description: 'Không thể tải thông tin tài khoản.',
                 })
+                return
             }
-            else if (loginAction.rejected.match(loginResponse)) {
-                notification.error({
-                    message: 'Đăng nhập thất bại',
-                    description: 'Tên đăng nhập hoặc mật khẩu không chính xác.',
-                })
-            }
+
+            notification.error({
+                message: 'Đăng nhập thất bại',
+                description: 'Tên đăng nhập hoặc mật khẩu không chính xác.',
+            })
         } catch {
             notification.error({
                 message: 'Đăng nhập thất bại',
@@ -98,8 +101,11 @@ const LoginPage: FC = () => {
                     <Title level={1} className={styles.title}>
                         Đăng nhập
                     </Title>
+                    <Paragraph style={{ marginBottom: 28, color: '#4b5563' }}>
+                        Sử dụng tài khoản của bạn để truy cập hệ thống tuyển dụng.
+                    </Paragraph>
 
-                    <Form
+                    <Form<LoginFormValues>
                         autoComplete="off"
                         onFinish={onLoginFinish}
                         className={styles.form}
@@ -112,7 +118,7 @@ const LoginPage: FC = () => {
                             rules={[
                                 {
                                     required: true,
-                                    message: 'Vui lòng nhập tên đăng nhập',
+                                    message: 'Vui lòng nhập tên đăng nhập.',
                                 },
                             ]}
                         >
@@ -133,7 +139,7 @@ const LoginPage: FC = () => {
                             rules={[
                                 {
                                     required: true,
-                                    message: 'Vui lòng nhập mật khẩu',
+                                    message: 'Vui lòng nhập mật khẩu.',
                                 },
                             ]}
                         >
@@ -147,16 +153,32 @@ const LoginPage: FC = () => {
                             />
                         </Form.Item>
 
-                        <Form.Item
-                            name="remember"
-                            valuePropName="checked"
-                            className={styles.rememberItem}
-                            label={null}
+                        <div
+                            style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                gap: 12,
+                                marginBottom: 28,
+                                flexWrap: 'wrap',
+                            }}
                         >
-                            <Checkbox className={styles.rememberCheckbox}>
-                                Nhớ mật khẩu đăng nhập
-                            </Checkbox>
-                        </Form.Item>
+                            <Form.Item
+                                name="remember"
+                                valuePropName="checked"
+                                className={styles.rememberItem}
+                                label={null}
+                                style={{ marginBottom: 0 }}
+                            >
+                                <Checkbox className={styles.rememberCheckbox}>
+                                    Ghi nhớ đăng nhập
+                                </Checkbox>
+                            </Form.Item>
+
+                            <Link to={PATHS.FORGOT_PASSWORD}>
+                                Quên mật khẩu?
+                            </Link>
+                        </div>
 
                         <Form.Item className={styles.actionItem}>
                             <Button
@@ -171,15 +193,21 @@ const LoginPage: FC = () => {
                             </Button>
                         </Form.Item>
 
-                        <Button
-                            className={styles.usbButton}
-                            htmlType="button"
-                            block
-                            size="large"
-                            onClick={() => navigate(PATHS.REGISTER)}
+                        <Space
+                            direction="vertical"
+                            size={12}
+                            style={{ width: '100%' }}
                         >
-                            Đăng ký
-                        </Button>
+                            <Button
+                                className={styles.usbButton}
+                                htmlType="button"
+                                block
+                                size="large"
+                                onClick={() => navigate(PATHS.REGISTER)}
+                            >
+                                Đăng ký
+                            </Button>
+                        </Space>
                     </Form>
                 </div>
             </section>

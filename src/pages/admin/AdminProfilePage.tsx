@@ -10,8 +10,10 @@ import {
     UserOutlined,
 } from '@ant-design/icons'
 import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
 
 import { User } from '@/interfaces/user/user.interface'
+import { PATHS } from '@/routers/path'
 import AdminService, {
     ApplicationDto,
     GetPermissionListResultDto,
@@ -45,6 +47,7 @@ type ActivityItem = {
 const roleProviderName = 'R'
 
 const AdminProfilePage = () => {
+    const navigate = useNavigate()
     const user = useSelector((store: RootState) => store.auth.user)
     const [loading, setLoading] = useState(false)
     const [identityUser, setIdentityUser] = useState<IdentityUserDto | null>(
@@ -223,7 +226,12 @@ const AdminProfilePage = () => {
                         </Typography.Paragraph>
                     </div>
                     <Space>
-                        <Button size="large">Đổi mật khẩu</Button>
+                        <Button
+                            size="large"
+                            onClick={() => navigate(PATHS.CHANGE_PASSWORD)}
+                        >
+                            Đổi mật khẩu
+                        </Button>
                         <Button type="primary" size="large">
                             Cập nhật hồ sơ
                         </Button>

@@ -1,13 +1,12 @@
-import { Avatar, Badge, Button, Dropdown, Input, notification } from 'antd'
+import { Avatar, Button, Dropdown, Input, notification } from 'antd'
 
 import {
-    BellOutlined,
     LogoutOutlined,
+    LockOutlined,
     MenuFoldOutlined,
     MenuOutlined,
     MenuUnfoldOutlined,
     SearchOutlined,
-    SettingOutlined,
     UserOutlined,
 } from '@ant-design/icons'
 import { useDispatch, useSelector } from 'react-redux'
@@ -42,9 +41,9 @@ const HeaderComponent = ({
     const user = useSelector((store: any) => store.auth.user)
     const siteRole = getSiteRole(user)
     const displayName =
-        user?.full_name || user?.userName || user?.email || 'Admin'
+        user?.full_name || user?.userName || user?.email || 'Người dùng'
     const profilePath = getProfilePathByRole(siteRole)
-    const roleLabel = getRoleDisplayName(siteRole) || 'Quản trị viên'
+    const roleLabel = getRoleDisplayName(siteRole) || 'Người dùng hệ thống'
 
     const handleLogout = async () => {
         await dispatch(logoutAction() as any)
@@ -62,9 +61,9 @@ const HeaderComponent = ({
             label: <Link to={profilePath}>Thông tin tài khoản</Link>,
         },
         {
-            key: 'settings',
-            icon: <SettingOutlined />,
-            label: 'Cài đặt cá nhân',
+            key: 'change-password',
+            icon: <LockOutlined />,
+            label: <Link to={PATHS.CHANGE_PASSWORD}>Đổi mật khẩu</Link>,
         },
         {
             key: 'logout',
@@ -101,13 +100,6 @@ const HeaderComponent = ({
 
             {isAuthenticated ? (
                 <div className={styles.rightSection}>
-                    <Badge dot>
-                        <Button
-                            type="text"
-                            icon={<BellOutlined />}
-                            className={styles.notificationButton}
-                        />
-                    </Badge>
                     <Dropdown menu={{ items }} trigger={['click']}>
                         <div className={styles.profile}>
                             <Avatar

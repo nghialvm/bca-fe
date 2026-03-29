@@ -26,7 +26,10 @@ import { Link } from 'react-router-dom'
 
 import { useCandidateWorkspace } from '@/hooks/useCandidateWorkspace'
 import { PATHS } from '@/routers/path'
-import { getApplicationStatusColor, getApplicationStatusLabel } from '@/utils/admin'
+import {
+    getApplicationStatusColor,
+    getApplicationStatusLabel,
+} from '@/utils/admin'
 import {
     getCandidateApplicationProgress,
     getCandidateProfileStrengths,
@@ -79,7 +82,8 @@ const CandidateDashboardPage = () => {
     )
 
     const announcements = useMemo(() => {
-        const items: Array<{ id: string; title: string; description: string }> = []
+        const items: Array<{ id: string; title: string; description: string }> =
+            []
 
         const interviewItems = applications.filter((item) =>
             isCandidateInterviewStage(item.status)
@@ -89,7 +93,7 @@ const CandidateDashboardPage = () => {
                 id: 'interview',
                 title: 'Bạn đang có hồ sơ ở vòng phỏng vấn',
                 description:
-                    'Theo dõi lịch hẹn và ghi chú trong từng hồ sơ để không bỏ lỡ tiến độ.',
+                    'Theo dõi lịch hẹn và chuẩn bị thông tin cần thiết trong từng hồ sơ để không bỏ lỡ tiến độ.',
             })
         }
 
@@ -99,18 +103,18 @@ const CandidateDashboardPage = () => {
         if (actionItems.length) {
             items.push({
                 id: 'action',
-                title: 'Hệ thống đang chờ phản hồi từ bạn',
+                title: 'Có hồ sơ đang chờ bạn phản hồi',
                 description:
-                    'Một số hồ sơ đang cần bạn xác nhận lịch phỏng vấn hoặc xử lý offer.',
+                    'Một số hồ sơ đang cần bạn xác nhận lịch phỏng vấn hoặc phản hồi offer.',
             })
         }
 
         if (!items.length) {
             items.push({
                 id: 'welcome',
-                title: 'Không gian ứng viên đã được đồng bộ API',
+                title: 'Mọi thông tin của bạn đã sẵn sàng',
                 description:
-                    'Dữ liệu hồ sơ, việc làm và ứng tuyển hiện đang lấy trực tiếp từ backend.',
+                    'Bạn có thể theo dõi hồ sơ cá nhân, quá trình ứng tuyển và các vị trí phù hợp ngay tại đây.',
             })
         }
 
@@ -135,13 +139,11 @@ const CandidateDashboardPage = () => {
                 <Row gutter={[24, 24]} align="middle">
                     <Col xs={24} lg={15}>
                         <Title level={2}>
-                            Theo dõi hồ sơ và tìm cơ hội phù hợp trong một giao diện
-                            thống nhất
+                            Theo dõi hồ sơ và tìm cơ hội phù hợp trong một nơi
                         </Title>
                         <Paragraph style={{ maxWidth: 720, marginBottom: 24 }}>
-                            Dashboard ứng viên hiện lấy dữ liệu thực từ backend để
-                            tổng hợp hồ sơ cá nhân, hồ sơ ứng tuyển và danh sách việc
-                            làm đang mở trong cùng một màn hình.
+                            Nhanh chóng xem lại hồ sơ cá nhân, tiến độ ứng tuyển gần
+                            đây và những vị trí đang mở phù hợp với bạn.
                         </Paragraph>
                         <Space wrap size="middle">
                             <Link to={PATHS.CANDIDATE_JOBS}>
@@ -162,7 +164,9 @@ const CandidateDashboardPage = () => {
                                     size={12}
                                     style={{ width: '100%' }}
                                 >
-                                    <Text className="portal-muted">Hồ sơ của bạn</Text>
+                                    <Text className="portal-muted">
+                                        Hồ sơ của bạn
+                                    </Text>
                                     <Title level={4} style={{ margin: 0 }}>
                                         {profile.fullName}
                                     </Title>
@@ -255,9 +259,9 @@ const CandidateDashboardPage = () => {
                                             <Paragraph
                                                 className="portal-muted"
                                                 style={{ marginTop: 12 }}
-                                                >
+                                            >
                                                 {item.note ||
-                                                    `${item.jobPositionName || 'Vị trí'} tại ${item.workLocation || 'hệ thống BCA'}.`}
+                                                    `${item.jobPositionName || 'Vị trí'} tại ${item.workLocation || 'BCA'}.`}
                                             </Paragraph>
                                             <Progress
                                                 percent={getCandidateApplicationProgress(
@@ -296,7 +300,7 @@ const CandidateDashboardPage = () => {
                         style={{ width: '100%' }}
                     >
                         <Card
-                            title="Thông báo từ hệ thống"
+                            title="Thông báo"
                             className="portal-section-card"
                         >
                             <List
@@ -347,7 +351,13 @@ const CandidateDashboardPage = () => {
                                                         </Text>
                                                     </div>
                                                 </div>
-                                                <Tag color={item.hasApplied ? 'blue' : 'green'}>
+                                                <Tag
+                                                    color={
+                                                        item.hasApplied
+                                                            ? 'blue'
+                                                            : 'green'
+                                                    }
+                                                >
                                                     {item.hasApplied
                                                         ? 'Đã ứng tuyển'
                                                         : 'Đang mở'}

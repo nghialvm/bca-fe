@@ -523,11 +523,6 @@ const AdminReportPage = () => {
                         <Typography.Title level={2}>
                             Quản lý báo cáo và thống kê
                         </Typography.Title>
-                        <Typography.Paragraph style={{ maxWidth: 720 }}>
-                            Lọc theo thời gian, đơn vị và vị trí để phân tích
-                            hiệu quả tuyển dụng, phễu chuyển đổi và khả năng
-                            chốt offer từ dữ liệu backend.
-                        </Typography.Paragraph>
                     </div>
                     <Space wrap>
                         <Button
@@ -535,7 +530,7 @@ const AdminReportPage = () => {
                             icon={<ReloadOutlined />}
                             onClick={handleResetFilters}
                         >
-                            Đặt lại bộ lọc
+                            Làm mới
                         </Button>
                         <Button
                             type="primary"
@@ -632,6 +627,12 @@ const AdminReportPage = () => {
                                 colorField="type"
                                 seriesField="type"
                                 smooth
+                                meta={{
+                                    month: { alias: 'Tháng' },
+                                    type: { alias: 'Nhóm dữ liệu' },
+                                    value: { alias: 'Số lượng' },
+                                }}
+                                tooltip={{ title: 'month' }}
                             />
                         ) : (
                             <Empty description="Không có dữ liệu theo tháng" />
@@ -658,9 +659,24 @@ const AdminReportPage = () => {
                                 colorField="name"
                                 label={{
                                     text: 'name',
-                                    position: 'outside',
                                 }}
                                 legend={{ color: { position: 'right' } }}
+                                meta={{
+                                    name: { alias: 'Trạng thái' },
+                                    value: { alias: 'Số lượng' },
+                                }}
+                                tooltip={{ title: 'name' }}
+                                scale={{
+                                    color: {
+                                        range: [
+                                            '#0B3D2E',
+                                            '#166534',
+                                            '#B7791F',
+                                            '#2E7D60',
+                                            '#10B981',
+                                        ],
+                                    },
+                                }}
                             />
                         ) : (
                             <Empty description="Không có dữ liệu trạng thái" />
@@ -694,6 +710,11 @@ const AdminReportPage = () => {
                                 label={{
                                     position: 'top',
                                 }}
+                                meta={{
+                                    name: { alias: 'Đơn vị' },
+                                    applications: { alias: 'Số hồ sơ' },
+                                }}
+                                tooltip={{ title: 'name' }}
                             />
                         ) : (
                             <Empty description="Không có dữ liệu theo đơn vị" />
@@ -819,10 +840,6 @@ const AdminReportPage = () => {
                             Tỉ lệ nhận:{' '}
                             {formatPercent(offerStats?.acceptanceRate)}
                         </span>
-                    </div>
-                    <div className={styles.sectionHint} style={{ marginTop: 16 }}>
-                        Các chỉ số offer được lọc theo bộ điều kiện hiện tại và
-                        đồng bộ từ backend report API.
                     </div>
                 </Card>
             </div>
