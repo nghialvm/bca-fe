@@ -514,14 +514,17 @@ export class CandidateService {
         responseContent: string
         note?: string
     }) {
+        const responseContent = input.responseContent.trim()
+        const note = input.note?.trim() || responseContent
+
         return await http.post('app/candidate-response', {
             applicationId: input.applicationId,
             offerId: input.offerId,
             responseType: input.responseType,
             responseChannel: 1,
             responseTime: dayjs().toISOString(),
-            responseContent: input.responseContent,
-            note: input.note?.trim() || null,
+            responseContent,
+            note,
         })
     }
 }
