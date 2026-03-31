@@ -24,6 +24,7 @@ import {
 import dayjs, { type Dayjs } from 'dayjs'
 
 import AdminStatCard from '@/components/cards/AdminStatCard'
+import { getVisiblePieChartData } from '@/configs/chart.config'
 import AdminService, {
     ApplicationDto,
     ApplicationStatusCount,
@@ -149,6 +150,11 @@ const AdminReportPage = () => {
         DepartmentStatisticsItem[]
     >([])
     const [topPositions, setTopPositions] = useState<PositionPoint[]>([])
+
+    const visibleStatusDistribution = useMemo(
+        () => getVisiblePieChartData(statusDistribution),
+        [statusDistribution]
+    )
 
     useEffect(() => {
         let frameId = 0
@@ -653,9 +659,9 @@ const AdminReportPage = () => {
                     <div className={styles.chart}>
                         {loading || !chartsReady ? (
                             <Skeleton active paragraph={{ rows: 8 }} />
-                        ) : statusDistribution.length ? (
+                        ) : visibleStatusDistribution.length ? (
                             <Pie
-                                data={statusDistribution}
+                                data={visibleStatusDistribution}
                                 angleField="value"
                                 colorField="name"
                                 label={{

@@ -22,6 +22,7 @@ import {
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
 
+import { getVisiblePieChartData } from '@/configs/chart.config'
 import { useEmployerWorkspace } from '@/hooks/useEmployerWorkspace'
 import { formatCount } from '@/utils/admin'
 import {
@@ -116,6 +117,10 @@ const EmployerDashboardPage = () => {
         applicationRows.map((item) => item.application.status)
     )
     const jobApplicationData = Object.values(jobApplicantCount)
+    const visibleStageData = useMemo(
+        () => getVisiblePieChartData(stageData),
+        [stageData]
+    )
 
     return (
         <div className="portal-page">
@@ -247,10 +252,10 @@ const EmployerDashboardPage = () => {
                     >
                         {loading ? (
                             <Skeleton active paragraph={{ rows: 8 }} />
-                        ) : stageData.some((item) => item.value > 0) ? (
+                        ) : visibleStageData.length ? (
                             <Pie
                                 height={320}
-                                data={stageData}
+                                data={visibleStageData}
                                 angleField="value"
                                 colorField="type"
                                 label={{ text: 'type' }}
