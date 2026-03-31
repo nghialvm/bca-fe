@@ -104,7 +104,9 @@ const ResetPasswordPage: FC = () => {
                             autoComplete="off"
                             onFinish={handleSubmit}
                         >
-                            <div className={styles.fieldLabel}>Mật khẩu mới</div>
+                            <div className={styles.fieldLabel}>
+                                Mật khẩu mới
+                            </div>
                             <Form.Item
                                 name="newPassword"
                                 className={styles.formItem}
@@ -115,14 +117,17 @@ const ResetPasswordPage: FC = () => {
                                     },
                                     {
                                         min: 6,
-                                        message: 'Mật khẩu cần có ít nhất 6 ký tự.',
+                                        message:
+                                            'Mật khẩu cần có ít nhất 6 ký tự.',
                                     },
                                 ]}
                             >
                                 <Input.Password
                                     className={styles.input}
                                     prefix={
-                                        <LockOutlined className={styles.inputIcon} />
+                                        <LockOutlined
+                                            className={styles.inputIcon}
+                                        />
                                     }
                                     placeholder="Nhập mật khẩu mới"
                                     size="large"
@@ -139,13 +144,15 @@ const ResetPasswordPage: FC = () => {
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Vui lòng xác nhận mật khẩu mới.',
+                                        message:
+                                            'Vui lòng xác nhận mật khẩu mới.',
                                     },
                                     ({ getFieldValue }) => ({
                                         validator(_, value) {
                                             if (
                                                 !value ||
-                                                getFieldValue('newPassword') === value
+                                                getFieldValue('newPassword') ===
+                                                    value
                                             ) {
                                                 return Promise.resolve()
                                             }
@@ -162,7 +169,9 @@ const ResetPasswordPage: FC = () => {
                                 <Input.Password
                                     className={styles.input}
                                     prefix={
-                                        <LockOutlined className={styles.inputIcon} />
+                                        <LockOutlined
+                                            className={styles.inputIcon}
+                                        />
                                     }
                                     placeholder="Nhập lại mật khẩu mới"
                                     size="large"

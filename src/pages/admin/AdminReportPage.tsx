@@ -111,7 +111,9 @@ const downloadCsv = (filename: string, rows: string[][]) => {
     const escapeCell = (value: string | number) =>
         `"${String(value ?? '').replace(/"/g, '""')}"`
 
-    const csvContent = rows.map((row) => row.map(escapeCell).join(',')).join('\n')
+    const csvContent = rows
+        .map((row) => row.map(escapeCell).join(','))
+        .join('\n')
     const blob = new Blob(['\uFEFF' + csvContent], {
         type: 'text/csv;charset=utf-8;',
     })
@@ -179,7 +181,9 @@ const AdminReportPage = () => {
                         }),
                     ])
 
-                setDepartments((departmentResponse?.items || []) as DepartmentDto[])
+                setDepartments(
+                    (departmentResponse?.items || []) as DepartmentDto[]
+                )
                 setJobPositions(
                     (jobPositionResponse?.items || []) as JobPositionDto[]
                 )
@@ -290,7 +294,9 @@ const AdminReportPage = () => {
                 )
 
                 const filteredApplications = applications.filter((item) => {
-                    if (!filteredRecruitmentIds.has(item.recruitmentRequestId)) {
+                    if (
+                        !filteredRecruitmentIds.has(item.recruitmentRequestId)
+                    ) {
                         return false
                     }
 
@@ -484,13 +490,7 @@ const AdminReportPage = () => {
 
         if (mode === 'department') {
             downloadCsv('bao-cao-don-vi.csv', [
-                [
-                    'Đơn vị',
-                    'Nhu cầu tuyển',
-                    'Hồ sơ',
-                    'Offer',
-                    'Đã tuyển',
-                ],
+                ['Đơn vị', 'Nhu cầu tuyển', 'Hồ sơ', 'Offer', 'Đã tuyển'],
                 ...departmentItems.map((item) => [
                     item.departmentName,
                     formatCount(item.totalRecruitmentRequests),
@@ -548,6 +548,7 @@ const AdminReportPage = () => {
                 <div className={styles.filterRow}>
                     <RangePicker
                         size="large"
+                        placeholder={['Ngày bắt đầu', 'Ngày kết thúc']}
                         value={filters.dateRange}
                         onChange={(value) =>
                             setFilters((currentValue) => ({
@@ -665,7 +666,15 @@ const AdminReportPage = () => {
                                     name: { alias: 'Trạng thái' },
                                     value: { alias: 'Số lượng' },
                                 }}
-                                tooltip={{ title: 'name' }}
+                                tooltip={{
+                                    title: 'name',
+                                    items: [
+                                        (datum) => ({
+                                            name: 'Số lượng',
+                                            value: datum.value,
+                                        }),
+                                    ],
+                                }}
                                 scale={{
                                     color: {
                                         range: [
@@ -714,7 +723,15 @@ const AdminReportPage = () => {
                                     name: { alias: 'Đơn vị' },
                                     applications: { alias: 'Số hồ sơ' },
                                 }}
-                                tooltip={{ title: 'name' }}
+                                tooltip={{
+                                    title: 'name',
+                                    items: [
+                                        (datum) => ({
+                                            name: 'Số hồ sơ',
+                                            value: datum.applications,
+                                        }),
+                                    ],
+                                }}
                             />
                         ) : (
                             <Empty description="Không có dữ liệu theo đơn vị" />
@@ -792,7 +809,8 @@ const AdminReportPage = () => {
                                             style={{
                                                 width: `${Math.min(
                                                     100,
-                                                    (item.value / funnelBase) * 100
+                                                    (item.value / funnelBase) *
+                                                        100
                                                 )}%`,
                                             }}
                                         />
@@ -827,8 +845,7 @@ const AdminReportPage = () => {
                             Đã gửi: {formatCount(offerStats?.sentOffers)}
                         </span>
                         <span className={styles.summaryPill}>
-                            Chấp nhận:{' '}
-                            {formatCount(offerStats?.acceptedOffers)}
+                            Chấp nhận: {formatCount(offerStats?.acceptedOffers)}
                         </span>
                         <span className={styles.summaryPill}>
                             Từ chối: {formatCount(offerStats?.declinedOffers)}
@@ -914,7 +931,9 @@ const AdminReportPage = () => {
             <Card
                 variant="borderless"
                 className={styles.sectionCard}
-                title={<span className={styles.sectionTitle}>Xuất báo cáo</span>}
+                title={
+                    <span className={styles.sectionTitle}>Xuất báo cáo</span>
+                }
             >
                 <div className={styles.actionTiles}>
                     {[

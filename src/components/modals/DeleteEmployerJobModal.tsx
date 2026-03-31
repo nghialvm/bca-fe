@@ -37,7 +37,9 @@ const DeleteEmployerJobModal = ({
                 />
 
                 <div>
-                    <Typography.Text strong>{job?.title || '-'}</Typography.Text>
+                    <Typography.Text strong>
+                        {job?.title || '-'}
+                    </Typography.Text>
                     <div>
                         <Typography.Text type="secondary">
                             {job?.requestCode || '-'}
@@ -48,7 +50,9 @@ const DeleteEmployerJobModal = ({
                 <Space wrap>
                     <Tag>{job?.departmentName || '-'}</Tag>
                     <Tag>{job?.jobPositionName || '-'}</Tag>
-                    <Tag color={job?.statusColor}>{job?.statusLabel || '-'}</Tag>
+                    <Tag color={job?.statusColor}>
+                        {job?.statusLabel || '-'}
+                    </Tag>
                     <Tag color="processing">
                         {job?.applicants ?? 0} ứng viên
                     </Tag>

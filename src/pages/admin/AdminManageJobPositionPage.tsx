@@ -62,7 +62,7 @@ type JobPositionFormValues = {
 }
 
 const getPagedItems = <T,>(response: unknown) =>
-    (((response as { items?: T[] })?.items || []) as T[])
+    ((response as { items?: T[] })?.items || []) as T[]
 
 const getErrorMessage = (error: unknown, fallback: string) =>
     (error as { response?: { data?: { error?: { message?: string } } } })
@@ -87,30 +87,37 @@ const AdminManageJobPositionPage = () => {
     const [formOpen, setFormOpen] = useState(false)
     const [editingRow, setEditingRow] = useState<JobPositionRecord | null>(null)
     const [viewingRow, setViewingRow] = useState<JobPositionRecord | null>(null)
-    const [deletingRow, setDeletingRow] = useState<JobPositionRecord | null>(null)
+    const [deletingRow, setDeletingRow] = useState<JobPositionRecord | null>(
+        null
+    )
     const [form] = Form.useForm<JobPositionFormValues>()
 
     const loadData = async () => {
         setLoading(true)
         try {
-            const [jobPositionResponse, departmentResponse, recruitmentResponse] =
-                await Promise.all([
-                    AdminService.getJobPositions({
-                        Sorting: 'name asc',
-                        MaxResultCount: 1000,
-                    }),
-                    AdminService.getDepartments({
-                        Sorting: 'name asc',
-                        MaxResultCount: 1000,
-                    }),
-                    AdminService.getRecruitmentRequests({
-                        Sorting: 'creationTime desc',
-                        MaxResultCount: 1000,
-                    }),
-                ])
+            const [
+                jobPositionResponse,
+                departmentResponse,
+                recruitmentResponse,
+            ] = await Promise.all([
+                AdminService.getJobPositions({
+                    Sorting: 'name asc',
+                    MaxResultCount: 1000,
+                }),
+                AdminService.getDepartments({
+                    Sorting: 'name asc',
+                    MaxResultCount: 1000,
+                }),
+                AdminService.getRecruitmentRequests({
+                    Sorting: 'creationTime desc',
+                    MaxResultCount: 1000,
+                }),
+            ])
 
-            const jobPositions = getPagedItems<JobPositionDto>(jobPositionResponse)
-            const departmentItems = getPagedItems<DepartmentDto>(departmentResponse)
+            const jobPositions =
+                getPagedItems<JobPositionDto>(jobPositionResponse)
+            const departmentItems =
+                getPagedItems<DepartmentDto>(departmentResponse)
             const recruitments =
                 getPagedItems<RecruitmentRequestDto>(recruitmentResponse)
 
@@ -315,9 +322,7 @@ const AdminManageJobPositionPage = () => {
     return (
         <div className={styles.page}>
             <section className="portal-hero portal-hero--light">
-                <span className="portal-hero__eyebrow">
-                    Vị trí công việc
-                </span>
+                <span className="portal-hero__eyebrow">Vị trí công việc</span>
                 <Space
                     style={{ width: '100%', justifyContent: 'space-between' }}
                     align="start"
@@ -394,7 +399,9 @@ const AdminManageJobPositionPage = () => {
                         <div className={styles.metricValue}>
                             {formatCount(stats.active)}
                         </div>
-                        <div className={styles.metricLabel}>Vị trí hoạt động</div>
+                        <div className={styles.metricLabel}>
+                            Vị trí hoạt động
+                        </div>
                     </div>
                 </div>
                 <div className={styles.metricBox}>
@@ -418,7 +425,9 @@ const AdminManageJobPositionPage = () => {
                         <div className={styles.metricValue}>
                             {formatCount(stats.departments)}
                         </div>
-                        <div className={styles.metricLabel}>Đơn vị có vị trí</div>
+                        <div className={styles.metricLabel}>
+                            Đơn vị có vị trí
+                        </div>
                     </div>
                 </div>
             </div>
@@ -483,7 +492,9 @@ const AdminManageJobPositionPage = () => {
                             key: 'status',
                             render: (_: unknown, record: JobPositionRecord) => (
                                 <Tag
-                                    color={record.isActive ? 'success' : 'warning'}
+                                    color={
+                                        record.isActive ? 'success' : 'warning'
+                                    }
                                     className={styles.statusTag}
                                 >
                                     {record.statusLabel}
@@ -557,7 +568,10 @@ const AdminManageJobPositionPage = () => {
                             },
                         ]}
                     >
-                        <Input maxLength={200} placeholder="Frontend Developer" />
+                        <Input
+                            maxLength={200}
+                            placeholder="Frontend Developer"
+                        />
                     </Form.Item>
 
                     <Form.Item
@@ -615,7 +629,11 @@ const AdminManageJobPositionPage = () => {
                             {viewingRow.departmentName}
                         </Descriptions.Item>
                         <Descriptions.Item label="Trạng thái">
-                            <Tag color={viewingRow.isActive ? 'success' : 'warning'}>
+                            <Tag
+                                color={
+                                    viewingRow.isActive ? 'success' : 'warning'
+                                }
+                            >
                                 {viewingRow.statusLabel}
                             </Tag>
                         </Descriptions.Item>

@@ -165,31 +165,36 @@ const EmployerReportPage = () => {
 
     const performanceRows: PerformanceRow[] = useMemo(
         () =>
-            recruitmentRequests.map((job) => {
-                const applicants = applicationRows.filter(
-                    (row) => row.application.recruitmentRequestId === job.id
-                )
-                const interviewed = applicants.filter((row) =>
-                    ['4', '5', '6', '7'].includes(
-                        String(row.application.status)
+            recruitmentRequests
+                .filter((job) => job.status === 4)
+                .map((job) => {
+                    const applicants = applicationRows.filter(
+                        (row) => row.application.recruitmentRequestId === job.id
                     )
-                )
-                const hired = applicants.filter((row) =>
-                    isApplicationHired(row.application.status)
-                )
+                    const interviewed = applicants.filter((row) =>
+                        ['4', '5', '6', '7'].includes(
+                            String(row.application.status)
+                        )
+                    )
+                    const hired = applicants.filter((row) =>
+                        isApplicationHired(row.application.status)
+                    )
 
-                return {
-                    key: job.id,
-                    title: job.title,
-                    department: currentDepartment?.name || 'Đơn vị tuyển dụng',
-                    applicants: applicants.length,
-                    interviewed: interviewed.length,
-                    hired: hired.length,
-                    rate: applicants.length
-                        ? Math.round((hired.length / applicants.length) * 100)
-                        : 0,
-                }
-            }),
+                    return {
+                        key: job.id,
+                        title: job.title,
+                        department:
+                            currentDepartment?.name || 'Đơn vị tuyển dụng',
+                        applicants: applicants.length,
+                        interviewed: interviewed.length,
+                        hired: hired.length,
+                        rate: applicants.length
+                            ? Math.round(
+                                  (hired.length / applicants.length) * 100
+                              )
+                            : 0,
+                    }
+                }),
         [applicationRows, currentDepartment?.name, recruitmentRequests]
     )
 
@@ -245,10 +250,6 @@ const EmployerReportPage = () => {
                 >
                     <div>
                         <Title level={2}>Báo cáo và thống kê tuyển dụng</Title>
-                        <Paragraph style={{ maxWidth: 760 }}>
-                            Theo dõi xu hướng ứng tuyển, hiệu suất từng vị trí và
-                            tiến độ tuyển dụng để điều chỉnh kế hoạch của đơn vị.
-                        </Paragraph>
                     </div>
                     <Button
                         size="large"
@@ -333,7 +334,15 @@ const EmployerReportPage = () => {
                                         month: { alias: 'Tháng' },
                                         applications: { alias: 'Số hồ sơ' },
                                     }}
-                                    tooltip={{ title: 'month' }}
+                                    tooltip={{
+                                        title: 'month',
+                                        items: [
+                                            (datum) => ({
+                                                name: 'Số hồ sơ',
+                                                value: datum.applications,
+                                            }),
+                                        ],
+                                    }}
                                 />
                             ) : (
                                 <Empty description="Chưa có dữ liệu xu hướng theo tháng" />
@@ -361,7 +370,15 @@ const EmployerReportPage = () => {
                                         name: { alias: 'Vị trí' },
                                         applications: { alias: 'Số hồ sơ' },
                                     }}
-                                    tooltip={{ title: 'name' }}
+                                    tooltip={{
+                                        title: 'name',
+                                        items: [
+                                            (datum) => ({
+                                                name: 'Số hồ sơ',
+                                                value: datum.applications,
+                                            }),
+                                        ],
+                                    }}
                                 />
                             ) : (
                                 <Empty description="Chưa có dữ liệu hiệu suất theo vị trí" />

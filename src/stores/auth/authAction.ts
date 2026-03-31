@@ -24,7 +24,10 @@ export const logoutAction = createAsyncThunk(AUTH_API.LOGOUT, async () => {
         await AuthService.logout()
         return { serverLogoutSucceeded: true }
     } catch (error) {
-        console.warn('Server logout failed, falling back to local logout.', error)
+        console.warn(
+            'Server logout failed, falling back to local logout.',
+            error
+        )
         return { serverLogoutSucceeded: false }
     }
 })

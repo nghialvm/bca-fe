@@ -141,9 +141,15 @@ const CandidateDashboardPage = () => {
                         <Title level={2}>
                             Theo dõi hồ sơ và tìm cơ hội phù hợp trong một nơi
                         </Title>
-                        <Paragraph style={{ maxWidth: 720, marginBottom: 24 }}>
-                            Nhanh chóng xem lại hồ sơ cá nhân, tiến độ ứng tuyển gần
-                            đây và những vị trí đang mở phù hợp với bạn.
+                        <Paragraph
+                            style={{
+                                maxWidth: 720,
+                                marginBottom: 24,
+                                color: '#fff',
+                            }}
+                        >
+                            Nhanh chóng xem lại hồ sơ cá nhân, tiến độ ứng tuyển
+                            gần đây và những vị trí đang mở phù hợp với bạn.
                         </Paragraph>
                         <Space wrap size="middle">
                             <Link to={PATHS.CANDIDATE_JOBS}>
@@ -212,7 +218,9 @@ const CandidateDashboardPage = () => {
                             size={16}
                             style={{ width: '100%' }}
                         >
-                            <div className="portal-stat-card__icon">{item.icon}</div>
+                            <div className="portal-stat-card__icon">
+                                {item.icon}
+                            </div>
                             <Statistic
                                 title={item.title}
                                 value={item.value}
@@ -236,8 +244,12 @@ const CandidateDashboardPage = () => {
                                 emptyText: 'Bạn chưa có hồ sơ ứng tuyển nào.',
                             }}
                             renderItem={(item) => {
-                                const label = getApplicationStatusLabel(item.status)
-                                const color = getApplicationStatusColor(item.status)
+                                const label = getApplicationStatusLabel(
+                                    item.status
+                                )
+                                const color = getApplicationStatusColor(
+                                    item.status
+                                )
 
                                 return (
                                     <List.Item>
@@ -246,7 +258,9 @@ const CandidateDashboardPage = () => {
                                                 <div>
                                                     <Title
                                                         level={5}
-                                                        style={{ marginBottom: 4 }}
+                                                        style={{
+                                                            marginBottom: 4,
+                                                        }}
                                                     >
                                                         {item.title}
                                                     </Title>
@@ -280,9 +294,9 @@ const CandidateDashboardPage = () => {
                                             >
                                                 <Text className="portal-muted">
                                                     Nộp ngày{' '}
-                                                    {dayjs(item.appliedTime).format(
-                                                        'DD/MM/YYYY'
-                                                    )}
+                                                    {dayjs(
+                                                        item.appliedTime
+                                                    ).format('DD/MM/YYYY')}
                                                 </Text>
                                                 <Text strong>{label}</Text>
                                             </Space>
@@ -299,10 +313,7 @@ const CandidateDashboardPage = () => {
                         size={24}
                         style={{ width: '100%' }}
                     >
-                        <Card
-                            title="Thông báo"
-                            className="portal-section-card"
-                        >
+                        <Card title="Thông báo" className="portal-section-card">
                             <List
                                 loading={loading}
                                 dataSource={announcements}
@@ -325,14 +336,18 @@ const CandidateDashboardPage = () => {
                         <Card
                             title="Cơ hội nổi bật"
                             extra={
-                                <Link to={PATHS.CANDIDATE_JOBS}>Xem tất cả</Link>
+                                <Link to={PATHS.CANDIDATE_JOBS}>
+                                    Xem tất cả
+                                </Link>
                             }
                             className="portal-section-card"
                         >
                             <List
                                 loading={loading}
                                 dataSource={highlightedJobs}
-                                locale={{ emptyText: 'Chưa có vị trí đang mở.' }}
+                                locale={{
+                                    emptyText: 'Chưa có vị trí đang mở.',
+                                }}
                                 renderItem={(item) => (
                                     <List.Item>
                                         <div style={{ width: '100%' }}>
@@ -344,10 +359,14 @@ const CandidateDashboardPage = () => {
                                                 }}
                                             >
                                                 <div>
-                                                    <Text strong>{item.title}</Text>
+                                                    <Text strong>
+                                                        {item.title}
+                                                    </Text>
                                                     <div>
                                                         <Text className="portal-muted">
-                                                            {item.departmentName}
+                                                            {
+                                                                item.departmentName
+                                                            }
                                                         </Text>
                                                     </div>
                                                 </div>

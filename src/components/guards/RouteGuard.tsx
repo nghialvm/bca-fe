@@ -33,7 +33,10 @@ const RouteGuard = ({ children, allowedRoles }: RouteGuardProps) => {
 
     const siteRole = getSiteRole(user)
 
-    if (allowedRoles?.length && (!siteRole || !allowedRoles.includes(siteRole))) {
+    if (
+        allowedRoles?.length &&
+        (!siteRole || !allowedRoles.includes(siteRole))
+    ) {
         notification.error({
             message: 'You do not have access to this site',
         })

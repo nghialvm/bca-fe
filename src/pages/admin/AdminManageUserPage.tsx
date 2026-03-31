@@ -125,12 +125,8 @@ const AdminManageUserPage = () => {
     const [roles, setRoles] = useState<IdentityRoleDto[]>([])
     const [rows, setRows] = useState<AdminUserRecord[]>([])
     const [createOpen, setCreateOpen] = useState(false)
-    const [viewingUser, setViewingUser] = useState<AdminUserRecord | null>(
-        null
-    )
-    const [editingUser, setEditingUser] = useState<AdminUserRecord | null>(
-        null
-    )
+    const [viewingUser, setViewingUser] = useState<AdminUserRecord | null>(null)
+    const [editingUser, setEditingUser] = useState<AdminUserRecord | null>(null)
     const [deletingUser, setDeletingUser] = useState<AdminUserRecord | null>(
         null
     )
@@ -150,14 +146,14 @@ const AdminManageUserPage = () => {
             ])
 
             const users = (userResponse?.items || []) as IdentityUserDto[]
-            const availableRoles = (roleResponse?.items || []) as IdentityRoleDto[]
+            const availableRoles = (roleResponse?.items ||
+                []) as IdentityRoleDto[]
 
             const userRoles = await Promise.all(
                 users.map(async (user) => {
                     try {
-                        const roleResult = await AdminService.getIdentityUserRoles(
-                            user.id
-                        )
+                        const roleResult =
+                            await AdminService.getIdentityUserRoles(user.id)
 
                         return {
                             userId: user.id,
@@ -374,7 +370,7 @@ const AdminManageUserPage = () => {
                         allowClear
                         size="large"
                         prefix={<SearchOutlined />}
-                        placeholder="Tìm kiếm theo tên, email hoặc username..."
+                        placeholder="Tìm kiếm theo tên, email hoặc tên đăng nhập..."
                         value={search}
                         className={styles.flexGrow}
                         onChange={(event) => setSearch(event.target.value)}

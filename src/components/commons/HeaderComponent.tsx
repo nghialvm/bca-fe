@@ -1,8 +1,8 @@
 import { Avatar, Button, Dropdown, Input, notification } from 'antd'
 
 import {
-    LogoutOutlined,
     LockOutlined,
+    LogoutOutlined,
     MenuFoldOutlined,
     MenuOutlined,
     MenuUnfoldOutlined,
@@ -89,13 +89,6 @@ const HeaderComponent = ({
                     onClick={onToggleSidebar}
                     className={styles.toggleButton}
                 />
-                <div className={styles.search}>
-                    <Input
-                        size="large"
-                        prefix={<SearchOutlined />}
-                        placeholder="Tìm kiếm..."
-                    />
-                </div>
             </div>
 
             {isAuthenticated ? (

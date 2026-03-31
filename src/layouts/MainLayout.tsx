@@ -10,16 +10,16 @@ import {
     Grid,
     Layout,
     Menu,
-    notification,
     Space,
     Typography,
+    notification,
 } from 'antd'
 import type { MenuProps, ThemeConfig } from 'antd'
 
 import {
     BellOutlined,
-    LogoutOutlined,
     LockOutlined,
+    LogoutOutlined,
     MenuOutlined,
     SettingOutlined,
     UserOutlined,
@@ -167,7 +167,9 @@ const useProfileMenu = (role: SiteRole) => {
             {
                 key: 'logout',
                 icon: <LogoutOutlined />,
-                label: <span onClick={() => void handleLogout()}>Đăng xuất</span>,
+                label: (
+                    <span onClick={() => void handleLogout()}>Đăng xuất</span>
+                ),
             },
         ],
         [dispatch, navigate, profilePath]
@@ -283,7 +285,7 @@ const CandidateShell = () => {
                         </div>
                     </Space>
                     <Space size={16}>
-                        <Badge dot>
+                        <Badge>
                             <BellOutlined
                                 className={styles.candidateBandIcon}
                             />
@@ -418,4 +420,3 @@ const MainLayout = () => {
 }
 
 export default MainLayout
-

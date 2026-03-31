@@ -32,7 +32,9 @@ const ViewEmployerJobModal = ({
                         <Typography.Text type="secondary">
                             {job?.requestCode || '-'}
                         </Typography.Text>
-                        <Tag color={job?.statusColor}>{job?.statusLabel || '-'}</Tag>
+                        <Tag color={job?.statusColor}>
+                            {job?.statusLabel || '-'}
+                        </Tag>
                     </Space>
                 </div>
 

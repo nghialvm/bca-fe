@@ -58,7 +58,8 @@ const normalizeKey = (value: unknown) =>
         .toLowerCase()
 
 export const getRecruitmentRequestStatusLabel = (status: unknown) =>
-    recruitmentRequestStatusLabels[normalizeKey(status)] || String(status || '-')
+    recruitmentRequestStatusLabels[normalizeKey(status)] ||
+    String(status || '-')
 
 export const getRecruitmentRequestStatusColor = (status: unknown) => {
     const key = normalizeKey(status)
@@ -75,9 +76,16 @@ export const isRecruitmentRequestPending = (status: unknown) =>
     ['1', 'pendingapproval'].includes(normalizeKey(status))
 
 export const isRecruitmentRequestActive = (status: unknown) =>
-    ['0', 'draft', '1', 'pendingapproval', '2', 'approved', '4', 'published'].includes(
-        normalizeKey(status)
-    )
+    [
+        '0',
+        'draft',
+        '1',
+        'pendingapproval',
+        '2',
+        'approved',
+        '4',
+        'published',
+    ].includes(normalizeKey(status))
 
 export const getApplicationStatusLabel = (status: unknown) =>
     applicationStatusLabels[normalizeKey(status)] || String(status || '-')
@@ -86,12 +94,32 @@ export const getApplicationStatusColor = (status: unknown) => {
     const key = normalizeKey(status)
 
     if (
-        ['1', 'submitted', '2', 'screening', '4', 'interviewscheduled', '5', 'interviewing'].includes(key)
+        [
+            '1',
+            'submitted',
+            '2',
+            'screening',
+            '4',
+            'interviewscheduled',
+            '5',
+            'interviewing',
+        ].includes(key)
     ) {
         return 'processing'
     }
 
-    if (['6', 'passedinterview', '8', 'offered', '9', 'offeraccepted', '11', 'hired'].includes(key)) {
+    if (
+        [
+            '6',
+            'passedinterview',
+            '8',
+            'offered',
+            '9',
+            'offeraccepted',
+            '11',
+            'hired',
+        ].includes(key)
+    ) {
         return 'success'
     }
 
@@ -142,7 +170,10 @@ export const getDisplayName = (user?: {
     userName?: string
     email?: string
 }) => {
-    const fullName = [user?.name, user?.surname].filter(Boolean).join(' ').trim()
+    const fullName = [user?.name, user?.surname]
+        .filter(Boolean)
+        .join(' ')
+        .trim()
 
     return fullName || user?.userName || user?.email || 'Chưa cập nhật'
 }

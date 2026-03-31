@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 
 import { notification } from 'antd'
+
 import { useSelector } from 'react-redux'
 
 import CandidateService, {
-    CandidatePortalApplicationProfileInput,
     CandidatePortalApplicationDto,
+    CandidatePortalApplicationProfileInput,
     CandidatePortalJobDto,
     CandidatePortalProfileDto,
-    UpdateCandidatePortalProfileDto,
     type CandidateWorkspaceUser,
+    UpdateCandidatePortalProfileDto,
 } from '@/services/candidate'
 
 type RootState = {
@@ -113,8 +114,7 @@ export const useCandidateWorkspace = () => {
 
             notification.success({
                 message: 'Ứng tuyển thành công',
-                description:
-                    'Hồ sơ của bạn đã được ghi nhận thành công.',
+                description: 'Hồ sơ của bạn đã được ghi nhận thành công.',
             })
 
             await loadData()

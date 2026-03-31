@@ -1,465 +1,92 @@
+import {
+    APPLICATION_API,
+    APPLICATION_SCREENING_API,
+    CANDIDATE_API,
+    CANDIDATE_RESPONSE_API,
+    DEPARTMENT_API,
+    EMAIL_API,
+    IDENTITY_ROLE_API,
+    IDENTITY_USER_API,
+    INTERVIEW_SCHEDULE_API,
+    JOB_POSITION_API,
+    OFFER_API,
+    PERMISSION_API,
+    RECRUITMENT_REPORT_API,
+    RECRUITMENT_REQUEST_API,
+} from '@/constants/api'
+import type {
+    ApplicationScreeningCreateDto,
+    ApplicationScreeningUpdateDto,
+    ApplicationUpdateDto,
+    CandidateResponseQuery,
+    CreateCandidateResponseDto,
+    CreateOfferDto,
+    DashboardFilter,
+    DepartmentCreateDto,
+    DepartmentUpdateDto,
+    IdentityUserCreateDto,
+    IdentityUserUpdateDto,
+    IdentityUserUpdateRolesDto,
+    InterviewScheduleCreateDto,
+    InterviewScheduleUpdateDto,
+    JobPositionCreateDto,
+    JobPositionUpdateDto,
+    PagedQuery,
+    RecruitmentRequestCreateDto,
+    RecruitmentRequestUpdateDto,
+    SendEmailDto,
+    UpdateOfferDto,
+    UpdatePermissionsDto,
+} from '@/interfaces/admin/admin.interface'
 import http from '@/services/http'
 
-export interface PagedResult<T> {
-    items: T[]
-    totalCount: number
-}
-
-export interface PagedQuery {
-    Filter?: string
-    Sorting?: string
-    SkipCount?: number
-    MaxResultCount?: number
-}
-
-export interface DashboardFilter {
-    FromDate?: string
-    ToDate?: string
-    DepartmentId?: string
-    JobPositionId?: string
-}
-
-export interface RecruitmentDashboardSummary {
-    totalRecruitmentRequests: number
-    totalPublishedRecruitmentRequests: number
-    totalApplications: number
-    totalCandidates: number
-    totalScreenedApplications: number
-    totalInterviewScheduled: number
-    totalInterviewPassed: number
-    totalOffers: number
-    totalOfferAccepted: number
-    totalHiredEmployees: number
-    hiringRate: number
-    offerAcceptanceRate: number
-}
-
-export interface RecruitmentFunnel {
-    totalApplications: number
-    screeningPassed: number
-    interviewScheduled: number
-    interviewPassed: number
-    offered: number
-    hired: number
-}
-
-export interface ApplicationStatusCount {
-    status: string | number
-    count: number
-}
-
-export interface OfferStatistics {
-    totalOffers: number
-    draftOffers: number
-    sentOffers: number
-    acceptedOffers: number
-    declinedOffers: number
-    expiredOffers: number
-    acceptanceRate: number
-}
-
-export interface HiringStatistics {
-    totalApplications: number
-    totalOffersAccepted: number
-    totalHiredEmployees: number
-    applicationToHireRate: number
-    offerAcceptedToHireRate: number
-}
-
-export interface RecruitmentTrendItem {
-    period: string
-    totalApplications: number
-    totalOffers: number
-    totalHired: number
-}
-
-export interface DepartmentStatisticsItem {
-    departmentId: string
-    departmentName: string
-    totalRecruitmentRequests: number
-    totalApplications: number
-    totalOffers: number
-    totalHired: number
-}
-
-export interface DepartmentDto {
-    id: string
-    code: string
-    name: string
-    managerUserId?: string | null
-    description?: string
-    isActive: boolean
-}
-
-export interface JobPositionDto {
-    id: string
-    code: string
-    name: string
-    departmentId: string
-    description?: string
-    isActive: boolean
-}
-
-export interface JobPositionCreateDto {
-    code: string
-    name: string
-    departmentId: string
-    description?: string
-    isActive: boolean
-}
-
-export interface JobPositionUpdateDto {
-    code: string
-    name: string
-    departmentId: string
-    description?: string
-    isActive: boolean
-}
-
-export interface DepartmentCreateDto {
-    code: string
-    name: string
-    managerUserId?: string | null
-    description?: string
-    isActive: boolean
-}
-
-export interface DepartmentUpdateDto {
-    code: string
-    name: string
-    managerUserId?: string | null
-    description?: string
-    isActive: boolean
-}
-
-export interface RecruitmentRequestDto {
-    id: string
-    requestCode: string
-    title: string
-    departmentId: string
-    jobPositionId: string
-    headcount: number
-    employmentType?: string
-    workLocation?: string
-    salaryMin?: number | null
-    salaryMax?: number | null
-    description?: string
-    requirement?: string
-    benefit?: string
-    applicationDeadline?: string | null
-    status: string | number
-    createdByUserId?: string | null
-    approvedByUserId?: string | null
-    approvedTime?: string | null
-    rejectReason?: string | null
-    publishedTime?: string | null
-    closedTime?: string | null
-    creationTime?: string
-}
-
-export interface RecruitmentRequestCreateDto {
-    requestCode: string
-    title: string
-    departmentId: string
-    positionId: string
-    headcount: number
-    employmentType: string
-    workLocation?: string
-    salaryMin?: number | null
-    salaryMax?: number | null
-    description?: string
-    requirement?: string
-    benefit?: string
-    applicationDeadline?: string | null
-}
-
-export interface RecruitmentRequestUpdateDto {
-    title: string
-    departmentId: string
-    positionId: string
-    headcount: number
-    employmentType: string
-    workLocation?: string
-    salaryMin?: number | null
-    salaryMax?: number | null
-    description?: string
-    requirement?: string
-    benefit?: string
-    applicationDeadline?: string | null
-}
-
-export interface ApplicationDto {
-    id: string
-    applicationCode: string
-    recruitmentRequestId: string
-    candidateId: string
-    appliedTime: string
-    status: string | number
-    cvFileId?: string | null
-    submittedCvUrl?: string | null
-    source?: string | null
-    note?: string | null
-    finalResult?: string | null
-}
-
-export interface ApplicationUpdateDto {
-    applicationCode: string
-    recruitmentRequestId: string
-    candidateId: string
-    appliedTime: string
-    status: string | number
-    cvFileId?: string | null
-    submittedCvUrl?: string | null
-    source?: string | null
-    note?: string | null
-    finalResult?: string | null
-}
-
-export interface CandidateDto {
-    id: string
-    candidateCode: string
-    candidateType?: string | number | null
-    employeeId?: string | null
-    fullName: string
-    dateOfBirth?: string | null
-    gender?: string | number | null
-    email: string
-    phoneNumber?: string
-    address?: string | null
-    identityNumber?: string | null
-    currentCompany?: string | null
-    currentPosition?: string
-    yearsOfExperience?: number | null
-    highestEducation?: string | null
-    universityName?: string | null
-    major?: string | null
-    status?: string | number
-    source?: string | null
-    note?: string | null
-}
-
-export interface ApplicationScreeningDto {
-    id: string
-    applicationId: string
-    screenedByUserId: string
-    screeningTime: string
-    result: string | number
-    comment?: string | null
-    score?: number | null
-    criteriaSummary?: string | null
-    creationTime?: string
-}
-
-export interface ApplicationScreeningCreateDto {
-    applicationId: string
-    screenedByUserId: string
-    screeningTime: string
-    result: string | number
-    comment?: string | null
-    score?: number | null
-    criteriaSummary?: string | null
-}
-
-export interface ApplicationScreeningUpdateDto {
-    applicationId: string
-    screenedByUserId: string
-    screeningTime: string
-    result: string | number
-    comment?: string | null
-    score?: number | null
-    criteriaSummary?: string | null
-}
-
-export interface InterviewScheduleDto {
-    id: string
-    applicationId: string
-    roundNumber: number
-    interviewType: string | number
-    scheduledTime: string
-    durationMinutes: number
-    location?: string | null
-    meetingLink?: string | null
-    contactPerson?: string | null
-    note?: string | null
-    status: string | number
-    createdByUserId?: string | null
-    creationTime?: string
-}
-
-export interface InterviewScheduleCreateDto {
-    applicationId: string
-    roundNumber: number
-    interviewType: string | number
-    scheduledTime: string
-    durationMinutes: number
-    location?: string | null
-    meetingLink?: string | null
-    contactPerson?: string | null
-    note?: string | null
-    status: string | number
-    createdByUserId?: string | null
-}
-
-export interface InterviewScheduleUpdateDto {
-    applicationId: string
-    roundNumber: number
-    interviewType: string | number
-    scheduledTime: string
-    durationMinutes: number
-    location?: string | null
-    meetingLink?: string | null
-    contactPerson?: string | null
-    note?: string | null
-    status: string | number
-    createdByUserId?: string | null
-}
-
-export interface OfferDto {
-    id: string
-    applicationId: string
-    salary: number
-    startDate?: string | null
-    probationMonths?: number | null
-    workLocation?: string | null
-    benefit?: string | null
-    note?: string | null
-    status: string | number
-    sentTime?: string | null
-    expiredTime?: string | null
-    creationTime?: string
-}
-
-export interface CreateOfferDto {
-    applicationId: string
-    salary: number
-    startDate?: string | null
-    probationMonths?: number | null
-    workLocation?: string | null
-    benefit?: string | null
-    note?: string | null
-    sentTime?: string | null
-    expiredTime?: string | null
-}
-
-export interface UpdateOfferDto extends CreateOfferDto {
-    status: string | number
-}
-
-export interface CandidateResponseDto {
-    id: string
-    applicationId: string
-    offerId?: string | null
-    responseType: string | number
-    responseChannel: string | number
-    responseTime: string
-    responseContent: string
-    note?: string | null
-    creationTime?: string
-}
-
-export interface CreateCandidateResponseDto {
-    applicationId: string
-    offerId?: string | null
-    responseType: string | number
-    responseChannel: string | number
-    responseTime: string
-    responseContent: string
-    note?: string | null
-}
-
-export interface IdentityRoleDto {
-    id: string
-    name: string
-    isDefault?: boolean
-    isStatic?: boolean
-    isPublic?: boolean
-    extraProperties?: Record<string, unknown>
-}
-
-export interface IdentityUserDto {
-    id: string
-    userName?: string
-    name?: string
-    surname?: string
-    email?: string
-    phoneNumber?: string
-    isActive?: boolean
-    creationTime?: string
-    extraProperties?: Record<string, unknown>
-}
-
-export interface IdentityUserCreateDto {
-    userName: string
-    name?: string
-    surname?: string
-    password: string
-    email: string
-    phoneNumber?: string
-    roleNames: string[]
-    isActive: boolean
-    lockoutEnabled?: boolean
-}
-
-export interface IdentityUserUpdateDto {
-    userName: string
-    name?: string
-    surname?: string
-    email: string
-    phoneNumber?: string
-    roleNames: string[]
-    isActive: boolean
-    lockoutEnabled?: boolean
-}
-
-export interface IdentityUserUpdateRolesDto {
-    roleNames: string[]
-}
-
-export interface PermissionGrantInfoDto {
-    name: string
-    displayName?: string
-    parentName?: string
-    isGranted: boolean
-    allowedProviders?: string[]
-    grantedProviders?: {
-        providerName?: string
-        providerKey?: string
-    }[]
-}
-
-export interface PermissionGroupDto {
-    name: string
-    displayName?: string
-    permissions: PermissionGrantInfoDto[]
-}
-
-export interface GetPermissionListResultDto {
-    entityDisplayName?: string
-    groups: PermissionGroupDto[]
-}
-
-export interface UpdatePermissionDto {
-    name: string
-    isGranted: boolean
-}
-
-export interface UpdatePermissionsDto {
-    permissions: UpdatePermissionDto[]
-}
-
-export interface SendEmailDto {
-    to: string
-    subject: string
-    body: string
-    isBodyHtml?: boolean
-}
-
-export interface CandidateResponseQuery extends PagedQuery {
-    ApplicationId?: string
-    OfferId?: string
-    ResponseType?: string | number
-    ResponseChannel?: string | number
-}
+export type {
+    ApplicationDto,
+    ApplicationScreeningCreateDto,
+    ApplicationScreeningDto,
+    ApplicationScreeningUpdateDto,
+    ApplicationStatusCount,
+    ApplicationUpdateDto,
+    CandidateDto,
+    CandidateResponseDto,
+    CandidateResponseQuery,
+    CreateCandidateResponseDto,
+    CreateOfferDto,
+    DashboardFilter,
+    DepartmentCreateDto,
+    DepartmentDto,
+    DepartmentStatisticsItem,
+    DepartmentUpdateDto,
+    GetPermissionListResultDto,
+    HiringStatistics,
+    IdentityRoleDto,
+    IdentityUserCreateDto,
+    IdentityUserDto,
+    IdentityUserUpdateDto,
+    IdentityUserUpdateRolesDto,
+    InterviewScheduleCreateDto,
+    InterviewScheduleDto,
+    InterviewScheduleUpdateDto,
+    JobPositionCreateDto,
+    JobPositionDto,
+    JobPositionUpdateDto,
+    OfferDto,
+    OfferStatistics,
+    PagedQuery,
+    PagedResult,
+    PermissionGrantInfoDto,
+    PermissionGroupDto,
+    RecruitmentDashboardSummary,
+    RecruitmentFunnel,
+    RecruitmentRequestCreateDto,
+    RecruitmentRequestDto,
+    RecruitmentRequestUpdateDto,
+    RecruitmentTrendItem,
+    SendEmailDto,
+    UpdateOfferDto,
+    UpdatePermissionDto,
+    UpdatePermissionsDto,
+} from '@/interfaces/admin/admin.interface'
 
 const defaultPagedQuery: Required<PagedQuery> = {
     Filter: '',
@@ -470,20 +97,20 @@ const defaultPagedQuery: Required<PagedQuery> = {
 
 export class AdminService {
     async getDashboardSummary(filter: DashboardFilter = {}) {
-        return await http.get('app/recruitment-report/dashboard-summary', {
+        return await http.get(RECRUITMENT_REPORT_API.DASHBOARD_SUMMARY, {
             params: filter,
         })
     }
 
     async getRecruitmentFunnel(filter: DashboardFilter = {}) {
-        return await http.get('app/recruitment-report/recruitment-funnel', {
+        return await http.get(RECRUITMENT_REPORT_API.RECRUITMENT_FUNNEL, {
             params: filter,
         })
     }
 
     async getApplicationStatusStatistics(filter: DashboardFilter = {}) {
         return await http.get(
-            'app/recruitment-report/application-status-statistics',
+            RECRUITMENT_REPORT_API.APPLICATION_STATUS_STATISTICS,
             {
                 params: filter,
             }
@@ -491,31 +118,31 @@ export class AdminService {
     }
 
     async getOfferStatistics(filter: DashboardFilter = {}) {
-        return await http.get('app/recruitment-report/offer-statistics', {
+        return await http.get(RECRUITMENT_REPORT_API.OFFER_STATISTICS, {
             params: filter,
         })
     }
 
     async getHiringStatistics(filter: DashboardFilter = {}) {
-        return await http.get('app/recruitment-report/hiring-statistics', {
+        return await http.get(RECRUITMENT_REPORT_API.HIRING_STATISTICS, {
             params: filter,
         })
     }
 
     async getRecruitmentTrend(filter: DashboardFilter = {}) {
-        return await http.get('app/recruitment-report/recruitment-trend', {
+        return await http.get(RECRUITMENT_REPORT_API.RECRUITMENT_TREND, {
             params: filter,
         })
     }
 
     async getDepartmentStatistics(filter: DashboardFilter = {}) {
-        return await http.get('app/recruitment-report/department-statistics', {
+        return await http.get(RECRUITMENT_REPORT_API.DEPARTMENT_STATISTICS, {
             params: filter,
         })
     }
 
     async getDepartments(query: PagedQuery = {}) {
-        return await http.get('app/department', {
+        return await http.get(DEPARTMENT_API.LIST, {
             params: {
                 ...defaultPagedQuery,
                 ...query,
@@ -524,7 +151,7 @@ export class AdminService {
     }
 
     async getJobPositions(query: PagedQuery = {}) {
-        return await http.get('app/job-position', {
+        return await http.get(JOB_POSITION_API.LIST, {
             params: {
                 ...defaultPagedQuery,
                 ...query,
@@ -533,39 +160,39 @@ export class AdminService {
     }
 
     async getJobPosition(id: string) {
-        return await http.get(`app/job-position/${id}`)
+        return await http.get(JOB_POSITION_API.DETAIL(id))
     }
 
     async getDepartment(id: string) {
-        return await http.get(`app/department/${id}`)
+        return await http.get(DEPARTMENT_API.DETAIL(id))
     }
 
     async createDepartment(input: DepartmentCreateDto) {
-        return await http.post('app/department', input)
+        return await http.post(DEPARTMENT_API.LIST, input)
     }
 
     async updateDepartment(id: string, input: DepartmentUpdateDto) {
-        return await http.put(`app/department/${id}`, input)
+        return await http.put(DEPARTMENT_API.DETAIL(id), input)
     }
 
     async deleteDepartment(id: string) {
-        return await http.delete(`app/department/${id}`)
+        return await http.delete(DEPARTMENT_API.DETAIL(id))
     }
 
     async createJobPosition(input: JobPositionCreateDto) {
-        return await http.post('app/job-position', input)
+        return await http.post(JOB_POSITION_API.LIST, input)
     }
 
     async updateJobPosition(id: string, input: JobPositionUpdateDto) {
-        return await http.put(`app/job-position/${id}`, input)
+        return await http.put(JOB_POSITION_API.DETAIL(id), input)
     }
 
     async deleteJobPosition(id: string) {
-        return await http.delete(`app/job-position/${id}`)
+        return await http.delete(JOB_POSITION_API.DETAIL(id))
     }
 
     async getRecruitmentRequests(query: PagedQuery = {}) {
-        return await http.get('app/recruitment-request', {
+        return await http.get(RECRUITMENT_REQUEST_API.LIST, {
             params: {
                 ...defaultPagedQuery,
                 ...query,
@@ -574,53 +201,53 @@ export class AdminService {
     }
 
     async getRecruitmentRequest(id: string) {
-        return await http.get(`app/recruitment-request/${id}`)
+        return await http.get(RECRUITMENT_REQUEST_API.DETAIL(id))
     }
 
     async createRecruitmentRequest(input: RecruitmentRequestCreateDto) {
-        return await http.post('app/recruitment-request', input)
+        return await http.post(RECRUITMENT_REQUEST_API.LIST, input)
     }
 
     async updateRecruitmentRequest(
         id: string,
         input: RecruitmentRequestUpdateDto
     ) {
-        return await http.put(`app/recruitment-request/${id}`, input)
+        return await http.put(RECRUITMENT_REQUEST_API.DETAIL(id), input)
     }
 
     async deleteRecruitmentRequest(id: string) {
-        return await http.delete(`app/recruitment-request/${id}`)
+        return await http.delete(RECRUITMENT_REQUEST_API.DETAIL(id))
     }
 
     async approveRecruitmentRequest(id: string) {
-        return await http.post(`app/recruitment-request/${id}/approve`, {})
+        return await http.post(RECRUITMENT_REQUEST_API.APPROVE(id), {})
     }
 
     async submitRecruitmentRequestForApproval(id: string) {
         return await http.post(
-            `app/recruitment-request/${id}/submit-for-approval`,
+            RECRUITMENT_REQUEST_API.SUBMIT_FOR_APPROVAL(id),
             {}
         )
     }
 
     async rejectRecruitmentRequest(id: string, reason: string) {
-        return await http.post(`app/recruitment-request/${id}/reject`, {
+        return await http.post(RECRUITMENT_REQUEST_API.REJECT(id), {
             reason,
         })
     }
 
     async publishRecruitmentRequest(id: string) {
-        return await http.post(`app/recruitment-request/${id}/publish`, {})
+        return await http.post(RECRUITMENT_REQUEST_API.PUBLISH(id), {})
     }
 
     async closeRecruitmentRequest(id: string, reason = '') {
-        return await http.post(`app/recruitment-request/${id}/close`, {
+        return await http.post(RECRUITMENT_REQUEST_API.CLOSE(id), {
             reason,
         })
     }
 
     async getApplications(query: PagedQuery = {}) {
-        return await http.get('app/application', {
+        return await http.get(APPLICATION_API.LIST, {
             params: {
                 ...defaultPagedQuery,
                 ...query,
@@ -629,11 +256,11 @@ export class AdminService {
     }
 
     async updateApplication(id: string, input: ApplicationUpdateDto) {
-        return await http.put(`app/application/${id}`, input)
+        return await http.put(APPLICATION_API.DETAIL(id), input)
     }
 
     async getCandidates(query: PagedQuery = {}) {
-        return await http.get('app/candidate', {
+        return await http.get(CANDIDATE_API.LIST, {
             params: {
                 ...defaultPagedQuery,
                 ...query,
@@ -642,7 +269,7 @@ export class AdminService {
     }
 
     async getInterviewSchedules(query: PagedQuery = {}) {
-        return await http.get('app/interview-schedule', {
+        return await http.get(INTERVIEW_SCHEDULE_API.LIST, {
             params: {
                 ...defaultPagedQuery,
                 ...query,
@@ -651,22 +278,22 @@ export class AdminService {
     }
 
     async getInterviewSchedule(id: string) {
-        return await http.get(`app/interview-schedule/${id}`)
+        return await http.get(INTERVIEW_SCHEDULE_API.DETAIL(id))
     }
 
     async createInterviewSchedule(input: InterviewScheduleCreateDto) {
-        return await http.post('app/interview-schedule', input)
+        return await http.post(INTERVIEW_SCHEDULE_API.LIST, input)
     }
 
     async updateInterviewSchedule(
         id: string,
         input: InterviewScheduleUpdateDto
     ) {
-        return await http.put(`app/interview-schedule/${id}`, input)
+        return await http.put(INTERVIEW_SCHEDULE_API.DETAIL(id), input)
     }
 
     async getApplicationScreenings(query: PagedQuery = {}) {
-        return await http.get('app/application-screening', {
+        return await http.get(APPLICATION_SCREENING_API.LIST, {
             params: {
                 ...defaultPagedQuery,
                 ...query,
@@ -675,18 +302,18 @@ export class AdminService {
     }
 
     async createApplicationScreening(input: ApplicationScreeningCreateDto) {
-        return await http.post('app/application-screening', input)
+        return await http.post(APPLICATION_SCREENING_API.LIST, input)
     }
 
     async updateApplicationScreening(
         id: string,
         input: ApplicationScreeningUpdateDto
     ) {
-        return await http.put(`app/application-screening/${id}`, input)
+        return await http.put(APPLICATION_SCREENING_API.DETAIL(id), input)
     }
 
     async getOffers(query: PagedQuery = {}) {
-        return await http.get('app/offer', {
+        return await http.get(OFFER_API.LIST, {
             params: {
                 ...defaultPagedQuery,
                 ...query,
@@ -695,15 +322,15 @@ export class AdminService {
     }
 
     async createOffer(input: CreateOfferDto) {
-        return await http.post('app/offer', input)
+        return await http.post(OFFER_API.LIST, input)
     }
 
     async updateOffer(id: string, input: UpdateOfferDto) {
-        return await http.put(`app/offer/${id}`, input)
+        return await http.put(OFFER_API.DETAIL(id), input)
     }
 
     async getCandidateResponses(query: CandidateResponseQuery = {}) {
-        return await http.get('app/candidate-response', {
+        return await http.get(CANDIDATE_RESPONSE_API.LIST, {
             params: {
                 ...defaultPagedQuery,
                 ...query,
@@ -712,11 +339,11 @@ export class AdminService {
     }
 
     async createCandidateResponse(input: CreateCandidateResponseDto) {
-        return await http.post('app/candidate-response', input)
+        return await http.post(CANDIDATE_RESPONSE_API.LIST, input)
     }
 
     async getIdentityUsers(query: PagedQuery = {}) {
-        return await http.get('identity/users', {
+        return await http.get(IDENTITY_USER_API.LIST, {
             params: {
                 ...defaultPagedQuery,
                 ...query,
@@ -725,34 +352,34 @@ export class AdminService {
     }
 
     async getIdentityUser(id: string) {
-        return await http.get(`identity/users/${id}`)
+        return await http.get(IDENTITY_USER_API.DETAIL(id))
     }
 
     async createIdentityUser(input: IdentityUserCreateDto) {
-        return await http.post('identity/users', input)
+        return await http.post(IDENTITY_USER_API.LIST, input)
     }
 
     async updateIdentityUser(id: string, input: IdentityUserUpdateDto) {
-        return await http.put(`identity/users/${id}`, input)
+        return await http.put(IDENTITY_USER_API.DETAIL(id), input)
     }
 
     async deleteIdentityUser(id: string) {
-        return await http.delete(`identity/users/${id}`)
+        return await http.delete(IDENTITY_USER_API.DETAIL(id))
     }
 
     async getIdentityUserRoles(id: string) {
-        return await http.get(`identity/users/${id}/roles`)
+        return await http.get(IDENTITY_USER_API.ROLES(id))
     }
 
     async updateIdentityUserRoles(
         id: string,
         input: IdentityUserUpdateRolesDto
     ) {
-        return await http.put(`identity/users/${id}/roles`, input)
+        return await http.put(IDENTITY_USER_API.ROLES(id), input)
     }
 
     async getIdentityRoles(query: PagedQuery = {}) {
-        return await http.get('identity/roles', {
+        return await http.get(IDENTITY_ROLE_API.LIST, {
             params: {
                 ...defaultPagedQuery,
                 ...query,
@@ -761,7 +388,7 @@ export class AdminService {
     }
 
     async getPermissions(providerName: string, providerKey: string) {
-        return await http.get('permission-management/permissions', {
+        return await http.get(PERMISSION_API.LIST, {
             params: {
                 providerName,
                 providerKey,
@@ -774,7 +401,7 @@ export class AdminService {
         providerKey: string,
         input: UpdatePermissionsDto
     ) {
-        return await http.put('permission-management/permissions', input, {
+        return await http.put(PERMISSION_API.LIST, input, {
             params: {
                 providerName,
                 providerKey,
@@ -783,7 +410,7 @@ export class AdminService {
     }
 
     async sendEmail(input: SendEmailDto) {
-        return await http.post('app/email/send', input)
+        return await http.post(EMAIL_API.SEND, input)
     }
 }
 

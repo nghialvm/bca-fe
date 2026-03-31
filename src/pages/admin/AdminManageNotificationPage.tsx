@@ -32,7 +32,11 @@ import AdminService, {
     DepartmentDto,
     IdentityUserDto,
 } from '@/services/admin'
-import { formatCount, formatDisplayDateTime, getDisplayName } from '@/utils/admin'
+import {
+    formatCount,
+    formatDisplayDateTime,
+    getDisplayName,
+} from '@/utils/admin'
 
 import styles from '../styles/AdminUi.module.css'
 
@@ -328,7 +332,9 @@ const AdminManageNotificationPage = () => {
                           : 'failed',
             }
 
-            setHistory((currentValue) => [historyItem, ...currentValue].slice(0, 20))
+            setHistory((currentValue) =>
+                [historyItem, ...currentValue].slice(0, 20)
+            )
 
             if (failedCount === 0) {
                 notification.success({
@@ -361,9 +367,15 @@ const AdminManageNotificationPage = () => {
     }
 
     const historyMetrics = useMemo(() => {
-        const successCount = history.filter((item) => item.status === 'success').length
-        const partialCount = history.filter((item) => item.status === 'partial').length
-        const failedCount = history.filter((item) => item.status === 'failed').length
+        const successCount = history.filter(
+            (item) => item.status === 'success'
+        ).length
+        const partialCount = history.filter(
+            (item) => item.status === 'partial'
+        ).length
+        const failedCount = history.filter(
+            (item) => item.status === 'failed'
+        ).length
 
         return {
             successCount,
@@ -443,7 +455,9 @@ const AdminManageNotificationPage = () => {
                         <div className={styles.metricValue}>
                             {formatCount(history.length)}
                         </div>
-                        <div className={styles.metricLabel}>Lượt gửi đã lưu</div>
+                        <div className={styles.metricLabel}>
+                            Lượt gửi đã lưu
+                        </div>
                     </div>
                 </div>
             </div>
@@ -482,6 +496,7 @@ const AdminManageNotificationPage = () => {
                             {
                                 title: 'Số lượng',
                                 dataIndex: 'count',
+                                align: 'center',
                                 key: 'count',
                                 render: (value: number) => formatCount(value),
                             },
@@ -489,16 +504,7 @@ const AdminManageNotificationPage = () => {
                                 title: 'Email mẫu',
                                 dataIndex: 'sample',
                                 key: 'sample',
-                            },
-                            {
-                                title: 'Nguồn dữ liệu',
-                                dataIndex: 'source',
-                                key: 'source',
-                                render: (value: string) => (
-                                    <span className={styles.tableSubText}>
-                                        {value}
-                                    </span>
-                                ),
+                                align: 'center',
                             },
                         ]}
                     />
@@ -515,7 +521,7 @@ const AdminManageNotificationPage = () => {
                 >
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
                         <span className={styles.summaryPill}>
-                            Nhóm: {' '}
+                            Nhóm:{' '}
                             {recipientGroupOptions.find(
                                 (item) => item.key === watchedRecipientGroup
                             )?.label || 'Tất cả ứng viên'}
@@ -524,10 +530,12 @@ const AdminManageNotificationPage = () => {
                             Người nhận: {formatCount(previewRecipients.length)}
                         </span>
                         <span className={styles.summaryPill}>
-                            Gửi thành công: {formatCount(historyMetrics.successCount)}
+                            Gửi thành công:{' '}
+                            {formatCount(historyMetrics.successCount)}
                         </span>
                         <span className={styles.summaryPill}>
-                            Gửi một phần: {formatCount(historyMetrics.partialCount)}
+                            Gửi một phần:{' '}
+                            {formatCount(historyMetrics.partialCount)}
                         </span>
                     </div>
 
@@ -535,19 +543,23 @@ const AdminManageNotificationPage = () => {
                         <div className={styles.detailItem}>
                             <MailOutlined className={styles.detailIcon} />
                             <span>
-                                Tiêu đề: {watchedTitle?.trim() || 'Chưa nhập tiêu đề'}
+                                Tiêu đề:{' '}
+                                {watchedTitle?.trim() || 'Chưa nhập tiêu đề'}
                             </span>
                         </div>
                         <div className={styles.detailItem}>
                             <BellOutlined className={styles.detailIcon} />
                             <span>
-                                Nội dung: {watchedContent?.trim() || 'Chưa nhập nội dung'}
+                                Nội dung:{' '}
+                                {watchedContent?.trim() || 'Chưa nhập nội dung'}
                             </span>
                         </div>
                         <div className={styles.detailItem}>
                             <UserOutlined className={styles.detailIcon} />
                             <span>
-                                Mẫu người nhận: {previewRecipients.slice(0, 5).join(', ') || '-'}
+                                Mẫu người nhận:{' '}
+                                {previewRecipients.slice(0, 5).join(', ') ||
+                                    '-'}
                             </span>
                         </div>
                     </div>
@@ -587,14 +599,17 @@ const AdminManageNotificationPage = () => {
                             title: 'Thời gian',
                             dataIndex: 'sentAt',
                             key: 'sentAt',
-                            render: (value: string) => formatDisplayDateTime(value),
+                            render: (value: string) =>
+                                formatDisplayDateTime(value),
                         },
                         {
                             title: 'Tiêu đề',
                             dataIndex: 'title',
                             key: 'title',
                             render: (value: string) => (
-                                <span className={styles.tableMainText}>{value}</span>
+                                <span className={styles.tableMainText}>
+                                    {value}
+                                </span>
                             ),
                         },
                         {
@@ -607,7 +622,9 @@ const AdminManageNotificationPage = () => {
                             key: 'result',
                             render: (_: unknown, record: SendHistoryItem) => (
                                 <span className={styles.tableSubText}>
-                                    {formatCount(record.successCount)}/{formatCount(record.recipientCount)} thành công
+                                    {formatCount(record.successCount)}/
+                                    {formatCount(record.recipientCount)} thành
+                                    công
                                 </span>
                             ),
                         },

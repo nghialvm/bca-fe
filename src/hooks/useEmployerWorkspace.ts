@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { notification } from 'antd'
+
 import { useSelector } from 'react-redux'
 
 import AdminService, {
@@ -66,8 +67,8 @@ const emptyWorkspace: EmployerWorkspaceData = {
     applicationRows: [],
 }
 
-const getPagedItems = <T,>(response: unknown) =>
-    (((response as { items?: T[] })?.items || []) as T[])
+const getPagedItems = <T>(response: unknown) =>
+    ((response as { items?: T[] })?.items || []) as T[]
 
 export const useEmployerWorkspace = () => {
     const user = useSelector((state: RootState) => state.auth.user)
@@ -137,24 +138,25 @@ export const useEmployerWorkspace = () => {
             ])
 
             const departments = getPagedItems<DepartmentDto>(departmentResponse)
-            const jobPositions = getPagedItems<JobPositionDto>(jobPositionResponse)
+            const jobPositions =
+                getPagedItems<JobPositionDto>(jobPositionResponse)
             const allRecruitmentRequests =
                 getPagedItems<RecruitmentRequestDto>(recruitmentResponse)
             const allApplications =
                 getPagedItems<ApplicationDto>(applicationResponse)
             const allCandidates = getPagedItems<CandidateDto>(candidateResponse)
-            const allApplicationScreenings = getPagedItems<ApplicationScreeningDto>(
-                applicationScreeningResponse
-            )
+            const allApplicationScreenings =
+                getPagedItems<ApplicationScreeningDto>(
+                    applicationScreeningResponse
+                )
             const allInterviews =
                 getPagedItems<InterviewScheduleDto>(interviewResponse)
             const allOffers = getPagedItems<OfferDto>(offerResponse)
             const allCandidateResponses = getPagedItems<CandidateResponseDto>(
                 candidateReplyResponse
             )
-            const identityUsers = getPagedItems<IdentityUserDto>(
-                identityUserResponse
-            )
+            const identityUsers =
+                getPagedItems<IdentityUserDto>(identityUserResponse)
 
             let managedDepartments = departments.filter(
                 (department) => department.managerUserId === user.id
@@ -186,7 +188,9 @@ export const useEmployerWorkspace = () => {
                 recruitmentRequestIds.has(application.recruitmentRequestId)
             )
             const applicationIds = new Set(applications.map((item) => item.id))
-            const candidateIds = new Set(applications.map((item) => item.candidateId))
+            const candidateIds = new Set(
+                applications.map((item) => item.candidateId)
+            )
             const candidates = allCandidates.filter((candidate) =>
                 candidateIds.has(candidate.id)
             )
@@ -209,7 +213,9 @@ export const useEmployerWorkspace = () => {
             const recruitmentRequestById = new Map(
                 recruitmentRequests.map((item) => [item.id, item])
             )
-            const candidateById = new Map(candidates.map((item) => [item.id, item]))
+            const candidateById = new Map(
+                candidates.map((item) => [item.id, item])
+            )
             const jobPositionById = new Map(
                 jobPositions.map((item) => [item.id, item])
             )
@@ -239,8 +245,9 @@ export const useEmployerWorkspace = () => {
                 currentDepartment: managedDepartments[0] || null,
                 managedDepartments,
                 managerUser:
-                    identityUsers.find((identityUser) => identityUser.id === user.id) ||
-                    null,
+                    identityUsers.find(
+                        (identityUser) => identityUser.id === user.id
+                    ) || null,
                 departments,
                 jobPositions,
                 recruitmentRequests,

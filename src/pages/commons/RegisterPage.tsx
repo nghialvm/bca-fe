@@ -127,7 +127,9 @@ const RegisterPage: FC = () => {
                             <Input
                                 className={styles.input}
                                 prefix={
-                                    <UserOutlined className={styles.inputIcon} />
+                                    <UserOutlined
+                                        className={styles.inputIcon}
+                                    />
                                 }
                                 placeholder="Nhập tên đăng nhập"
                                 size="large"
@@ -152,7 +154,9 @@ const RegisterPage: FC = () => {
                             <Input
                                 className={styles.input}
                                 prefix={
-                                    <MailOutlined className={styles.inputIcon} />
+                                    <MailOutlined
+                                        className={styles.inputIcon}
+                                    />
                                 }
                                 placeholder="Nhập địa chỉ email"
                                 size="large"
@@ -177,14 +181,18 @@ const RegisterPage: FC = () => {
                             <Input.Password
                                 className={styles.input}
                                 prefix={
-                                    <LockOutlined className={styles.inputIcon} />
+                                    <LockOutlined
+                                        className={styles.inputIcon}
+                                    />
                                 }
                                 placeholder="Nhập mật khẩu"
                                 size="large"
                             />
                         </Form.Item>
 
-                        <div className={styles.fieldLabel}>Xác nhận mật khẩu</div>
+                        <div className={styles.fieldLabel}>
+                            Xác nhận mật khẩu
+                        </div>
                         <Form.Item
                             name="confirmPassword"
                             className={styles.formItem}
@@ -215,7 +223,9 @@ const RegisterPage: FC = () => {
                             <Input.Password
                                 className={styles.input}
                                 prefix={
-                                    <LockOutlined className={styles.inputIcon} />
+                                    <LockOutlined
+                                        className={styles.inputIcon}
+                                    />
                                 }
                                 placeholder="Nhập lại mật khẩu"
                                 size="large"

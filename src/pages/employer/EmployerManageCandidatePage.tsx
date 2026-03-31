@@ -578,7 +578,9 @@ const EmployerManageCandidatePage = () => {
             render: (_, candidate) =>
                 candidate.offer ? (
                     <Space direction="vertical" size={4}>
-                        <Tag color={getOfferStatusColor(candidate.offer.status)}>
+                        <Tag
+                            color={getOfferStatusColor(candidate.offer.status)}
+                        >
                             {getOfferStatusLabel(candidate.offer.status)}
                         </Tag>
                         <Text type="secondary">
@@ -665,11 +667,6 @@ const EmployerManageCandidatePage = () => {
             <section className="portal-hero portal-hero--light">
                 <span className="portal-hero__eyebrow">Ứng viên</span>
                 <Title level={2}>Quản lý danh sách ứng viên</Title>
-                <Paragraph style={{ maxWidth: 760 }}>
-                    Theo dõi toàn bộ ứng viên đã nộp hồ sơ vào đơn vị, xem chi
-                    tiết từng hồ sơ, CV đính kèm và cập nhật kết quả xử lý ngay
-                    tại đây.
-                </Paragraph>
             </section>
 
             <Card className="portal-section-card">
@@ -873,7 +870,8 @@ const EmployerManageCandidatePage = () => {
                                             Lương:{' '}
                                             {formatScore(
                                                 Number(
-                                                    profileCandidate.offer.salary
+                                                    profileCandidate.offer
+                                                        .salary
                                                 )
                                             )}{' '}
                                             VND
@@ -1019,8 +1017,7 @@ const EmployerManageCandidatePage = () => {
                                 rules={[
                                     {
                                         required: true,
-                                        message:
-                                            'Nhập mức lương cho offer.',
+                                        message: 'Nhập mức lương cho offer.',
                                     },
                                 ]}
                             >
@@ -1031,13 +1028,11 @@ const EmployerManageCandidatePage = () => {
                                 />
                             </Form.Item>
 
-                            <Form.Item
-                                label="Ngày bắt đầu"
-                                name="startDate"
-                            >
+                            <Form.Item label="Ngày bắt đầu" name="startDate">
                                 <DatePicker
                                     style={{ width: '100%' }}
                                     format="DD/MM/YYYY"
+                                    placeholder="Chọn ngày bắt đầu"
                                 />
                             </Form.Item>
 
@@ -1082,6 +1077,7 @@ const EmployerManageCandidatePage = () => {
                                     showTime
                                     style={{ width: '100%' }}
                                     format="DD/MM/YYYY HH:mm"
+                                    placeholder="Chọn hạn phản hồi"
                                 />
                             </Form.Item>
                         </Form>

@@ -47,9 +47,9 @@ const AdminManageOrganizationPage = () => {
     const [status, setStatus] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
     const [submitting, setSubmitting] = useState(false)
-    const [organizations, setOrganizations] = useState<AdminOrganizationRecord[]>(
-        []
-    )
+    const [organizations, setOrganizations] = useState<
+        AdminOrganizationRecord[]
+    >([])
     const [managerUsers, setManagerUsers] = useState<IdentityUserDto[]>([])
     const [createOpen, setCreateOpen] = useState(false)
     const [viewingOrganization, setViewingOrganization] =
@@ -139,7 +139,10 @@ const AdminManageOrganizationPage = () => {
                 organization.managerName.toLowerCase().includes(keyword) ||
                 organization.managerEmail.toLowerCase().includes(keyword)
 
-            return matchesKeyword && (!status || organization.statusLabel === status)
+            return (
+                matchesKeyword &&
+                (!status || organization.statusLabel === status)
+            )
         })
     }, [organizations, search, status])
 
@@ -238,9 +241,7 @@ const AdminManageOrganizationPage = () => {
     return (
         <div className={styles.page}>
             <section className="portal-hero portal-hero--light">
-                <span className="portal-hero__eyebrow">
-                    Đơn vị
-                </span>
+                <span className="portal-hero__eyebrow">Đơn vị</span>
                 <Space
                     style={{ width: '100%', justifyContent: 'space-between' }}
                     align="start"
@@ -307,7 +308,9 @@ const AdminManageOrganizationPage = () => {
                         <div className={styles.metricValue}>
                             {formatCount(totalUsers)}
                         </div>
-                        <div className={styles.metricLabel}>Đầu mối quản lý</div>
+                        <div className={styles.metricLabel}>
+                            Đầu mối quản lý
+                        </div>
                     </div>
                 </div>
                 <div className={styles.metricBox}>
@@ -334,7 +337,9 @@ const AdminManageOrganizationPage = () => {
                                     .length
                             )}
                         </div>
-                        <div className={styles.metricLabel}>Đơn vị hoạt động</div>
+                        <div className={styles.metricLabel}>
+                            Đơn vị hoạt động
+                        </div>
                     </div>
                 </div>
             </div>
@@ -355,7 +360,10 @@ const AdminManageOrganizationPage = () => {
                         {
                             title: 'Đơn vị',
                             key: 'organization',
-                            render: (_: unknown, record: AdminOrganizationRecord) => (
+                            render: (
+                                _: unknown,
+                                record: AdminOrganizationRecord
+                            ) => (
                                 <div className={styles.tableNameCell}>
                                     <span className={styles.tableMainText}>
                                         {record.name}
@@ -369,7 +377,10 @@ const AdminManageOrganizationPage = () => {
                         {
                             title: 'Quản lý',
                             key: 'manager',
-                            render: (_: unknown, record: AdminOrganizationRecord) => (
+                            render: (
+                                _: unknown,
+                                record: AdminOrganizationRecord
+                            ) => (
                                 <div className={styles.tableNameCell}>
                                     <span className={styles.tableMainText}>
                                         {record.managerName}
@@ -416,9 +427,14 @@ const AdminManageOrganizationPage = () => {
                             title: 'Trạng thái',
                             dataIndex: 'statusLabel',
                             key: 'statusLabel',
-                            render: (_: string, record: AdminOrganizationRecord) => (
+                            render: (
+                                _: string,
+                                record: AdminOrganizationRecord
+                            ) => (
                                 <Tag
-                                    color={record.isActive ? 'success' : 'warning'}
+                                    color={
+                                        record.isActive ? 'success' : 'warning'
+                                    }
                                     className={styles.statusTag}
                                 >
                                     {record.statusLabel}
@@ -428,7 +444,10 @@ const AdminManageOrganizationPage = () => {
                         {
                             title: 'Thao tác',
                             key: 'actions',
-                            render: (_: unknown, record: AdminOrganizationRecord) => (
+                            render: (
+                                _: unknown,
+                                record: AdminOrganizationRecord
+                            ) => (
                                 <Space size="small">
                                     <Button
                                         icon={<EyeOutlined />}

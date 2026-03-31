@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import dayjs from 'dayjs'
-
 import {
     Button,
     Card,
@@ -17,15 +15,12 @@ import {
     notification,
 } from 'antd'
 
-import {
-    MailOutlined,
-    SaveOutlined,
-    SendOutlined,
-} from '@ant-design/icons'
+import { MailOutlined, SaveOutlined, SendOutlined } from '@ant-design/icons'
+import dayjs from 'dayjs'
 
 import {
-    useEmployerWorkspace,
     type EmployerApplicationRow,
+    useEmployerWorkspace,
 } from '@/hooks/useEmployerWorkspace'
 import AdminService, { type InterviewScheduleDto } from '@/services/admin'
 import { formatDisplayDateTime } from '@/utils/admin'
@@ -163,7 +158,8 @@ const renderTemplateText = (
     )
 
 const EmployerManageCommunicationPage = () => {
-    const { applicationRows, currentDepartment, interviews } = useEmployerWorkspace()
+    const { applicationRows, currentDepartment, interviews } =
+        useEmployerWorkspace()
     const [selectedTemplate, setSelectedTemplate] = useState<MessageTemplate>(
         messageTemplates[0]
     )
@@ -216,11 +212,15 @@ const EmployerManageCommunicationPage = () => {
                 .filter((row) => row.candidate?.email)
                 .map((row) => ({
                     label: `${row.candidate?.fullName || 'Ứng viên'} • ${
-                        row.recruitmentRequest?.title || row.jobPosition?.name || '-'
+                        row.recruitmentRequest?.title ||
+                        row.jobPosition?.name ||
+                        '-'
                     } • ${row.candidate?.email}`,
                     value: row.application.id,
                 }))
-                .sort((left, right) => left.label.localeCompare(right.label, 'vi')),
+                .sort((left, right) =>
+                    left.label.localeCompare(right.label, 'vi')
+                ),
         [applicationRows]
     )
 
@@ -248,10 +248,14 @@ const EmployerManageCommunicationPage = () => {
                 row.recruitmentRequest?.title || row.jobPosition?.name
             ),
             '[Phòng ban]': getTextValue(row.department?.name),
-            '[Ngày giờ phỏng vấn]': formatDisplayDateTime(interview?.scheduledTime),
+            '[Ngày giờ phỏng vấn]': formatDisplayDateTime(
+                interview?.scheduledTime
+            ),
             '[Địa điểm phỏng vấn]': getTextValue(interview?.location),
             '[Hình thức phỏng vấn]': getTextValue(
-                interview ? getInterviewTypeLabel(interview.interviewType) : undefined
+                interview
+                    ? getInterviewTypeLabel(interview.interviewType)
+                    : undefined
             ),
             '[Người phụ trách]': getTextValue(interview?.contactPerson),
             '[Link họp]': getTextValue(interview?.meetingLink),
@@ -367,11 +371,6 @@ const EmployerManageCommunicationPage = () => {
             <section className="portal-hero portal-hero--light">
                 <span className="portal-hero__eyebrow">Giao tiếp</span>
                 <Title level={2}>Soạn và gửi thông điệp cho ứng viên</Title>
-                <Paragraph style={{ maxWidth: 760 }}>
-                    Danh sách người nhận được lấy từ hồ sơ ứng tuyển của đơn vị.
-                    Biến trong tiêu đề và nội dung email sẽ được thay bằng dữ liệu
-                    thật của từng hồ sơ đã chọn trước khi gửi.
-                </Paragraph>
             </section>
 
             <Row gutter={[24, 24]}>
@@ -382,7 +381,9 @@ const EmployerManageCommunicationPage = () => {
                             renderItem={(template) => (
                                 <List.Item
                                     style={{ paddingInline: 0 }}
-                                    onClick={() => handleSelectTemplate(template)}
+                                    onClick={() =>
+                                        handleSelectTemplate(template)
+                                    }
                                 >
                                     <Card
                                         size="small"
@@ -391,7 +392,8 @@ const EmployerManageCommunicationPage = () => {
                                         style={{
                                             width: '100%',
                                             borderColor:
-                                                selectedTemplate.id === template.id
+                                                selectedTemplate.id ===
+                                                template.id
                                                     ? '#0B3D2E'
                                                     : undefined,
                                         }}
@@ -399,7 +401,11 @@ const EmployerManageCommunicationPage = () => {
                                         <Text strong>{template.title}</Text>
                                         <div style={{ marginTop: 8 }}>
                                             <Tag color="green">
-                                                {templateTypeLabel[template.type]}
+                                                {
+                                                    templateTypeLabel[
+                                                        template.type
+                                                    ]
+                                                }
                                             </Tag>
                                         </div>
                                     </Card>
@@ -529,7 +535,8 @@ const EmployerManageCommunicationPage = () => {
                             />
                         ) : (
                             <Text className="portal-muted">
-                                Chưa có lịch sử gửi email trong phạm vi đơn vị này.
+                                Chưa có lịch sử gửi email trong phạm vi đơn vị
+                                này.
                             </Text>
                         )}
                     </Card>

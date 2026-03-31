@@ -27,6 +27,7 @@ export const PATHS = {
     EMPLOYER_MANAGE_INTERVIEWS: '/employer/interviews',
     EMPLOYER_MANAGE_COMMUNICATIONS: '/employer/communications',
     EMPLOYER_MANAGE_CANDIDATES: '/employer/candidates',
+    EMPLOYER_MANAGE_EMPLOYEES: '/employer/employees',
     EMPLOYER_REPORT: '/employer/reports',
     EMPLOYER_PROFILE: '/employer/profile',
 

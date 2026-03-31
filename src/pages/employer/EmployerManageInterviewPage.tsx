@@ -18,7 +18,6 @@ import {
     Typography,
     notification,
 } from 'antd'
-import dayjs, { type Dayjs } from 'dayjs'
 
 import {
     CalendarOutlined,
@@ -29,6 +28,7 @@ import {
     TeamOutlined,
     VideoCameraOutlined,
 } from '@ant-design/icons'
+import dayjs, { type Dayjs } from 'dayjs'
 import { useSelector } from 'react-redux'
 
 import { useEmployerWorkspace } from '@/hooks/useEmployerWorkspace'
@@ -117,42 +117,50 @@ const getTextValue = (value?: string | null) => value?.trim() || '-'
 
 const getErrorMessage = (error: unknown) => {
     const message =
-        (error as {
-            response?: {
-                data?: {
-                    error?: {
+        (
+            error as {
+                response?: {
+                    data?: {
+                        error?: {
+                            message?: string
+                        }
                         message?: string
                     }
-                    message?: string
                 }
+                message?: string
             }
-            message?: string
-        })?.response?.data?.error?.message ||
-        (error as {
-            response?: {
-                data?: {
-                    message?: string
+        )?.response?.data?.error?.message ||
+        (
+            error as {
+                response?: {
+                    data?: {
+                        message?: string
+                    }
                 }
+                message?: string
             }
-            message?: string
-        })?.response?.data?.message ||
+        )?.response?.data?.message ||
         (error as { message?: string })?.message
 
-    return message || 'Vui lòng kiểm tra lại quyền truy cập hoặc dữ liệu đầu vào.'
+    return (
+        message || 'Vui lòng kiểm tra lại quyền truy cập hoặc dữ liệu đầu vào.'
+    )
 }
 
 const EmployerManageInterviewPage = () => {
     const currentUser = useSelector((state: RootState) => state.auth.user)
     const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
     const [formMode, setFormMode] = useState<'create' | 'edit'>('create')
-    const [detailInterview, setDetailInterview] = useState<InterviewRow | null>(null)
-    const [editingInterview, setEditingInterview] = useState<InterviewRow | null>(
+    const [detailInterview, setDetailInterview] = useState<InterviewRow | null>(
         null
     )
+    const [editingInterview, setEditingInterview] =
+        useState<InterviewRow | null>(null)
     const [modalOpen, setModalOpen] = useState(false)
     const [submitting, setSubmitting] = useState(false)
     const [form] = Form.useForm<InterviewFormValues>()
-    const { applicationRows, interviews, loading, reload } = useEmployerWorkspace()
+    const { applicationRows, interviews, loading, reload } =
+        useEmployerWorkspace()
 
     const applicationMap = useMemo(
         () => new Map(applicationRows.map((row) => [row.application.id, row])),
@@ -163,7 +171,9 @@ const EmployerManageInterviewPage = () => {
         () =>
             interviews
                 .map((item) => {
-                    const applicationRow = applicationMap.get(item.applicationId)
+                    const applicationRow = applicationMap.get(
+                        item.applicationId
+                    )
 
                     return {
                         id: item.id,
@@ -190,7 +200,8 @@ const EmployerManageInterviewPage = () => {
                             applicationRow?.application?.status || '-',
                         scheduledTime: item.scheduledTime,
                         interviewer:
-                            item.contactPerson || 'Chưa cập nhật người phụ trách',
+                            item.contactPerson ||
+                            'Chưa cập nhật người phụ trách',
                         interviewType: item.interviewType,
                         status: item.status,
                         roundNumber: item.roundNumber,
@@ -223,11 +234,15 @@ const EmployerManageInterviewPage = () => {
             applicationRows
                 .map((row) => ({
                     label: `${row.candidate?.fullName || 'Ứng viên'} • ${
-                        row.recruitmentRequest?.title || row.jobPosition?.name || '-'
+                        row.recruitmentRequest?.title ||
+                        row.jobPosition?.name ||
+                        '-'
                     } • ${row.application.applicationCode}`,
                     value: row.application.id,
                 }))
-                .sort((left, right) => left.label.localeCompare(right.label, 'vi')),
+                .sort((left, right) =>
+                    left.label.localeCompare(right.label, 'vi')
+                ),
         [applicationRows]
     )
 
@@ -424,11 +439,6 @@ const EmployerManageInterviewPage = () => {
                 >
                     <div>
                         <Title level={2}>Quản lý lịch phỏng vấn</Title>
-                        <Paragraph style={{ maxWidth: 760 }}>
-                            Employer có thể lên lịch phỏng vấn mới, mở chi tiết từng
-                            buổi và chỉnh sửa lại thời gian, hình thức hoặc trạng thái
-                            ngay trên trang này.
-                        </Paragraph>
                     </div>
                     <Button
                         type="primary"
@@ -470,7 +480,9 @@ const EmployerManageInterviewPage = () => {
                                     size={16}
                                     style={{ width: '100%' }}
                                 >
-                                    {upcomingInterviews.map(renderInterviewCard)}
+                                    {upcomingInterviews.map(
+                                        renderInterviewCard
+                                    )}
                                 </Space>
                             ) : (
                                 <Empty description="Chưa có lịch phỏng vấn sắp tới" />
@@ -493,7 +505,9 @@ const EmployerManageInterviewPage = () => {
                                     size={16}
                                     style={{ width: '100%' }}
                                 >
-                                    {completedInterviews.map(renderInterviewCard)}
+                                    {completedInterviews.map(
+                                        renderInterviewCard
+                                    )}
                                 </Space>
                             ) : (
                                 <Empty description="Chưa có lịch phỏng vấn hoàn thành" />
@@ -504,12 +518,18 @@ const EmployerManageInterviewPage = () => {
             ) : (
                 <Card className="portal-section-card">
                     {interviewRows.length ? (
-                        <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                        <Space
+                            direction="vertical"
+                            size={16}
+                            style={{ width: '100%' }}
+                        >
                             {interviewRows.map((item) => (
                                 <Card key={item.id} size="small">
                                     <Row gutter={[16, 16]} align="middle">
                                         <Col xs={24} md={8}>
-                                            <Text strong>{item.candidateName}</Text>
+                                            <Text strong>
+                                                {item.candidateName}
+                                            </Text>
                                             <div className="portal-muted">
                                                 {item.position}
                                             </div>
@@ -527,7 +547,9 @@ const EmployerManageInterviewPage = () => {
                                                     item.status
                                                 )}
                                             >
-                                                {getInterviewStatusLabel(item.status)}
+                                                {getInterviewStatusLabel(
+                                                    item.status
+                                                )}
                                             </Tag>
                                         </Col>
                                         <Col xs={24} md={4}>
@@ -568,7 +590,10 @@ const EmployerManageInterviewPage = () => {
                 open={Boolean(detailInterview)}
                 onCancel={() => setDetailInterview(null)}
                 footer={[
-                    <Button key="close" onClick={() => setDetailInterview(null)}>
+                    <Button
+                        key="close"
+                        onClick={() => setDetailInterview(null)}
+                    >
                         Đóng
                     </Button>,
                     <Button
@@ -586,15 +611,25 @@ const EmployerManageInterviewPage = () => {
                 width={760}
             >
                 {detailInterview ? (
-                    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                    <Space
+                        direction="vertical"
+                        size={16}
+                        style={{ width: '100%' }}
+                    >
                         <div>
                             <Title level={4} style={{ marginBottom: 4 }}>
                                 {detailInterview.candidateName}
                             </Title>
                             <Space wrap size={[8, 8]}>
                                 <Tag>{detailInterview.applicationCode}</Tag>
-                                <Tag color={getInterviewStatusColor(detailInterview.status)}>
-                                    {getInterviewStatusLabel(detailInterview.status)}
+                                <Tag
+                                    color={getInterviewStatusColor(
+                                        detailInterview.status
+                                    )}
+                                >
+                                    {getInterviewStatusLabel(
+                                        detailInterview.status
+                                    )}
                                 </Tag>
                                 <Tag>Vòng {detailInterview.roundNumber}</Tag>
                             </Space>
@@ -602,11 +637,16 @@ const EmployerManageInterviewPage = () => {
                         <Card size="small">
                             <Space direction="vertical" size={8}>
                                 <Text>
-                                    Vị trí: <Text strong>{detailInterview.position}</Text>
+                                    Vị trí:{' '}
+                                    <Text strong>
+                                        {detailInterview.position}
+                                    </Text>
                                 </Text>
                                 <Text>
                                     Phòng ban:{' '}
-                                    <Text strong>{detailInterview.department}</Text>
+                                    <Text strong>
+                                        {detailInterview.department}
+                                    </Text>
                                 </Text>
                                 <Text>
                                     Trạng thái hồ sơ:{' '}
@@ -618,7 +658,9 @@ const EmployerManageInterviewPage = () => {
                                 </Text>
                                 <Text>
                                     Email ứng viên:{' '}
-                                    {getTextValue(detailInterview.candidate?.email)}
+                                    {getTextValue(
+                                        detailInterview.candidate?.email
+                                    )}
                                 </Text>
                             </Space>
                         </Card>
@@ -649,10 +691,13 @@ const EmployerManageInterviewPage = () => {
                                 </Text>
                                 <Text>
                                     Người phụ trách:{' '}
-                                    <Text strong>{detailInterview.interviewer}</Text>
+                                    <Text strong>
+                                        {detailInterview.interviewer}
+                                    </Text>
                                 </Text>
                                 <Text>
-                                    Địa điểm: {getTextValue(detailInterview.location)}
+                                    Địa điểm:{' '}
+                                    {getTextValue(detailInterview.location)}
                                 </Text>
                                 <Text>
                                     Link họp:{' '}
@@ -669,7 +714,8 @@ const EmployerManageInterviewPage = () => {
                                     )}
                                 </Text>
                                 <Text>
-                                    Ghi chú: {getTextValue(detailInterview.note)}
+                                    Ghi chú:{' '}
+                                    {getTextValue(detailInterview.note)}
                                 </Text>
                             </Space>
                         </Card>
@@ -699,7 +745,8 @@ const EmployerManageInterviewPage = () => {
                         rules={[
                             {
                                 required: true,
-                                message: 'Chọn hồ sơ ứng tuyển cần lên lịch phỏng vấn.',
+                                message:
+                                    'Chọn hồ sơ ứng tuyển cần lên lịch phỏng vấn.',
                             },
                         ]}
                     >
@@ -762,6 +809,7 @@ const EmployerManageInterviewPage = () => {
                                     showTime={{ format: 'HH:mm' }}
                                     format="DD/MM/YYYY HH:mm"
                                     style={{ width: '100%' }}
+                                    placeholder="Chọn thời gian phỏng vấn"
                                 />
                             </Form.Item>
                         </Col>
@@ -788,7 +836,10 @@ const EmployerManageInterviewPage = () => {
 
                     <Row gutter={[16, 0]}>
                         <Col xs={24} md={12}>
-                            <Form.Item label="Người phụ trách" name="contactPerson">
+                            <Form.Item
+                                label="Người phụ trách"
+                                name="contactPerson"
+                            >
                                 <Input placeholder="Nhập tên người phụ trách" />
                             </Form.Item>
                         </Col>
@@ -799,7 +850,8 @@ const EmployerManageInterviewPage = () => {
                                 rules={[
                                     {
                                         required: true,
-                                        message: 'Chọn trạng thái lịch phỏng vấn.',
+                                        message:
+                                            'Chọn trạng thái lịch phỏng vấn.',
                                     },
                                 ]}
                             >

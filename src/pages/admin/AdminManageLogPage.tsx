@@ -30,7 +30,11 @@ import AdminService, {
     IdentityUserDto,
     RecruitmentRequestDto,
 } from '@/services/admin'
-import { formatCount, formatDisplayDateTime, getDisplayName } from '@/utils/admin'
+import {
+    formatCount,
+    formatDisplayDateTime,
+    getDisplayName,
+} from '@/utils/admin'
 
 import styles from '../styles/AdminUi.module.css'
 
@@ -49,7 +53,9 @@ const downloadCsv = (filename: string, rows: string[][]) => {
     const escapeCell = (value: string | number) =>
         `"${String(value ?? '').replace(/"/g, '""')}"`
 
-    const csvContent = rows.map((row) => row.map(escapeCell).join(',')).join('\n')
+    const csvContent = rows
+        .map((row) => row.map(escapeCell).join(','))
+        .join('\n')
     const blob = new Blob(['\uFEFF' + csvContent], {
         type: 'text/csv;charset=utf-8;',
     })
@@ -121,7 +127,8 @@ const AdminManageLogPage = () => {
                 )
 
                 const recruitmentEntries = recruitments.flatMap((item) => {
-                    const unitName = departmentsById.get(item.departmentId) || '-'
+                    const unitName =
+                        departmentsById.get(item.departmentId) || '-'
                     const result: LogEntry[] = []
 
                     if (item.creationTime) {
@@ -167,7 +174,9 @@ const AdminManageLogPage = () => {
                 })
 
                 const applicationEntries = applications.map((item) => {
-                    const recruitment = recruitmentById.get(item.recruitmentRequestId)
+                    const recruitment = recruitmentById.get(
+                        item.recruitmentRequestId
+                    )
 
                     return {
                         id: `${item.id}-application`,
@@ -177,9 +186,11 @@ const AdminManageLogPage = () => {
                         source: 'app/application',
                         severity: 'info' as const,
                         title: `Ứng viên nộp hồ sơ: ${
-                            candidatesById.get(item.candidateId) || item.candidateId
+                            candidatesById.get(item.candidateId) ||
+                            item.candidateId
                         }`,
-                        description: recruitment?.title || 'Chưa xác định vị trí',
+                        description:
+                            recruitment?.title || 'Chưa xác định vị trí',
                     }
                 })
 
@@ -197,11 +208,16 @@ const AdminManageLogPage = () => {
                     }))
 
                 setEntries(
-                    [...recruitmentEntries, ...applicationEntries, ...userEntries]
+                    [
+                        ...recruitmentEntries,
+                        ...applicationEntries,
+                        ...userEntries,
+                    ]
                         .filter((item) => Boolean(item.time))
                         .sort(
                             (left, right) =>
-                                dayjs(right.time).valueOf() - dayjs(left.time).valueOf()
+                                dayjs(right.time).valueOf() -
+                                dayjs(left.time).valueOf()
                         )
                 )
             } catch {
@@ -235,10 +251,12 @@ const AdminManageLogPage = () => {
         return {
             total: filteredEntries.length,
             last7Days,
-            warnings: filteredEntries.filter((item) => item.severity === 'warning')
-                .length,
-            userEvents: filteredEntries.filter((item) => item.type === 'Tài khoản')
-                .length,
+            warnings: filteredEntries.filter(
+                (item) => item.severity === 'warning'
+            ).length,
+            userEvents: filteredEntries.filter(
+                (item) => item.type === 'Tài khoản'
+            ).length,
         }
     }, [filteredEntries])
 
@@ -315,7 +333,9 @@ const AdminManageLogPage = () => {
                         <FileTextOutlined />
                     </div>
                     <div>
-                        <div className={styles.metricValue}>{formatCount(metrics.total)}</div>
+                        <div className={styles.metricValue}>
+                            {formatCount(metrics.total)}
+                        </div>
                         <div className={styles.metricLabel}>Tổng sự kiện</div>
                     </div>
                 </div>
@@ -324,8 +344,12 @@ const AdminManageLogPage = () => {
                         <ClockCircleOutlined />
                     </div>
                     <div>
-                        <div className={styles.metricValue}>{formatCount(metrics.last7Days)}</div>
-                        <div className={styles.metricLabel}>7 ngày gần nhất</div>
+                        <div className={styles.metricValue}>
+                            {formatCount(metrics.last7Days)}
+                        </div>
+                        <div className={styles.metricLabel}>
+                            7 ngày gần nhất
+                        </div>
                     </div>
                 </div>
                 <div className={styles.metricBox}>
@@ -333,8 +357,12 @@ const AdminManageLogPage = () => {
                         <WarningOutlined />
                     </div>
                     <div>
-                        <div className={styles.metricValue}>{formatCount(metrics.warnings)}</div>
-                        <div className={styles.metricLabel}>Sự kiện cảnh báo</div>
+                        <div className={styles.metricValue}>
+                            {formatCount(metrics.warnings)}
+                        </div>
+                        <div className={styles.metricLabel}>
+                            Sự kiện cảnh báo
+                        </div>
                     </div>
                 </div>
                 <div className={styles.metricBox}>
@@ -342,8 +370,12 @@ const AdminManageLogPage = () => {
                         <UserOutlined />
                     </div>
                     <div>
-                        <div className={styles.metricValue}>{formatCount(metrics.userEvents)}</div>
-                        <div className={styles.metricLabel}>Sự kiện tài khoản</div>
+                        <div className={styles.metricValue}>
+                            {formatCount(metrics.userEvents)}
+                        </div>
+                        <div className={styles.metricLabel}>
+                            Sự kiện tài khoản
+                        </div>
                     </div>
                 </div>
             </div>
@@ -363,14 +395,18 @@ const AdminManageLogPage = () => {
                     ) : recentEntries.length ? (
                         <div className={styles.timelineList}>
                             {recentEntries.map((item) => (
-                                <div key={item.key} className={styles.timelineItem}>
+                                <div
+                                    key={item.key}
+                                    className={styles.timelineItem}
+                                >
                                     <div className={styles.timelineDot} />
                                     <div>
                                         <div className={styles.tableMainText}>
                                             {item.title}
                                         </div>
                                         <div className={styles.tableSubText}>
-                                            {formatDisplayDateTime(item.time)} · {item.source}
+                                            {formatDisplayDateTime(item.time)} ·{' '}
+                                            {item.source}
                                         </div>
                                         <div className={styles.sectionHint}>
                                             {item.description}
@@ -388,7 +424,9 @@ const AdminManageLogPage = () => {
             <Card
                 variant="borderless"
                 className={styles.sectionCard}
-                title={<span className={styles.sectionTitle}>Bảng sự kiện</span>}
+                title={
+                    <span className={styles.sectionTitle}>Bảng sự kiện</span>
+                }
             >
                 <Table
                     rowKey="key"
@@ -405,7 +443,8 @@ const AdminManageLogPage = () => {
                             title: 'Thời gian',
                             dataIndex: 'time',
                             key: 'time',
-                            render: (value: string) => formatDisplayDateTime(value),
+                            render: (value: string) =>
+                                formatDisplayDateTime(value),
                         },
                         {
                             title: 'Loại',
@@ -417,7 +456,9 @@ const AdminManageLogPage = () => {
                             dataIndex: 'title',
                             key: 'title',
                             render: (value: string) => (
-                                <span className={styles.tableMainText}>{value}</span>
+                                <span className={styles.tableMainText}>
+                                    {value}
+                                </span>
                             ),
                         },
                         {

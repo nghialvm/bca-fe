@@ -10,15 +10,14 @@ import {
     Input,
     InputNumber,
     Modal,
-    notification,
     Row,
     Select,
     Space,
     Tag,
     Typography,
     Upload,
+    notification,
 } from 'antd'
-import type { UploadFile } from 'antd/es/upload/interface'
 
 import {
     EnvironmentOutlined,
@@ -27,13 +26,16 @@ import {
     TeamOutlined,
     UploadOutlined,
 } from '@ant-design/icons'
+import type { UploadFile } from 'antd/es/upload/interface'
 import dayjs, { type Dayjs } from 'dayjs'
 
 import { useCandidateWorkspace } from '@/hooks/useCandidateWorkspace'
+import useDebounce from '@/hooks/useDebounce'
 import type { CandidatePortalJobDto } from '@/services/candidate'
 import { formatSalaryRange } from '@/utils/candidate'
 
 const { Paragraph, Text, Title } = Typography
+const SEARCH_DEBOUNCE_MS = 400
 
 type ApplyFormValues = {
     fullName: string
@@ -53,14 +55,16 @@ type ApplyFormValues = {
 }
 
 const CandidateJobPage = () => {
-    const [search, setSearch] = useState('')
+    const [searchInput, setSearchInput] = useState('')
     const [department, setDepartment] = useState<string>('all')
     const [location, setLocation] = useState<string>('all')
-    const [applyingJob, setApplyingJob] = useState<CandidatePortalJobDto | null>(null)
+    const [applyingJob, setApplyingJob] =
+        useState<CandidatePortalJobDto | null>(null)
     const [cvFileList, setCvFileList] = useState<UploadFile[]>([])
     const [form] = Form.useForm<ApplyFormValues>()
     const { jobs, loading, profile, applyToJob, applyingJobId } =
         useCandidateWorkspace()
+    const search = useDebounce(searchInput, SEARCH_DEBOUNCE_MS)
 
     const departments = useMemo(
         () => [
@@ -105,7 +109,8 @@ const CandidateJobPage = () => {
                     .join(' ')
                     .toLowerCase()
 
-                const matchesSearch = !normalized || haystack.includes(normalized)
+                const matchesSearch =
+                    !normalized || haystack.includes(normalized)
                 const matchesDepartment =
                     department === 'all' || job.departmentName === department
                 const jobLocation = job.workLocation || 'Chưa cập nhật'
@@ -130,7 +135,9 @@ const CandidateJobPage = () => {
             email: profile?.email || '',
             phoneNumber: profile?.phoneNumber || '',
             address: profile?.address || '',
-            dateOfBirth: profile?.dateOfBirth ? dayjs(profile.dateOfBirth) : null,
+            dateOfBirth: profile?.dateOfBirth
+                ? dayjs(profile.dateOfBirth)
+                : null,
             identityNumber: profile?.identityNumber || '',
             currentCompany: profile?.currentCompany || '',
             currentPosition: profile?.currentPosition || '',
@@ -187,10 +194,10 @@ const CandidateJobPage = () => {
             <section className="portal-hero">
                 <span className="portal-hero__eyebrow">Việc làm phù hợp</span>
                 <Title level={2}>Danh sách vị trí đang mở cho ứng viên</Title>
-                <Paragraph style={{ maxWidth: 720 }}>
+                <Paragraph style={{ maxWidth: 720, color: '#fff' }}>
                     Trang việc làm đã được nối với candidate portal API, tự động
-                    đồng bộ danh sách đợt tuyển dụng đang mở và trạng thái ứng tuyển
-                    của bạn.
+                    đồng bộ danh sách đợt tuyển dụng đang mở và trạng thái ứng
+                    tuyển của bạn.
                 </Paragraph>
             </section>
 
@@ -203,8 +210,10 @@ const CandidateJobPage = () => {
                             size="large"
                             prefix={<SearchOutlined />}
                             placeholder="Nhập từ khóa, đơn vị, mã phiếu..."
-                            value={search}
-                            onChange={(event) => setSearch(event.target.value)}
+                            value={searchInput}
+                            onChange={(event) =>
+                                setSearchInput(event.target.value)
+                            }
                         />
                     </Col>
                     <Col xs={24} md={6}>
@@ -246,7 +255,10 @@ const CandidateJobPage = () => {
                 <Row gutter={[24, 24]}>
                     {filteredJobs.map((job) => {
                         const daysRemaining = job.applicationDeadline
-                            ? dayjs(job.applicationDeadline).diff(dayjs(), 'day')
+                            ? dayjs(job.applicationDeadline).diff(
+                                  dayjs(),
+                                  'day'
+                              )
                             : null
 
                         return (
@@ -275,7 +287,9 @@ const CandidateJobPage = () => {
                                                 </Tag>
                                                 <Title
                                                     level={4}
-                                                    style={{ margin: '12px 0 8px' }}
+                                                    style={{
+                                                        margin: '12px 0 8px',
+                                                    }}
                                                 >
                                                     {job.title}
                                                 </Title>
@@ -283,7 +297,13 @@ const CandidateJobPage = () => {
                                                     {job.departmentName}
                                                 </Text>
                                             </div>
-                                            <Tag color={job.hasApplied ? 'blue' : 'green'}>
+                                            <Tag
+                                                color={
+                                                    job.hasApplied
+                                                        ? 'blue'
+                                                        : 'green'
+                                                }
+                                            >
                                                 {job.hasApplied
                                                     ? 'Đã ứng tuyển'
                                                     : job.employmentType}
@@ -315,11 +335,12 @@ const CandidateJobPage = () => {
                                         >
                                             <Text>
                                                 <EnvironmentOutlined />{' '}
-                                                {job.workLocation || 'Chưa cập nhật'}
+                                                {job.workLocation ||
+                                                    'Chưa cập nhật'}
                                             </Text>
                                             <Text>
-                                                <TeamOutlined /> Số lượng: {job.headcount}{' '}
-                                                người
+                                                <TeamOutlined /> Số lượng:{' '}
+                                                {job.headcount} người
                                             </Text>
                                             <Text strong>
                                                 {formatSalaryRange(
@@ -357,10 +378,18 @@ const CandidateJobPage = () => {
                                                       : 'Đã hết hạn'}
                                             </Text>
                                             <Button
-                                                type={job.hasApplied ? 'default' : 'primary'}
+                                                type={
+                                                    job.hasApplied
+                                                        ? 'default'
+                                                        : 'primary'
+                                                }
                                                 disabled={job.hasApplied}
-                                                loading={applyingJobId === job.id}
-                                                onClick={() => handleOpenApplyModal(job)}
+                                                loading={
+                                                    applyingJobId === job.id
+                                                }
+                                                onClick={() =>
+                                                    handleOpenApplyModal(job)
+                                                }
                                             >
                                                 {job.hasApplied
                                                     ? 'Đã ứng tuyển'
@@ -374,7 +403,10 @@ const CandidateJobPage = () => {
                     })}
                 </Row>
             ) : (
-                <Card className="portal-section-card portal-empty" loading={loading}>
+                <Card
+                    className="portal-section-card portal-empty"
+                    loading={loading}
+                >
                     <Empty
                         description="Không tìm thấy vị trí phù hợp với bộ lọc hiện tại"
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -385,21 +417,29 @@ const CandidateJobPage = () => {
             <Modal
                 title="Nộp hồ sơ ứng tuyển"
                 open={Boolean(applyingJob)}
+                width="50%"
                 onCancel={resetApplyModal}
                 onOk={() => void handleSubmitApplication()}
                 okText="Gửi hồ sơ"
                 cancelText="Hủy"
-                confirmLoading={Boolean(applyingJob && applyingJobId === applyingJob.id)}
+                confirmLoading={Boolean(
+                    applyingJob && applyingJobId === applyingJob.id
+                )}
                 destroyOnHidden
             >
                 {applyingJob ? (
-                    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                    <Space
+                        direction="vertical"
+                        size={16}
+                        style={{ width: '100%' }}
+                    >
                         <div>
                             <Title level={4} style={{ marginBottom: 4 }}>
                                 {applyingJob.title}
                             </Title>
                             <Text className="portal-muted">
-                                {applyingJob.departmentName} - {applyingJob.requestCode}
+                                {applyingJob.departmentName} -{' '}
+                                {applyingJob.requestCode}
                             </Text>
                         </div>
 
@@ -416,16 +456,20 @@ const CandidateJobPage = () => {
                                     beforeUpload={(file) => {
                                         const isPdf =
                                             file.type === 'application/pdf' ||
-                                            file.name.toLowerCase().endsWith('.pdf')
+                                            file.name
+                                                .toLowerCase()
+                                                .endsWith('.pdf')
                                         if (!isPdf) {
                                             notification.error({
-                                                message: 'Chỉ chấp nhận file PDF',
+                                                message:
+                                                    'Chỉ chấp nhận file PDF',
                                             })
                                             return Upload.LIST_IGNORE
                                         }
                                         if (file.size > 10 * 1024 * 1024) {
                                             notification.error({
-                                                message: 'File CV vượt quá 10MB',
+                                                message:
+                                                    'File CV vượt quá 10MB',
                                             })
                                             return Upload.LIST_IGNORE
                                         }
@@ -458,7 +502,8 @@ const CandidateJobPage = () => {
                                         rules={[
                                             {
                                                 required: true,
-                                                message: 'Vui lòng nhập họ và tên',
+                                                message:
+                                                    'Vui lòng nhập họ và tên',
                                             },
                                         ]}
                                     >
@@ -493,7 +538,8 @@ const CandidateJobPage = () => {
                                         rules={[
                                             {
                                                 required: true,
-                                                message: 'Vui lòng chọn ngày sinh',
+                                                message:
+                                                    'Vui lòng chọn ngày sinh',
                                             },
                                         ]}
                                     >
@@ -511,7 +557,8 @@ const CandidateJobPage = () => {
                                         rules={[
                                             {
                                                 required: true,
-                                                message: 'Vui lòng nhập số CCCD',
+                                                message:
+                                                    'Vui lòng nhập số CCCD',
                                             },
                                         ]}
                                     >
@@ -528,7 +575,8 @@ const CandidateJobPage = () => {
                                         rules={[
                                             {
                                                 required: true,
-                                                message: 'Vui lòng nhập số điện thoại',
+                                                message:
+                                                    'Vui lòng nhập số điện thoại',
                                             },
                                         ]}
                                     >
@@ -542,7 +590,8 @@ const CandidateJobPage = () => {
                                         rules={[
                                             {
                                                 required: true,
-                                                message: 'Vui lòng nhập số năm kinh nghiệm',
+                                                message:
+                                                    'Vui lòng nhập số năm kinh nghiệm',
                                             },
                                         ]}
                                     >
@@ -606,7 +655,8 @@ const CandidateJobPage = () => {
                                         rules={[
                                             {
                                                 required: true,
-                                                message: 'Vui lòng nhập vị trí hiện tại',
+                                                message:
+                                                    'Vui lòng nhập vị trí hiện tại',
                                             },
                                         ]}
                                     >
@@ -623,25 +673,47 @@ const CandidateJobPage = () => {
                                         rules={[
                                             {
                                                 required: true,
-                                                message: 'Vui lòng chọn trình độ học vấn',
+                                                message:
+                                                    'Vui lòng chọn trình độ học vấn',
                                             },
                                         ]}
                                     >
                                         <Select
                                             placeholder="Chọn trình độ"
                                             options={[
-                                                { label: 'THPT', value: 'THPT' },
-                                                { label: 'Trung cấp', value: 'Trung cấp' },
-                                                { label: 'Cao đẳng', value: 'Cao đẳng' },
-                                                { label: 'Đại học', value: 'Đại học' },
-                                                { label: 'Thạc sĩ', value: 'Thạc sĩ' },
-                                                { label: 'Tiến sĩ', value: 'Tiến sĩ' },
+                                                {
+                                                    label: 'THPT',
+                                                    value: 'THPT',
+                                                },
+                                                {
+                                                    label: 'Trung cấp',
+                                                    value: 'Trung cấp',
+                                                },
+                                                {
+                                                    label: 'Cao đẳng',
+                                                    value: 'Cao đẳng',
+                                                },
+                                                {
+                                                    label: 'Đại học',
+                                                    value: 'Đại học',
+                                                },
+                                                {
+                                                    label: 'Thạc sĩ',
+                                                    value: 'Thạc sĩ',
+                                                },
+                                                {
+                                                    label: 'Tiến sĩ',
+                                                    value: 'Tiến sĩ',
+                                                },
                                             ]}
                                         />
                                     </Form.Item>
                                 </Col>
                                 <Col xs={24} md={12}>
-                                    <Form.Item label="Trường" name="universityName">
+                                    <Form.Item
+                                        label="Trường"
+                                        name="universityName"
+                                    >
                                         <Input placeholder="Tên trường / cơ sở đào tạo" />
                                     </Form.Item>
                                 </Col>

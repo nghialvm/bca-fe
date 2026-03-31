@@ -30,8 +30,12 @@ const { Paragraph, Text, Title } = Typography
 
 const EmployerProfilePage = () => {
     const navigate = useNavigate()
-    const { applicationRows, currentDepartment, managerUser, recruitmentRequests } =
-        useEmployerWorkspace()
+    const {
+        applicationRows,
+        currentDepartment,
+        managerUser,
+        recruitmentRequests,
+    } = useEmployerWorkspace()
 
     const activeJobs = recruitmentRequests.filter((item) =>
         isRecruitmentRequestPublished(item.status)
@@ -41,7 +45,9 @@ const EmployerProfilePage = () => {
         return (
             <div className="portal-page">
                 <section className="portal-hero portal-hero--light">
-                    <span className="portal-hero__eyebrow">Thông tin đơn vị</span>
+                    <span className="portal-hero__eyebrow">
+                        Thông tin đơn vị
+                    </span>
                     <Title level={2}>Thông tin đơn vị tuyển dụng</Title>
                     <Paragraph style={{ maxWidth: 760 }}>
                         Chưa xác định được đơn vị employer mà tài khoản hiện tại
@@ -68,8 +74,9 @@ const EmployerProfilePage = () => {
                     <div>
                         <Title level={2}>Thông tin đơn vị tuyển dụng</Title>
                         <Paragraph style={{ maxWidth: 760 }}>
-                            Trang hồ sơ employer hiện được đồng bộ từ dữ liệu đơn vị,
-                            người quản lý và các chỉ số tuyển dụng thực tế của hệ thống.
+                            Trang hồ sơ employer hiện được đồng bộ từ dữ liệu
+                            đơn vị, người quản lý và các chỉ số tuyển dụng thực
+                            tế của hệ thống.
                         </Paragraph>
                     </div>
                     <Button
@@ -107,7 +114,9 @@ const EmployerProfilePage = () => {
                                     </Space>
                                 }
                             >
-                                {managerUser?.name || managerUser?.userName || '-'}
+                                {managerUser?.name ||
+                                    managerUser?.userName ||
+                                    '-'}
                             </Descriptions.Item>
                             <Descriptions.Item
                                 label={
@@ -160,7 +169,9 @@ const EmployerProfilePage = () => {
                             <Statistic
                                 title="Tin đang mở"
                                 value={activeJobs}
-                                formatter={(value) => formatCount(Number(value))}
+                                formatter={(value) =>
+                                    formatCount(Number(value))
+                                }
                             />
                             <div style={{ marginTop: 16 }}>
                                 <Tag color="green">Đang hoạt động tốt</Tag>
@@ -170,11 +181,13 @@ const EmployerProfilePage = () => {
                             <Statistic
                                 title="Ứng viên đang xử lý"
                                 value={applicationRows.length}
-                                formatter={(value) => formatCount(Number(value))}
+                                formatter={(value) =>
+                                    formatCount(Number(value))
+                                }
                             />
                             <Text className="portal-muted">
-                                Bao gồm toàn bộ hồ sơ thuộc các đợt tuyển dụng của
-                                đơn vị.
+                                Bao gồm toàn bộ hồ sơ thuộc các đợt tuyển dụng
+                                của đơn vị.
                             </Text>
                         </Card>
                     </Space>

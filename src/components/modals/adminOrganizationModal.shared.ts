@@ -1,5 +1,4 @@
 import type { DepartmentDto, IdentityUserDto } from '@/services/admin'
-
 import { getDisplayName } from '@/utils/admin'
 
 export type AdminOrganizationRecord = {

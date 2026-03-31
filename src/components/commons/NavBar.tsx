@@ -109,6 +109,11 @@ const NavBar: React.FC<NavBarProps> = ({ collapsed, onNavigate }) => {
             label: 'Ứng viên',
         },
         {
+            key: PATHS.EMPLOYER_MANAGE_EMPLOYEES,
+            icon: <SafetyOutlined />,
+            label: 'Nhân viên',
+        },
+        {
             key: PATHS.EMPLOYER_MANAGE_INTERVIEWS,
             icon: <SolutionOutlined />,
             label: 'Lịch phỏng vấn',

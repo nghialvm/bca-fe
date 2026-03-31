@@ -444,7 +444,9 @@ const AdminManagePermissionPage = () => {
                                 {getRoleDisplayName(selectedRole?.name) ||
                                     selectedRole?.name ||
                                     '-'}
-                                {selectedRole?.name ? ` (${selectedRole.name})` : ''}
+                                {selectedRole?.name
+                                    ? ` (${selectedRole.name})`
+                                    : ''}
                             </span>
                             <span className={styles.summaryPill}>
                                 {formatCount(selectedRole?.users)} người dùng

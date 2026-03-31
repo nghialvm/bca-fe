@@ -43,10 +43,13 @@ import styles from '../styles/AdminUi.module.css'
 const statColors = ['#2f54eb', '#d48806', '#389e0d', '#cf1322']
 
 const getPagedItems = <T,>(response: unknown) =>
-    (((response as { items?: T[] })?.items || []) as T[])
+    ((response as { items?: T[] })?.items || []) as T[]
 
 const normalizeStatus = (value: string | number) =>
-    String(value).trim().replace(/[\s_-]+/g, '').toLowerCase()
+    String(value)
+        .trim()
+        .replace(/[\s_-]+/g, '')
+        .toLowerCase()
 
 const isApprovedOrPublished = (value: string | number) =>
     ['2', 'approved', '4', 'published'].includes(normalizeStatus(value))
@@ -235,8 +238,14 @@ const AdminManageJobPage = () => {
             notification.error({
                 message: 'Phê duyệt thất bại',
                 description:
-                    (error as { response?: { data?: { error?: { message?: string } } }; message?: string })
-                        ?.response?.data?.error?.message ||
+                    (
+                        error as {
+                            response?: {
+                                data?: { error?: { message?: string } }
+                            }
+                            message?: string
+                        }
+                    )?.response?.data?.error?.message ||
                     (error as { message?: string })?.message ||
                     'Backend không chấp nhận yêu cầu phê duyệt hoặc publish.',
             })

@@ -1,6 +1,14 @@
 import { FC, useState } from 'react'
 
-import { Button, Card, Form, Input, Space, Typography, notification } from 'antd'
+import {
+    Button,
+    Card,
+    Form,
+    Input,
+    Space,
+    Typography,
+    notification,
+} from 'antd'
 
 import { LockOutlined } from '@ant-design/icons'
 import { useSelector } from 'react-redux'
@@ -8,7 +16,11 @@ import { useNavigate } from 'react-router-dom'
 
 import { PATHS } from '@/routers/path'
 import AuthService from '@/services/auth'
-import { getDefaultPathByRole, getProfilePathByRole, getSiteRole } from '@/utils/role'
+import {
+    getDefaultPathByRole,
+    getProfilePathByRole,
+    getSiteRole,
+} from '@/utils/role'
 
 const { Paragraph, Title } = Typography
 
@@ -58,7 +70,8 @@ const ChangePasswordPage: FC = () => {
                 <span className="portal-hero__eyebrow">Bảo mật tài khoản</span>
                 <Title level={2}>Đổi mật khẩu</Title>
                 <Paragraph style={{ maxWidth: 720 }}>
-                    Cập nhật mật khẩu định kỳ để bảo vệ tài khoản của bạn trên hệ thống tuyển dụng.
+                    Cập nhật mật khẩu định kỳ để bảo vệ tài khoản của bạn trên
+                    hệ thống tuyển dụng.
                 </Paragraph>
             </section>
 
@@ -117,12 +130,17 @@ const ChangePasswordPage: FC = () => {
                             },
                             ({ getFieldValue }) => ({
                                 validator(_, value) {
-                                    if (!value || getFieldValue('newPassword') === value) {
+                                    if (
+                                        !value ||
+                                        getFieldValue('newPassword') === value
+                                    ) {
                                         return Promise.resolve()
                                     }
 
                                     return Promise.reject(
-                                        new Error('Mật khẩu xác nhận không khớp.')
+                                        new Error(
+                                            'Mật khẩu xác nhận không khớp.'
+                                        )
                                     )
                                 },
                             }),

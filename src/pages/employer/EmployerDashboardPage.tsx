@@ -84,9 +84,14 @@ const EmployerDashboardPage = () => {
         () =>
             interviews
                 .filter((item) =>
-                    ['1', '2', '3', 'pending', 'confirmed', 'rescheduled'].includes(
-                        String(item.status).toLowerCase()
-                    )
+                    [
+                        '1',
+                        '2',
+                        '3',
+                        'pending',
+                        'confirmed',
+                        'rescheduled',
+                    ].includes(String(item.status).toLowerCase())
                 )
                 .sort(
                     (left, right) =>
@@ -119,10 +124,6 @@ const EmployerDashboardPage = () => {
                     Tổng quan tuyển dụng
                 </span>
                 <Title level={2}>Bức tranh tuyển dụng của đơn vị</Title>
-                <Paragraph style={{ maxWidth: 760 }}>
-                    Theo dõi nhanh các vị trí đang mở, số lượng hồ sơ, lịch
-                    phỏng vấn sắp tới và tiến độ tuyển dụng của đơn vị.
-                </Paragraph>
             </section>
 
             <Row gutter={[24, 24]}>
@@ -135,7 +136,9 @@ const EmployerDashboardPage = () => {
                             <Statistic
                                 title="Tin đang mở"
                                 value={stats.activeJobs}
-                                formatter={(value) => formatCount(Number(value))}
+                                formatter={(value) =>
+                                    formatCount(Number(value))
+                                }
                             />
                         </Space>
                     </Card>
@@ -149,7 +152,9 @@ const EmployerDashboardPage = () => {
                             <Statistic
                                 title="Tổng ứng viên"
                                 value={stats.totalApplicants}
-                                formatter={(value) => formatCount(Number(value))}
+                                formatter={(value) =>
+                                    formatCount(Number(value))
+                                }
                             />
                         </Space>
                     </Card>
@@ -163,8 +168,14 @@ const EmployerDashboardPage = () => {
                             <Statistic
                                 title="Lịch phỏng vấn"
                                 value={stats.upcomingInterviews}
-                                formatter={(value) => formatCount(Number(value))}
-                                suffix={<Text className="portal-muted">Sắp tới</Text>}
+                                formatter={(value) =>
+                                    formatCount(Number(value))
+                                }
+                                suffix={
+                                    <Text className="portal-muted">
+                                        Sắp tới
+                                    </Text>
+                                }
                             />
                         </Space>
                     </Card>
@@ -178,7 +189,9 @@ const EmployerDashboardPage = () => {
                             <Statistic
                                 title="Ứng viên đã chọn"
                                 value={stats.selectedCandidates}
-                                formatter={(value) => formatCount(Number(value))}
+                                formatter={(value) =>
+                                    formatCount(Number(value))
+                                }
                             />
                         </Space>
                     </Card>
@@ -211,7 +224,15 @@ const EmployerDashboardPage = () => {
                                         name: { alias: 'Vị trí' },
                                         applicants: { alias: 'Số ứng viên' },
                                     }}
-                                    tooltip={{ title: 'name' }}
+                                    tooltip={{
+                                        title: 'name',
+                                        items: [
+                                            (datum) => ({
+                                                name: 'Số ứng viên',
+                                                value: datum.applicants,
+                                            }),
+                                        ],
+                                    }}
                                 />
                             ) : (
                                 <Empty description="Chưa có dữ liệu ứng viên theo vị trí" />
@@ -249,7 +270,15 @@ const EmployerDashboardPage = () => {
                                     type: { alias: 'Giai đoạn' },
                                     value: { alias: 'Số lượng' },
                                 }}
-                                tooltip={{ title: 'type' }}
+                                tooltip={{
+                                    title: 'type',
+                                    items: [
+                                        (datum) => ({
+                                            name: 'Số lượng',
+                                            value: datum.value,
+                                        }),
+                                    ],
+                                }}
                             />
                         ) : (
                             <Empty description="Chưa có dữ liệu giai đoạn tuyển dụng" />
@@ -269,7 +298,8 @@ const EmployerDashboardPage = () => {
                         dataSource={upcomingInterviews}
                         renderItem={(item) => {
                             const applicationRow = applicationRows.find(
-                                (row) => row.application.id === item.applicationId
+                                (row) =>
+                                    row.application.id === item.applicationId
                             )
 
                             return (
@@ -286,11 +316,12 @@ const EmployerDashboardPage = () => {
                                                 level={5}
                                                 style={{ marginBottom: 4 }}
                                             >
-                                                {applicationRow?.candidate?.fullName ||
-                                                    'Ứng viên'}
+                                                {applicationRow?.candidate
+                                                    ?.fullName || 'Ứng viên'}
                                             </Title>
                                             <Text className="portal-muted">
-                                                {applicationRow?.recruitmentRequest
+                                                {applicationRow
+                                                    ?.recruitmentRequest
                                                     ?.title || '-'}
                                             </Text>
                                         </div>
@@ -309,7 +340,9 @@ const EmployerDashboardPage = () => {
                                                 <Text strong>
                                                     {dayjs(
                                                         item.scheduledTime
-                                                    ).format('DD/MM/YYYY HH:mm')}
+                                                    ).format(
+                                                        'DD/MM/YYYY HH:mm'
+                                                    )}
                                                 </Text>
                                             </div>
                                             <Text className="portal-muted">

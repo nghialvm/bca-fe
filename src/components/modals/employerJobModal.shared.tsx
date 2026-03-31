@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 
 import { DatePicker, Form, Input, InputNumber, Select } from 'antd'
 import type { FormInstance } from 'antd'
+
 import type { Dayjs } from 'dayjs'
 import dayjs from 'dayjs'
 
@@ -126,7 +127,8 @@ export const mapRecruitmentRequestToEmployerJobRecord = (
             recruitmentRequest.description?.trim() || 'Chưa cập nhật mô tả',
         requirement:
             recruitmentRequest.requirement?.trim() || 'Chưa cập nhật yêu cầu',
-        benefit: recruitmentRequest.benefit?.trim() || 'Chưa cập nhật quyền lợi',
+        benefit:
+            recruitmentRequest.benefit?.trim() || 'Chưa cập nhật quyền lợi',
         applicationDeadline: recruitmentRequest.applicationDeadline || null,
         creationTime: recruitmentRequest.creationTime,
         status: recruitmentRequest.status,
@@ -148,10 +150,16 @@ export const getEmployerJobFormInitialValues = (
     workLocation: job?.workLocation === '-' ? '' : job?.workLocation || '',
     salaryMin: job?.salaryMin ?? undefined,
     salaryMax: job?.salaryMax ?? undefined,
-    description: job?.description === 'Chưa cập nhật mô tả' ? '' : job?.description || '',
+    description:
+        job?.description === 'Chưa cập nhật mô tả'
+            ? ''
+            : job?.description || '',
     requirement:
-        job?.requirement === 'Chưa cập nhật yêu cầu' ? '' : job?.requirement || '',
-    benefit: job?.benefit === 'Chưa cập nhật quyền lợi' ? '' : job?.benefit || '',
+        job?.requirement === 'Chưa cập nhật yêu cầu'
+            ? ''
+            : job?.requirement || '',
+    benefit:
+        job?.benefit === 'Chưa cập nhật quyền lợi' ? '' : job?.benefit || '',
     applicationDeadline: job?.applicationDeadline
         ? dayjs(job.applicationDeadline)
         : null,

@@ -209,10 +209,12 @@ const CandidateApplicationPage = () => {
         <div className="portal-page">
             <section className="portal-hero">
                 <span className="portal-hero__eyebrow">Theo dõi hồ sơ</span>
-                <Title level={2}>Theo dõi từng hồ sơ ứng tuyển theo thời gian</Title>
-                <Paragraph style={{ maxWidth: 760 }}>
-                    Xem lại từng hồ sơ đã nộp, theo dõi tiến độ xử lý và phản hồi
-                    offer ngay trên cùng một màn hình.
+                <Title level={2}>
+                    Theo dõi từng hồ sơ ứng tuyển theo thời gian
+                </Title>
+                <Paragraph style={{ maxWidth: 760, color: '#fff' }}>
+                    Xem lại từng hồ sơ đã nộp, theo dõi tiến độ xử lý và phản
+                    hồi offer ngay trên cùng một màn hình.
                 </Paragraph>
             </section>
 
@@ -226,7 +228,10 @@ const CandidateApplicationPage = () => {
 
             <Row gutter={[24, 24]}>
                 <Col xs={24} xl={16}>
-                    <Card title="Danh sách hồ sơ" className="portal-section-card">
+                    <Card
+                        title="Danh sách hồ sơ"
+                        className="portal-section-card"
+                    >
                         {applications.length ? (
                             <List
                                 loading={loading}
@@ -253,10 +258,14 @@ const CandidateApplicationPage = () => {
                                                             {item.title}
                                                         </Title>
                                                         <Text className="portal-muted">
-                                                            {item.departmentName}
+                                                            {
+                                                                item.departmentName
+                                                            }
                                                         </Text>
                                                     </div>
-                                                    <Tag color={color}>{label}</Tag>
+                                                    <Tag color={color}>
+                                                        {label}
+                                                    </Tag>
                                                 </div>
 
                                                 <Space
@@ -265,11 +274,13 @@ const CandidateApplicationPage = () => {
                                                     style={{ marginTop: 16 }}
                                                 >
                                                     <Text>
-                                                        <FileTextOutlined /> Mã hồ
-                                                        sơ: {item.applicationCode}
+                                                        <FileTextOutlined /> Mã
+                                                        hồ sơ:{' '}
+                                                        {item.applicationCode}
                                                     </Text>
                                                     <Text>
-                                                        <CalendarOutlined /> Nộp:{' '}
+                                                        <CalendarOutlined />{' '}
+                                                        Nộp:{' '}
                                                         {dayjs(
                                                             item.appliedTime
                                                         ).format('DD/MM/YYYY')}
@@ -300,10 +311,13 @@ const CandidateApplicationPage = () => {
                                                     <Space
                                                         wrap
                                                         align="center"
-                                                        style={{ marginTop: 16 }}
+                                                        style={{
+                                                            marginTop: 16,
+                                                        }}
                                                     >
                                                         <Text strong>
-                                                            Hồ sơ này đã có offer
+                                                            Hồ sơ này đã có
+                                                            offer
                                                         </Text>
                                                         {item.latestOfferResponse ? (
                                                             <Tag
@@ -395,7 +409,9 @@ const CandidateApplicationPage = () => {
                                                 <Text strong>{item.title}</Text>
                                                 <Paragraph
                                                     className="portal-muted"
-                                                    style={{ margin: '6px 0 0' }}
+                                                    style={{
+                                                        margin: '6px 0 0',
+                                                    }}
                                                 >
                                                     {item.offer &&
                                                     canRespondToOffer(item)
@@ -434,7 +450,9 @@ const CandidateApplicationPage = () => {
                     >
                         <Card size="small">
                             <Space direction="vertical" size={4}>
-                                <Text strong>{selectedOfferApplication.title}</Text>
+                                <Text strong>
+                                    {selectedOfferApplication.title}
+                                </Text>
                                 <Text type="secondary">
                                     {selectedOfferApplication.departmentName}
                                 </Text>
@@ -450,11 +468,13 @@ const CandidateApplicationPage = () => {
                                     </Tag>
                                     <Tag
                                         color={getOfferStatusColor(
-                                            selectedOfferApplication.offer.status
+                                            selectedOfferApplication.offer
+                                                .status
                                         )}
                                     >
                                         {getOfferStatusLabel(
-                                            selectedOfferApplication.offer.status
+                                            selectedOfferApplication.offer
+                                                .status
                                         )}
                                     </Tag>
                                     {selectedOfferApplication.latestOfferResponse ? (

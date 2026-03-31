@@ -27,6 +27,7 @@ import ResetPasswordPage from '@/pages/commons/ResetPasswordPage'
 import EmployerDashboardPage from '@/pages/employer/EmployerDashboardPage'
 import EmployerManageCandidatePage from '@/pages/employer/EmployerManageCandidatePage'
 import EmployerManageCommunicationPage from '@/pages/employer/EmployerManageCommunicationPage'
+import EmployerManageEmployeePage from '@/pages/employer/EmployerManageEmployeePage'
 import EmployerManageInterviewPage from '@/pages/employer/EmployerManageInterviewPage'
 import EmployerManageJobPage from '@/pages/employer/EmployerManageJobPage'
 import EmployerProfilePage from '@/pages/employer/EmployerProfilePage'
@@ -56,10 +57,7 @@ const AppRouter = [
         }
         key="shared-authenticated"
     >
-        <Route
-            path={PATHS.CHANGE_PASSWORD}
-            element={<ChangePasswordPage />}
-        />
+        <Route path={PATHS.CHANGE_PASSWORD} element={<ChangePasswordPage />} />
     </Route>,
     <Route
         element={
@@ -137,6 +135,10 @@ const AppRouter = [
         <Route
             path={PATHS.EMPLOYER_MANAGE_CANDIDATES}
             element={<EmployerManageCandidatePage />}
+        />
+        <Route
+            path={PATHS.EMPLOYER_MANAGE_EMPLOYEES}
+            element={<EmployerManageEmployeePage />}
         />
         <Route path={PATHS.EMPLOYER_REPORT} element={<EmployerReportPage />} />
         <Route

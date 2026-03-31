@@ -83,7 +83,9 @@ const ForgotPasswordPage: FC = () => {
                             <Input
                                 className={styles.input}
                                 prefix={
-                                    <MailOutlined className={styles.inputIcon} />
+                                    <MailOutlined
+                                        className={styles.inputIcon}
+                                    />
                                 }
                                 placeholder="Nhập email đã đăng ký"
                                 size="large"
@@ -112,7 +114,8 @@ const ForgotPasswordPage: FC = () => {
                         </Button>
 
                         <Paragraph style={{ marginTop: 16, marginBottom: 0 }}>
-                            Chưa có tài khoản? <Link to={PATHS.REGISTER}>Đăng ký ngay</Link>
+                            Chưa có tài khoản?{' '}
+                            <Link to={PATHS.REGISTER}>Đăng ký ngay</Link>
                         </Paragraph>
                     </Form>
                 </div>

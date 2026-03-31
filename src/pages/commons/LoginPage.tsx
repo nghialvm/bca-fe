@@ -1,6 +1,14 @@
 import { FC, useEffect, useState } from 'react'
 
-import { Button, Checkbox, Form, Input, Space, Typography, notification } from 'antd'
+import {
+    Button,
+    Checkbox,
+    Form,
+    Input,
+    Space,
+    Typography,
+    notification,
+} from 'antd'
 
 import { LockOutlined, UserOutlined } from '@ant-design/icons'
 import { useDispatch, useSelector } from 'react-redux'
@@ -102,7 +110,8 @@ const LoginPage: FC = () => {
                         Đăng nhập
                     </Title>
                     <Paragraph style={{ marginBottom: 28, color: '#4b5563' }}>
-                        Sử dụng tài khoản của bạn để truy cập hệ thống tuyển dụng.
+                        Sử dụng tài khoản của bạn để truy cập hệ thống tuyển
+                        dụng.
                     </Paragraph>
 
                     <Form<LoginFormValues>
@@ -125,7 +134,9 @@ const LoginPage: FC = () => {
                             <Input
                                 className={styles.input}
                                 prefix={
-                                    <UserOutlined className={styles.inputIcon} />
+                                    <UserOutlined
+                                        className={styles.inputIcon}
+                                    />
                                 }
                                 placeholder="Nhập tên đăng nhập"
                                 size="large"
@@ -146,7 +157,9 @@ const LoginPage: FC = () => {
                             <Input.Password
                                 className={styles.input}
                                 prefix={
-                                    <LockOutlined className={styles.inputIcon} />
+                                    <LockOutlined
+                                        className={styles.inputIcon}
+                                    />
                                 }
                                 placeholder="Nhập mật khẩu"
                                 size="large"

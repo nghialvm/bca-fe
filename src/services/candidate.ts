@@ -1,5 +1,15 @@
 import dayjs from 'dayjs'
 
+import {
+    APPLICATION_API,
+    CANDIDATE_API,
+    CANDIDATE_DOCUMENT_API,
+    CANDIDATE_RESPONSE_API,
+    DEPARTMENT_API,
+    JOB_POSITION_API,
+    OFFER_API,
+    RECRUITMENT_REQUEST_API,
+} from '@/constants/api'
 import type {
     ApplicationDto,
     CandidateDto,
@@ -9,142 +19,31 @@ import type {
     OfferDto,
     PagedResult,
     RecruitmentRequestDto,
-} from '@/services/admin'
+} from '@/interfaces/admin/admin.interface'
+import type {
+    CandidateCvUploadResultDto,
+    CandidatePortalApplicationDto,
+    CandidatePortalApplicationProfileInput,
+    CandidatePortalJobDto,
+    CandidatePortalProfileDto,
+    CandidateWorkspaceDto,
+    CandidateWorkspaceUser,
+    CreateCandidatePortalApplicationDto,
+    UpdateCandidatePortalProfileDto,
+} from '@/interfaces/candidate/candidate.interface'
 import http from '@/services/http'
 
-export interface CandidatePortalProfileDto {
-    id: string
-    candidateCode: string
-    candidateType?: string | number | null
-    employeeId?: string | null
-    fullName: string
-    dateOfBirth?: string | null
-    gender?: string | number | null
-    phoneNumber?: string | null
-    email?: string | null
-    address?: string | null
-    identityNumber?: string | null
-    currentCompany?: string | null
-    currentPosition?: string | null
-    yearsOfExperience?: number | null
-    highestEducation?: string | null
-    universityName?: string | null
-    major?: string | null
-    status?: string | number | null
-    source?: string | null
-    note?: string | null
-}
-
-export interface CandidatePortalJobDto {
-    id: string
-    requestCode: string
-    title: string
-    departmentId: string
-    departmentName: string
-    jobPositionId: string
-    jobPositionName: string
-    headcount: number
-    employmentType: string
-    workLocation?: string | null
-    salaryMin?: number | null
-    salaryMax?: number | null
-    description?: string | null
-    requirement?: string | null
-    benefit?: string | null
-    applicationDeadline?: string | null
-    status: string | number
-    publishedTime?: string | null
-    hasApplied: boolean
-}
-
-export interface CandidatePortalApplicationDto {
-    id: string
-    applicationCode: string
-    recruitmentRequestId: string
-    recruitmentRequestCode: string
-    title: string
-    departmentId: string
-    departmentName: string
-    jobPositionId: string
-    jobPositionName: string
-    workLocation?: string | null
-    appliedTime: string
-    status: string | number
-    submittedCvUrl?: string | null
-    source?: string | null
-    note?: string | null
-    finalResult?: string | null
-    offer?: OfferDto | null
-    latestOfferResponse?: CandidateResponseDto | null
-}
-
-export interface CreateCandidatePortalApplicationDto {
-    recruitmentRequestId: string
-    cvFile: File
-    cvDescription?: string
-    source?: string
-    note?: string
-    profile: CandidatePortalApplicationProfileInput
-}
-
-export interface CandidatePortalApplicationProfileInput {
-    fullName: string
-    email: string
-    phoneNumber: string
-    address: string
-    dateOfBirth?: string | null
-    identityNumber: string
-    currentCompany?: string
-    currentPosition: string
-    yearsOfExperience: number
-    highestEducation: string
-    universityName?: string
-    major?: string
-    gender?: number | null
-}
-
-export interface UpdateCandidatePortalProfileDto {
-    candidateCode: string
-    candidateType: number
-    employeeId?: string | null
-    fullName: string
-    dateOfBirth?: string | null
-    gender: number
-    phoneNumber: string
-    email: string
-    address: string
-    identityNumber: string
-    currentCompany: string
-    currentPosition: string
-    yearsOfExperience: number
-    highestEducation: string
-    universityName: string
-    major: string
-    status: number
-    source: string
-    note: string
-}
-
-export interface CandidateCvUploadResultDto {
-    documentId: string
-    fileName: string
-    fileUrl: string
-    fileSize: number
-    contentType: string
-}
-
-export interface CandidateWorkspaceUser {
-    id?: string
-    userName?: string
-    email?: string
-    full_name?: string
-}
-
-export interface CandidateWorkspaceDto {
-    profile: CandidatePortalProfileDto | null
-    jobs: CandidatePortalJobDto[]
-    applications: CandidatePortalApplicationDto[]
-}
+export type {
+    CandidateCvUploadResultDto,
+    CandidatePortalApplicationDto,
+    CandidatePortalApplicationProfileInput,
+    CandidatePortalJobDto,
+    CandidatePortalProfileDto,
+    CandidateWorkspaceDto,
+    CandidateWorkspaceUser,
+    CreateCandidatePortalApplicationDto,
+    UpdateCandidatePortalProfileDto,
+} from '@/interfaces/candidate/candidate.interface'
 
 const defaultPagedQuery = {
     Filter: '',
@@ -198,7 +97,9 @@ const buildRecruitmentMap = (items: RecruitmentRequestDto[]) =>
     new Map(items.map((item) => [item.id, item]))
 
 const isOfferResponseType = (value: unknown) =>
-    ['4', 'offeraccepted', '5', 'offerdeclined'].includes(normalizeStatus(value))
+    ['4', 'offeraccepted', '5', 'offerdeclined'].includes(
+        normalizeStatus(value)
+    )
 
 const getPagedItems = <T>(response: PagedResult<T> | T[] | undefined): T[] => {
     if (Array.isArray(response)) {
@@ -218,11 +119,13 @@ const mapJobDto = (
     requestCode: item.requestCode,
     title: item.title,
     departmentId: item.departmentId,
-    departmentName: departmentMap.get(item.departmentId) || 'Chưa cập nhật',
+    departmentName:
+        departmentMap.get(item.departmentId) || 'ChÆ°a cáº­p nháº­t',
     jobPositionId: item.jobPositionId,
-    jobPositionName: jobPositionMap.get(item.jobPositionId) || 'Chưa cập nhật',
+    jobPositionName:
+        jobPositionMap.get(item.jobPositionId) || 'ChÆ°a cáº­p nháº­t',
     headcount: item.headcount,
-    employmentType: item.employmentType || 'Toàn thời gian',
+    employmentType: item.employmentType || 'ToÃ n thá»i gian',
     workLocation: item.workLocation,
     salaryMin: item.salaryMin,
     salaryMax: item.salaryMax,
@@ -250,15 +153,17 @@ const mapApplicationDto = (
         applicationCode: item.applicationCode,
         recruitmentRequestId: item.recruitmentRequestId,
         recruitmentRequestCode: recruitment?.requestCode || '',
-        title: recruitment?.title || 'Vị trí tuyển dụng',
+        title: recruitment?.title || 'Vá»‹ trÃ­ tuyá»ƒn dá»¥ng',
         departmentId: recruitment?.departmentId || '',
         departmentName: recruitment?.departmentId
-            ? departmentMap.get(recruitment.departmentId) || 'Chưa cập nhật'
-            : 'Chưa cập nhật',
+            ? departmentMap.get(recruitment.departmentId) ||
+              'ChÆ°a cáº­p nháº­t'
+            : 'ChÆ°a cáº­p nháº­t',
         jobPositionId: recruitment?.jobPositionId || '',
         jobPositionName: recruitment?.jobPositionId
-            ? jobPositionMap.get(recruitment.jobPositionId) || 'Chưa cập nhật'
-            : 'Chưa cập nhật',
+            ? jobPositionMap.get(recruitment.jobPositionId) ||
+              'ChÆ°a cáº­p nháº­t'
+            : 'ChÆ°a cáº­p nháº­t',
         workLocation: recruitment?.workLocation,
         appliedTime: item.appliedTime,
         status: item.status,
@@ -284,13 +189,17 @@ export class CandidateService {
             offerResponse,
             candidateReplyResponse,
         ] = await Promise.all([
-            http.get('app/candidate', { params: defaultPagedQuery }),
-            http.get('app/recruitment-request', { params: defaultPagedQuery }),
-            http.get('app/application', { params: defaultPagedQuery }),
-            http.get('app/department', { params: defaultPagedQuery }),
-            http.get('app/job-position', { params: defaultPagedQuery }),
-            http.get('app/offer', { params: defaultPagedQuery }),
-            http.get('app/candidate-response', { params: defaultPagedQuery }),
+            http.get(CANDIDATE_API.LIST, { params: defaultPagedQuery }),
+            http.get(RECRUITMENT_REQUEST_API.LIST, {
+                params: defaultPagedQuery,
+            }),
+            http.get(APPLICATION_API.LIST, { params: defaultPagedQuery }),
+            http.get(DEPARTMENT_API.LIST, { params: defaultPagedQuery }),
+            http.get(JOB_POSITION_API.LIST, { params: defaultPagedQuery }),
+            http.get(OFFER_API.LIST, { params: defaultPagedQuery }),
+            http.get(CANDIDATE_RESPONSE_API.LIST, {
+                params: defaultPagedQuery,
+            }),
         ])
 
         const candidates = getPagedItems<CandidateDto>(
@@ -363,7 +272,9 @@ export class CandidateService {
                     dayjs(left.responseTime).valueOf()
             )
             .forEach((item) => {
-                if (!latestOfferResponseByApplicationId.has(item.applicationId)) {
+                if (
+                    !latestOfferResponseByApplicationId.has(item.applicationId)
+                ) {
                     latestOfferResponseByApplicationId.set(
                         item.applicationId,
                         item
@@ -419,7 +330,7 @@ export class CandidateService {
 
         if (!candidateId) {
             throw new Error(
-                'Không xác định được hồ sơ ứng viên từ phiên đăng nhập.'
+                'KhÃ´ng xÃ¡c Ä‘á»‹nh Ä‘Æ°á»£c há»“ sÆ¡ á»©ng viÃªn tá»« phiÃªn Ä‘Äƒng nháº­p.'
             )
         }
 
@@ -430,7 +341,8 @@ export class CandidateService {
             candidateType: Number(profile.candidateType ?? 2),
             employeeId: profile.employeeId ?? null,
             fullName: input.profile.fullName.trim(),
-            dateOfBirth: input.profile.dateOfBirth ?? profile.dateOfBirth ?? null,
+            dateOfBirth:
+                input.profile.dateOfBirth ?? profile.dateOfBirth ?? null,
             gender: Number(input.profile.gender ?? profile.gender ?? 1),
             phoneNumber: input.profile.phoneNumber.trim(),
             email: input.profile.email.trim(),
@@ -460,7 +372,7 @@ export class CandidateService {
             .slice(2, 8)
             .toUpperCase()}`
 
-        return await http.post('app/application', {
+        return await http.post(APPLICATION_API.LIST, {
             applicationCode,
             recruitmentRequestId: input.recruitmentRequestId,
             candidateId,
@@ -473,8 +385,12 @@ export class CandidateService {
         })
     }
 
-    async getCandidateProfile(candidateId: string): Promise<CandidatePortalProfileDto> {
-        const candidate = (await http.get(`app/candidate/${candidateId}`)) as CandidateDto
+    async getCandidateProfile(
+        candidateId: string
+    ): Promise<CandidatePortalProfileDto> {
+        const candidate = (await http.get(
+            CANDIDATE_API.DETAIL(candidateId)
+        )) as CandidateDto
         return toProfileDto(candidate)
     }
 
@@ -482,7 +398,7 @@ export class CandidateService {
         candidateId: string,
         input: UpdateCandidatePortalProfileDto
     ) {
-        return await http.put(`app/candidate/${candidateId}`, input)
+        return await http.put(CANDIDATE_API.DETAIL(candidateId), input)
     }
 
     async uploadCv(
@@ -500,7 +416,7 @@ export class CandidateService {
             formData.append('description', options.description.trim())
         }
 
-        return await http.post('app/candidate-document/upload-cv', formData, {
+        return await http.post(CANDIDATE_DOCUMENT_API.UPLOAD_CV, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -517,7 +433,7 @@ export class CandidateService {
         const responseContent = input.responseContent.trim()
         const note = input.note?.trim() || responseContent
 
-        return await http.post('app/candidate-response', {
+        return await http.post(CANDIDATE_RESPONSE_API.LIST, {
             applicationId: input.applicationId,
             offerId: input.offerId,
             responseType: input.responseType,

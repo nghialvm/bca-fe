@@ -361,7 +361,15 @@ const AdminDashboardPage = () => {
                                     name: { alias: 'Trạng thái' },
                                     value: { alias: 'Số lượng' },
                                 }}
-                                tooltip={{ title: 'name' }}
+                                tooltip={{
+                                    title: 'name',
+                                    items: [
+                                        (datum) => ({
+                                            name: 'Số lượng',
+                                            value: datum.value,
+                                        }),
+                                    ],
+                                }}
                                 axis={{
                                     x: {
                                         labelAutoHide: true,

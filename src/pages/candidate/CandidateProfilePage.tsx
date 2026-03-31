@@ -32,8 +32,8 @@ import {
 import dayjs, { type Dayjs } from 'dayjs'
 import { useNavigate } from 'react-router-dom'
 
-import { PATHS } from '@/routers/path'
 import { useCandidateWorkspace } from '@/hooks/useCandidateWorkspace'
+import { PATHS } from '@/routers/path'
 import { getCandidateProfileStrengths } from '@/utils/candidate'
 
 const { Paragraph, Text, Title } = Typography
@@ -143,7 +143,9 @@ const CandidateProfilePage = () => {
                 employeeId: profile.employeeId ?? null,
                 fullName: values.fullName.trim(),
                 dateOfBirth: values.dateOfBirth?.toISOString() || null,
-                gender: Number(values.gender ?? normalizeGender(profile.gender)),
+                gender: Number(
+                    values.gender ?? normalizeGender(profile.gender)
+                ),
                 phoneNumber: values.phoneNumber.trim(),
                 email: values.email.trim(),
                 address: values.address.trim(),
@@ -182,9 +184,10 @@ const CandidateProfilePage = () => {
                         <Title level={2}>
                             Thông tin cá nhân và năng lực hồ sơ
                         </Title>
-                        <Paragraph style={{ maxWidth: 720 }}>
+                        <Paragraph style={{ maxWidth: 720, color: '#fff' }}>
                             Cập nhật thông tin cá nhân, học vấn và kinh nghiệm
-                            để hồ sơ của bạn luôn đầy đủ và rõ ràng với nhà tuyển dụng.
+                            để hồ sơ của bạn luôn đầy đủ và rõ ràng với nhà
+                            tuyển dụng.
                         </Paragraph>
                     </Col>
                     <Col xs={24} lg={8}>
@@ -201,11 +204,15 @@ const CandidateProfilePage = () => {
                                         {getInitials(profile.fullName)}
                                     </Avatar>
                                     <div>
-                                        <Title level={4} style={{ marginBottom: 4 }}>
+                                        <Title
+                                            level={4}
+                                            style={{ marginBottom: 4 }}
+                                        >
                                             {profile.fullName}
                                         </Title>
                                         <Text className="portal-muted">
-                                            {profile.currentPosition || 'Ứng viên'}
+                                            {profile.currentPosition ||
+                                                'Ứng viên'}
                                         </Text>
                                         <div style={{ marginTop: 16 }}>
                                             <Space wrap>
@@ -219,7 +226,9 @@ const CandidateProfilePage = () => {
                                                 <Button
                                                     icon={<LockOutlined />}
                                                     onClick={() =>
-                                                        navigate(PATHS.CHANGE_PASSWORD)
+                                                        navigate(
+                                                            PATHS.CHANGE_PASSWORD
+                                                        )
                                                     }
                                                 >
                                                     Đổi mật khẩu
@@ -356,7 +365,10 @@ const CandidateProfilePage = () => {
                             {strengths.length ? (
                                 <div className="portal-chip-row">
                                     {strengths.map((skill) => (
-                                        <Tag key={skill} className="portal-tag-soft">
+                                        <Tag
+                                            key={skill}
+                                            className="portal-tag-soft"
+                                        >
                                             {skill}
                                         </Tag>
                                     ))}
@@ -452,6 +464,7 @@ const CandidateProfilePage = () => {
                                 <DatePicker
                                     style={{ width: '100%' }}
                                     format="DD/MM/YYYY"
+                                    placeholder="Chọn ngày sinh"
                                 />
                             </Form.Item>
                         </Col>
@@ -495,7 +508,10 @@ const CandidateProfilePage = () => {
 
                     <Row gutter={16}>
                         <Col span={12}>
-                            <Form.Item label="Công ty hiện tại" name="currentCompany">
+                            <Form.Item
+                                label="Công ty hiện tại"
+                                name="currentCompany"
+                            >
                                 <Input placeholder="Nhập công ty hiện tại" />
                             </Form.Item>
                         </Col>
