@@ -52,10 +52,10 @@ const CreateEmployerJobModal = ({
     return (
         <Modal
             destroyOnClose
-            title="Tạo tin tuyển dụng"
+            title="Tạo tin tuyển dụng bản nháp"
             open={open}
             width={720}
-            okText="Tạo mới"
+            okText="Lưu bản nháp"
             cancelText="Hủy"
             confirmLoading={submitting}
             onCancel={onCancel}

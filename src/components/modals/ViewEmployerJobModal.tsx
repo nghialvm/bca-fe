@@ -44,6 +44,11 @@ const ViewEmployerJobModal = ({
                             {item.value}
                         </Descriptions.Item>
                     ))}
+                    {job?.rejectReason ? (
+                        <Descriptions.Item label="Lý do từ chối">
+                            {job.rejectReason}
+                        </Descriptions.Item>
+                    ) : null}
                     <Descriptions.Item label="Mô tả công việc">
                         {job?.description || '-'}
                     </Descriptions.Item>

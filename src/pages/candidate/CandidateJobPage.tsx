@@ -195,7 +195,7 @@ const CandidateJobPage = () => {
                 <span className="portal-hero__eyebrow">Việc làm phù hợp</span>
                 <Title level={2}>Danh sách vị trí đang mở cho ứng viên</Title>
                 <Paragraph style={{ maxWidth: 720, color: '#fff' }}>
-                    Trang việc làm đã được nối với candidate portal API, tự động
+                    Trang việc làm tự động
                     đồng bộ danh sách đợt tuyển dụng đang mở và trạng thái ứng
                     tuyển của bạn.
                 </Paragraph>
@@ -209,7 +209,7 @@ const CandidateJobPage = () => {
                             allowClear
                             size="large"
                             prefix={<SearchOutlined />}
-                            placeholder="Nhập từ khóa, đơn vị, mã phiếu..."
+                            placeholder="Nhập từ khóa, đơn vị, mã tin tuyển dụng..."
                             value={searchInput}
                             onChange={(event) =>
                                 setSearchInput(event.target.value)

@@ -662,7 +662,7 @@ const AdminManageJobPositionPage = () => {
                 <Typography.Paragraph style={{ marginBottom: 0 }}>
                     Bạn chắc chắn muốn xóa vị trí{' '}
                     <strong>{deletingRow?.name}</strong>? Nếu vị trí này đang
-                    được tham chiếu bởi tin tuyển dụng khác, backend có thể từ
+                    được tham chiếu bởi tin tuyển dụng khác, hệ thống có thể từ
                     chối thao tác này.
                 </Typography.Paragraph>
             </Modal>

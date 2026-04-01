@@ -55,10 +55,11 @@ const normalizeStatus = (value: string | number) =>
 const canSubmitRecruitment = (value: string | number) =>
     ['0', 'draft', '3', 'rejected'].includes(normalizeStatus(value))
 
+const canCloseRecruitment = (value: string | number) =>
+    !['5', 'closed'].includes(normalizeStatus(value))
+
 const canDeleteRecruitment = (value: string | number) =>
-    !['3', 'rejected', '5', 'closed', '6', 'cancelled'].includes(
-        normalizeStatus(value)
-    )
+    !['5', 'closed'].includes(normalizeStatus(value))
 
 const getErrorMessage = (error: unknown) => {
     const message =
@@ -177,17 +178,13 @@ const EmployerManageJobPage = () => {
     const handleCreateJob = async (values: EmployerJobFormValues) => {
         setSubmitting(true)
         try {
-            const createdRecruitment =
-                await AdminService.createRecruitmentRequest(
-                    mapEmployerJobFormToCreateDto(values)
-                )
-            await AdminService.submitRecruitmentRequestForApproval(
-                (createdRecruitment as unknown as { id: string }).id
+            await AdminService.createRecruitmentRequest(
+                mapEmployerJobFormToCreateDto(values)
             )
             notification.success({
-                message: 'Đã tạo và gửi duyệt tin tuyển dụng',
+                message: 'Đã tạo tin tuyển dụng bản nháp',
                 description:
-                    'Tin tuyển dụng mới đã được chuyển sang trạng thái chờ admin duyệt.',
+                    'Tin tuyển dụng mới đã được lưu ở trạng thái bản nháp. Hãy dùng hành động "Gửi duyệt" khi sẵn sàng gửi admin phê duyệt.',
             })
             setCreateOpen(false)
             await reload()
@@ -398,6 +395,7 @@ const EmployerManageJobPage = () => {
                     >
                         <Button
                             icon={<StopOutlined />}
+                            disabled={!canCloseRecruitment(record.status)}
                             loading={actionLoadingId === record.id}
                         >
                             Đóng tin

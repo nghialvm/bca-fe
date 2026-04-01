@@ -218,18 +218,10 @@ const CandidateApplicationPage = () => {
                 </Paragraph>
             </section>
 
-            <Alert
-                type="info"
-                showIcon
-                icon={<InfoCircleOutlined />}
-                message="Lưu ý"
-                description="Các hồ sơ đang ở vòng phỏng vấn hoặc đã gửi offer sẽ được ưu tiên hiển thị trong mục việc cần làm để bạn thao tác nhanh hơn."
-            />
-
             <Row gutter={[24, 24]}>
-                <Col xs={24} xl={16}>
+                <Col xs={24} xl={24}>
                     <Card
-                        title="Danh sách hồ sơ"
+                        title=" Danh sách hồ sơ đã nộp"
                         className="portal-section-card"
                     >
                         {applications.length ? (
@@ -354,83 +346,6 @@ const CandidateApplicationPage = () => {
                             <Empty description="Bạn chưa nộp hồ sơ ứng tuyển nào" />
                         )}
                     </Card>
-                </Col>
-
-                <Col xs={24} xl={8}>
-                    <Space
-                        direction="vertical"
-                        size={24}
-                        style={{ width: '100%' }}
-                    >
-                        <Card
-                            title="Trạng thái xử lý"
-                            className="portal-section-card"
-                        >
-                            <Timeline
-                                items={[
-                                    {
-                                        color: '#0B3D2E',
-                                        dot: <ClockCircleOutlined />,
-                                        children:
-                                            'Tiếp nhận và đối chiếu hồ sơ',
-                                    },
-                                    {
-                                        color: '#2E7D60',
-                                        dot: <FileProtectOutlined />,
-                                        children:
-                                            'Sàng lọc và đánh giá chuyên môn',
-                                    },
-                                    {
-                                        color: '#B7791F',
-                                        dot: <SolutionOutlined />,
-                                        children: 'Phỏng vấn và xử lý offer',
-                                    },
-                                    {
-                                        color: '#166534',
-                                        dot: <CheckCircleOutlined />,
-                                        children:
-                                            'Thông báo kết quả và hướng dẫn tiếp theo',
-                                    },
-                                ]}
-                            />
-                        </Card>
-
-                        <Card
-                            title="Việc cần làm"
-                            className="portal-section-card"
-                        >
-                            {actionItems.length ? (
-                                <List
-                                    loading={loading}
-                                    dataSource={actionItems}
-                                    renderItem={(item) => (
-                                        <List.Item>
-                                            <div>
-                                                <Text strong>{item.title}</Text>
-                                                <Paragraph
-                                                    className="portal-muted"
-                                                    style={{
-                                                        margin: '6px 0 0',
-                                                    }}
-                                                >
-                                                    {item.offer &&
-                                                    canRespondToOffer(item)
-                                                        ? 'Bạn đang có offer chờ phản hồi trong mục hồ sơ đã nộp.'
-                                                        : item.note ||
-                                                          `${getApplicationStatusLabel(item.status)} - theo dõi email và thông báo hệ thống.`}
-                                                </Paragraph>
-                                            </div>
-                                        </List.Item>
-                                    )}
-                                />
-                            ) : (
-                                <Empty
-                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                    description="Hiện không có tác vụ cần xử lý ngay"
-                                />
-                            )}
-                        </Card>
-                    </Space>
                 </Col>
             </Row>
 

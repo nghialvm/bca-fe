@@ -269,34 +269,6 @@ const CandidateShell = () => {
 
     return (
         <Layout className={styles.candidateShell}>
-            <div className={styles.candidateTopBand}>
-                <div className={styles.candidateTopBandInner}>
-                    <Space size={12}>
-                        <div className={styles.candidateBrandSeal}>
-                            <img src="/logo.png" alt="Logo" />
-                        </div>
-                        <div>
-                            <Text className={styles.candidateTopTitle}>
-                                BỘ CÔNG AN
-                            </Text>
-                            <Text className={styles.candidateTopSubtitle}>
-                                Cổng thông tin tuyển dụng
-                            </Text>
-                        </div>
-                    </Space>
-                    <Space size={16}>
-                        <Badge>
-                            <BellOutlined
-                                className={styles.candidateBandIcon}
-                            />
-                        </Badge>
-                        <Text className={styles.candidateBandText}>
-                            Hỗ trợ 24/7
-                        </Text>
-                    </Space>
-                </div>
-            </div>
-
             <Header className={styles.candidateHeader}>
                 <div className={styles.candidateHeaderInner}>
                     <Link

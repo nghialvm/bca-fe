@@ -19,7 +19,7 @@ const DeleteEmployerJobModal = ({
 }: DeleteEmployerJobModalProps) => {
     return (
         <Modal
-            destroyOnClose
+            destroyOnHidden
             title="Xóa tin tuyển dụng"
             open={open}
             okText="Xóa"
@@ -33,7 +33,7 @@ const DeleteEmployerJobModal = ({
                 <Alert
                     type="warning"
                     showIcon
-                    message="Thao tác này sẽ xóa tin tuyển dụng khỏi hệ thống nếu backend cho phép."
+                    message="Thao tác này sẽ xóa tin tuyển dụng khỏi hệ thống."
                 />
 
                 <div>

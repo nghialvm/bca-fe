@@ -518,7 +518,7 @@ const AdminReportPage = () => {
         <div className={styles.page}>
             <section className="portal-hero portal-hero--light">
                 <span className="portal-hero__eyebrow">
-                    Báo cáo và thống kê
+                    Thống kê báo cáo
                 </span>
                 <Space
                     style={{ width: '100%', justifyContent: 'space-between' }}
@@ -527,7 +527,7 @@ const AdminReportPage = () => {
                 >
                     <div>
                         <Typography.Title level={2}>
-                            Quản lý báo cáo và thống kê
+                            Quản lý thống kê và báo cáo
                         </Typography.Title>
                     </div>
                     <Space wrap>
@@ -614,39 +614,6 @@ const AdminReportPage = () => {
             </div>
 
             <div className={styles.chartGrid}>
-                <Card
-                    variant="borderless"
-                    className={styles.sectionCard}
-                    title={
-                        <span className={styles.sectionTitle}>
-                            Xu hướng tuyển dụng theo tháng
-                        </span>
-                    }
-                >
-                    <div className={styles.chart}>
-                        {loading || !chartsReady ? (
-                            <Skeleton active paragraph={{ rows: 8 }} />
-                        ) : monthlyTrendData.length ? (
-                            <Line
-                                data={monthlyTrendData}
-                                xField="month"
-                                yField="value"
-                                colorField="type"
-                                seriesField="type"
-                                smooth
-                                meta={{
-                                    month: { alias: 'Tháng' },
-                                    type: { alias: 'Nhóm dữ liệu' },
-                                    value: { alias: 'Số lượng' },
-                                }}
-                                tooltip={{ title: 'month' }}
-                            />
-                        ) : (
-                            <Empty description="Không có dữ liệu theo tháng" />
-                        )}
-                    </div>
-                </Card>
-
                 <Card
                     variant="borderless"
                     className={styles.sectionCard}

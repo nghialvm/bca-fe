@@ -41,6 +41,7 @@ export type EmployerJobRecord = {
     benefit: string
     applicationDeadline?: string | null
     creationTime?: string
+    rejectReason?: string | null
     status: string | number
     statusLabel: string
     statusColor: string
@@ -131,6 +132,7 @@ export const mapRecruitmentRequestToEmployerJobRecord = (
             recruitmentRequest.benefit?.trim() || 'Chưa cập nhật quyền lợi',
         applicationDeadline: recruitmentRequest.applicationDeadline || null,
         creationTime: recruitmentRequest.creationTime,
+        rejectReason: recruitmentRequest.rejectReason?.trim() || null,
         status: recruitmentRequest.status,
         statusLabel: statusMeta.label,
         statusColor: statusMeta.color,
@@ -239,42 +241,42 @@ export const EmployerJobFormFields = ({
     return (
         <>
             <Form.Item
-                label="Mã phiếu tuyển dụng"
+                label="Mã tin tuyển dụng"
                 name="requestCode"
                 rules={[
                     {
                         required: true,
                         whitespace: true,
-                        message: 'Vui lòng nhập mã phiếu tuyển dụng',
+                        message: 'Vui lòng nhập mã tin tuyển dụng',
                     },
                     {
                         max: 50,
-                        message: 'Mã phiếu tuyển dụng tối đa 50 ký tự',
+                        message: 'Mã tin tuyển dụng tối đa 50 ký tự',
                     },
                 ]}
             >
                 <Input
                     disabled={mode === 'update'}
-                    placeholder="Nhập mã phiếu tuyển dụng"
+                    placeholder="Nhập mã tin tuyển dụng"
                 />
             </Form.Item>
 
             <Form.Item
-                label="Tiêu đề tuyển dụng"
+                label="Tiêu đề tin tuyển dụng"
                 name="title"
                 rules={[
                     {
                         required: true,
                         whitespace: true,
-                        message: 'Vui lòng nhập tiêu đề tuyển dụng',
+                        message: 'Vui lòng nhập tiêu đề tin tuyển dụng',
                     },
                     {
                         max: 200,
-                        message: 'Tiêu đề tuyển dụng tối đa 200 ký tự',
+                        message: 'Tiêu đề tin tuyển dụng tối đa 200 ký tự',
                     },
                 ]}
             >
-                <Input placeholder="Nhập tiêu đề tuyển dụng" />
+                <Input placeholder="Nhập tiêu đề tin tuyển dụng" />
             </Form.Item>
 
             <Form.Item
@@ -474,7 +476,7 @@ export const EmployerJobFormFields = ({
 export const getEmployerJobSummaryItems = (job?: EmployerJobRecord | null) => [
     {
         key: 'requestCode',
-        label: 'Mã phiếu tuyển dụng',
+        label: 'Mã tin tuyển dụng',
         value: job?.requestCode || '-',
     },
     {

@@ -20,6 +20,7 @@ import {
 
 import {
     FileTextOutlined,
+    CalendarOutlined,
     FilterOutlined,
     MailOutlined,
     PhoneOutlined,
@@ -29,6 +30,12 @@ import type { ColumnsType } from 'antd/es/table'
 import dayjs, { type Dayjs } from 'dayjs'
 import { useSelector } from 'react-redux'
 
+import {
+    buildInterviewSchedulePayload,
+    createInterviewInitialValues,
+    InterviewScheduleFormFields,
+    type InterviewFormValues,
+} from '@/components/modals/interviewScheduleForm.shared'
 import { useEmployerWorkspace } from '@/hooks/useEmployerWorkspace'
 import type {
     ApplicationDto,
@@ -96,7 +103,7 @@ type OfferFormValues = {
 }
 
 const screeningResultOptions = [
-    { label: 'Đạt sàng lọc', value: 1 },
+    { label: 'Đạt', value: 1 },
     { label: 'Không đạt', value: 2 },
 ]
 
@@ -125,7 +132,7 @@ const normalizeScreeningResult = (value: unknown) => {
 const getScreeningResultLabel = (value: unknown) => {
     const normalized = normalizeScreeningResult(value)
 
-    if (normalized === 1) return 'Đạt sàng lọc'
+    if (normalized === 1) return 'Đạt'
     if (normalized === 2) return 'Không đạt'
 
     return 'Chưa đánh giá'
@@ -159,10 +166,10 @@ const formatScore = (value?: number | null) => {
     }).format(Number(value))
 }
 
-const getTextValue = (value?: string | null) => {
+const getTextValue = (value?: string | null, fallback = '-') => {
     const trimmed = value?.trim()
 
-    return trimmed || '-'
+    return trimmed || fallback
 }
 
 const buildApplicationUpdatePayload = (
@@ -223,12 +230,22 @@ const EmployerManageCandidatePage = () => {
         useState<EmployerCandidateRow | null>(null)
     const [offerCandidate, setOfferCandidate] =
         useState<EmployerCandidateRow | null>(null)
+    const [interviewCandidate, setInterviewCandidate] =
+        useState<EmployerCandidateRow | null>(null)
     const [submitting, setSubmitting] = useState(false)
     const [offerSubmitting, setOfferSubmitting] = useState(false)
+    const [interviewSubmitting, setInterviewSubmitting] = useState(false)
     const [form] = Form.useForm<EvaluationFormValues>()
     const [offerForm] = Form.useForm<OfferFormValues>()
-    const { applicationRows, applicationScreenings, offers, loading, reload } =
-        useEmployerWorkspace()
+    const [interviewForm] = Form.useForm<InterviewFormValues>()
+    const {
+        applicationRows,
+        applicationScreenings,
+        offers,
+        interviews,
+        loading,
+        reload,
+    } = useEmployerWorkspace()
 
     const latestScreeningByApplicationId = useMemo(() => {
         const map = new Map<string, ApplicationScreeningDto>()
@@ -253,6 +270,18 @@ const EmployerManageCandidatePage = () => {
 
         return map
     }, [offers])
+
+    const maxInterviewRoundByApplicationId = useMemo(() => {
+        const map = new Map<string, number>()
+
+        interviews.forEach((interview) => {
+            const currentMax = map.get(interview.applicationId) || 0
+            const nextMax = Math.max(currentMax, Number(interview.roundNumber))
+            map.set(interview.applicationId, nextMax)
+        })
+
+        return map
+    }, [interviews])
 
     const candidateRows = useMemo<EmployerCandidateRow[]>(
         () =>
@@ -354,6 +383,24 @@ const EmployerManageCandidatePage = () => {
     const closeOfferModal = () => {
         setOfferCandidate(null)
         offerForm.resetFields()
+    }
+
+    const openInterviewModal = (candidate: EmployerCandidateRow) => {
+        const nextRound =
+            (maxInterviewRoundByApplicationId.get(candidate.applicationId) ||
+                0) + 1
+
+        interviewForm.setFieldsValue(
+            createInterviewInitialValues({
+                roundNumber: nextRound,
+            })
+        )
+        setInterviewCandidate(candidate)
+    }
+
+    const closeInterviewModal = () => {
+        setInterviewCandidate(null)
+        interviewForm.resetFields()
     }
 
     const handleSubmitEvaluation = async () => {
@@ -526,6 +573,56 @@ const EmployerManageCandidatePage = () => {
         }
     }
 
+    const handleSubmitInterview = async () => {
+        if (!interviewCandidate) return
+
+        if (!currentUser?.id) {
+            notification.error({
+                message: 'Không xác định được người thao tác',
+                description:
+                    'Phiên đăng nhập hiện tại không có thông tin người dùng để tạo lịch phỏng vấn.',
+            })
+            return
+        }
+
+        try {
+            const values = await interviewForm.validateFields()
+            const payload = buildInterviewSchedulePayload(
+                {
+                    ...values,
+                    applicationId: interviewCandidate.applicationId,
+                },
+                currentUser.id
+            )
+
+            setInterviewSubmitting(true)
+            await AdminService.createInterviewSchedule(payload)
+
+            notification.success({
+                message: 'Đã tạo lịch hẹn phỏng vấn',
+                description: `${interviewCandidate.name} đã được lên lịch phỏng vấn.`,
+            })
+
+            closeInterviewModal()
+            await reload()
+        } catch (error) {
+            if (
+                typeof error === 'object' &&
+                error !== null &&
+                'errorFields' in error
+            ) {
+                return
+            }
+
+            notification.error({
+                message: 'Không tạo được lịch hẹn phỏng vấn',
+                description: getErrorMessage(error),
+            })
+        } finally {
+            setInterviewSubmitting(false)
+        }
+    }
+
     const columns: ColumnsType<EmployerCandidateRow> = [
         {
             title: 'Ứng viên',
@@ -642,6 +739,12 @@ const EmployerManageCandidatePage = () => {
                         onClick={() => setProfileCandidate(candidate)}
                     >
                         Hồ sơ
+                    </Button>
+                    <Button
+                        icon={<CalendarOutlined />}
+                        onClick={() => openInterviewModal(candidate)}
+                    >
+                        Hẹn phỏng vấn
                     </Button>
                     <Button
                         type="primary"
@@ -976,6 +1079,46 @@ const EmployerManageCandidatePage = () => {
                                 )}
                             </Descriptions.Item>
                         </Descriptions>
+                    </Space>
+                ) : null}
+            </Modal>
+
+            <Modal
+                title="Hẹn phỏng vấn"
+                open={Boolean(interviewCandidate)}
+                onCancel={closeInterviewModal}
+                onOk={() => void handleSubmitInterview()}
+                okText="Tạo lịch"
+                cancelText="Hủy"
+                confirmLoading={interviewSubmitting}
+                destroyOnClose
+                width={720}
+            >
+                {interviewCandidate ? (
+                    <Space
+                        direction="vertical"
+                        size={16}
+                        style={{ width: '100%' }}
+                    >
+                        <Card size="small">
+                            <Space direction="vertical" size={4}>
+                                <Text strong>{interviewCandidate.name}</Text>
+                                <Text type="secondary">
+                                    {interviewCandidate.position} •{' '}
+                                    {interviewCandidate.department}
+                                </Text>
+                                <Text type="secondary">
+                                    Mã hồ sơ: {interviewCandidate.applicationCode}
+                                </Text>
+                                <Text type="secondary">
+                                    Email mời: {interviewCandidate.email}
+                                </Text>
+                            </Space>
+                        </Card>
+
+                        <Form form={interviewForm} layout="vertical">
+                            <InterviewScheduleFormFields />
+                        </Form>
                     </Space>
                 ) : null}
             </Modal>

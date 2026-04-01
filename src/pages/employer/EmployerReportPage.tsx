@@ -314,43 +314,7 @@ const EmployerReportPage = () => {
             </Row>
 
             <Row gutter={[24, 24]}>
-                <Col xs={24} xl={12}>
-                    <Card
-                        title="Xu hướng theo tháng"
-                        className="portal-section-card"
-                    >
-                        <div className={styles.chart}>
-                            {loading ? (
-                                <Skeleton active paragraph={{ rows: 8 }} />
-                            ) : monthlyTrend.length && chartsReady ? (
-                                <Line
-                                    height={320}
-                                    data={monthlyTrend}
-                                    xField="month"
-                                    yField="applications"
-                                    color="#0B3D2E"
-                                    point={{ size: 4 }}
-                                    meta={{
-                                        month: { alias: 'Tháng' },
-                                        applications: { alias: 'Số hồ sơ' },
-                                    }}
-                                    tooltip={{
-                                        title: 'month',
-                                        items: [
-                                            (datum) => ({
-                                                name: 'Số hồ sơ',
-                                                value: datum.applications,
-                                            }),
-                                        ],
-                                    }}
-                                />
-                            ) : (
-                                <Empty description="Chưa có dữ liệu xu hướng theo tháng" />
-                            )}
-                        </div>
-                    </Card>
-                </Col>
-                <Col xs={24} xl={12}>
+                <Col xs={24} xl={24}>
                     <Card
                         title="Hiệu suất theo vị trí"
                         className="portal-section-card"

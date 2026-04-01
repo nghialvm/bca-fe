@@ -120,12 +120,12 @@ const mapJobDto = (
     title: item.title,
     departmentId: item.departmentId,
     departmentName:
-        departmentMap.get(item.departmentId) || 'ChÆ°a cáº­p nháº­t',
+        departmentMap.get(item.departmentId) || 'Chưa cập nhật',
     jobPositionId: item.jobPositionId,
     jobPositionName:
-        jobPositionMap.get(item.jobPositionId) || 'ChÆ°a cáº­p nháº­t',
+        jobPositionMap.get(item.jobPositionId) || 'Chưa cập nhật',
     headcount: item.headcount,
-    employmentType: item.employmentType || 'ToÃ n thá»i gian',
+    employmentType: item.employmentType || 'Toàn thời gian',
     workLocation: item.workLocation,
     salaryMin: item.salaryMin,
     salaryMax: item.salaryMax,
@@ -153,17 +153,17 @@ const mapApplicationDto = (
         applicationCode: item.applicationCode,
         recruitmentRequestId: item.recruitmentRequestId,
         recruitmentRequestCode: recruitment?.requestCode || '',
-        title: recruitment?.title || 'Vá»‹ trÃ­ tuyá»ƒn dá»¥ng',
+        title: recruitment?.title || 'Vị trí tuyển dụng',
         departmentId: recruitment?.departmentId || '',
         departmentName: recruitment?.departmentId
             ? departmentMap.get(recruitment.departmentId) ||
-              'ChÆ°a cáº­p nháº­t'
-            : 'ChÆ°a cáº­p nháº­t',
+              'Chưa cập nhật'
+            : 'Chưa cập nhật',
         jobPositionId: recruitment?.jobPositionId || '',
         jobPositionName: recruitment?.jobPositionId
             ? jobPositionMap.get(recruitment.jobPositionId) ||
-              'ChÆ°a cáº­p nháº­t'
-            : 'ChÆ°a cáº­p nháº­t',
+              'Chưa cập nhật'
+            : 'Chưa cập nhật',
         workLocation: recruitment?.workLocation,
         appliedTime: item.appliedTime,
         status: item.status,
@@ -330,7 +330,7 @@ export class CandidateService {
 
         if (!candidateId) {
             throw new Error(
-                'KhÃ´ng xÃ¡c Ä‘á»‹nh Ä‘Æ°á»£c há»“ sÆ¡ á»©ng viÃªn tá»« phiÃªn Ä‘Äƒng nháº­p.'
+                'Không xác định được hồ sơ ứng viên từ phiên đăng nhập.'
             )
         }
 

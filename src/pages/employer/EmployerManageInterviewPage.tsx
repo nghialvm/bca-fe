@@ -4,15 +4,11 @@ import {
     Button,
     Card,
     Col,
-    DatePicker,
     Empty,
     Form,
-    Input,
-    InputNumber,
     Modal,
     Radio,
     Row,
-    Select,
     Space,
     Tag,
     Typography,
@@ -28,14 +24,19 @@ import {
     TeamOutlined,
     VideoCameraOutlined,
 } from '@ant-design/icons'
-import dayjs, { type Dayjs } from 'dayjs'
+import dayjs from 'dayjs'
 import { useSelector } from 'react-redux'
 
+import {
+    buildInterviewSchedulePayload,
+    createInterviewInitialValues,
+    InterviewScheduleFormFields,
+    type InterviewFormValues,
+} from '@/components/modals/interviewScheduleForm.shared'
 import { useEmployerWorkspace } from '@/hooks/useEmployerWorkspace'
 import type {
     ApplicationDto,
     CandidateDto,
-    InterviewScheduleCreateDto,
     InterviewScheduleDto,
     InterviewScheduleUpdateDto,
 } from '@/services/admin'
@@ -77,33 +78,6 @@ type InterviewRow = {
     location?: string | null
     meetingLink?: string | null
 }
-
-type InterviewFormValues = {
-    applicationId: string
-    roundNumber: number
-    interviewType: number
-    scheduledTime: Dayjs
-    durationMinutes: number
-    location?: string
-    meetingLink?: string
-    contactPerson?: string
-    note?: string
-    status: number
-}
-
-const interviewTypeOptions = [
-    { label: 'Trực tiếp', value: 1 },
-    { label: 'Trực tuyến', value: 2 },
-    { label: 'Điện thoại', value: 3 },
-]
-
-const interviewStatusOptions = [
-    { label: 'Chờ xác nhận', value: 1 },
-    { label: 'Đã xác nhận', value: 2 },
-    { label: 'Đổi lịch', value: 3 },
-    { label: 'Đã hủy', value: 4 },
-    { label: 'Hoàn thành', value: 5 },
-]
 
 const isUpcomingInterview = (status: string | number) =>
     ['1', '2', '3', 'pending', 'confirmed', 'rescheduled'].includes(
@@ -248,18 +222,11 @@ const EmployerManageInterviewPage = () => {
 
     const openCreateModal = () => {
         form.resetFields()
-        form.setFieldsValue({
-            applicationId: applicationRows[0]?.application.id,
-            roundNumber: 1,
-            interviewType: 1,
-            scheduledTime: dayjs().add(1, 'day').hour(9).minute(0),
-            durationMinutes: 60,
-            status: 1,
-            contactPerson: '',
-            location: '',
-            meetingLink: '',
-            note: '',
-        })
+        form.setFieldsValue(
+            createInterviewInitialValues({
+                applicationId: applicationRows[0]?.application.id,
+            })
+        )
         setFormMode('create')
         setEditingInterview(null)
         setModalOpen(true)
@@ -267,18 +234,20 @@ const EmployerManageInterviewPage = () => {
 
     const openEditModal = (row: InterviewRow) => {
         form.resetFields()
-        form.setFieldsValue({
-            applicationId: row.application.id,
-            roundNumber: row.roundNumber,
-            interviewType: Number(row.interviewType),
-            scheduledTime: dayjs(row.scheduledTime),
-            durationMinutes: row.durationMinutes,
-            status: Number(row.status),
-            contactPerson: row.interviewer,
-            location: row.location || '',
-            meetingLink: row.meetingLink || '',
-            note: row.note || '',
-        })
+        form.setFieldsValue(
+            createInterviewInitialValues({
+                applicationId: row.application.id,
+                roundNumber: row.roundNumber,
+                interviewType: Number(row.interviewType),
+                scheduledTime: dayjs(row.scheduledTime),
+                durationMinutes: row.durationMinutes,
+                status: Number(row.status),
+                contactPerson: row.interviewer,
+                location: row.location || '',
+                meetingLink: row.meetingLink || '',
+                note: row.note || '',
+            })
+        )
         setFormMode('edit')
         setEditingInterview(row)
         setModalOpen(true)
@@ -302,19 +271,10 @@ const EmployerManageInterviewPage = () => {
 
         try {
             const values = await form.validateFields()
-            const payload: InterviewScheduleCreateDto = {
-                applicationId: values.applicationId,
-                roundNumber: values.roundNumber,
-                interviewType: values.interviewType,
-                scheduledTime: values.scheduledTime.toISOString(),
-                durationMinutes: values.durationMinutes,
-                location: values.location?.trim() || null,
-                meetingLink: values.meetingLink?.trim() || null,
-                contactPerson: values.contactPerson?.trim() || null,
-                note: values.note?.trim() || null,
-                status: values.status,
-                createdByUserId: currentUser.id,
-            }
+            const payload = buildInterviewSchedulePayload(
+                values as InterviewFormValues & { applicationId: string },
+                currentUser.id
+            )
 
             setSubmitting(true)
 
@@ -739,141 +699,11 @@ const EmployerManageInterviewPage = () => {
                 width={760}
             >
                 <Form form={form} layout="vertical">
-                    <Form.Item
-                        label="Hồ sơ ứng tuyển"
-                        name="applicationId"
-                        rules={[
-                            {
-                                required: true,
-                                message:
-                                    'Chọn hồ sơ ứng tuyển cần lên lịch phỏng vấn.',
-                            },
-                        ]}
-                    >
-                        <Select
-                            showSearch
-                            options={applicationOptions}
-                            optionFilterProp="label"
-                            placeholder="Chọn hồ sơ ứng tuyển"
-                        />
-                    </Form.Item>
-
-                    <Row gutter={[16, 0]}>
-                        <Col xs={24} md={12}>
-                            <Form.Item
-                                label="Vòng phỏng vấn"
-                                name="roundNumber"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Nhập số vòng phỏng vấn.',
-                                    },
-                                ]}
-                            >
-                                <InputNumber
-                                    min={1}
-                                    precision={0}
-                                    style={{ width: '100%' }}
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item
-                                label="Hình thức"
-                                name="interviewType"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Chọn hình thức phỏng vấn.',
-                                    },
-                                ]}
-                            >
-                                <Select options={interviewTypeOptions} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
-                    <Row gutter={[16, 0]}>
-                        <Col xs={24} md={12}>
-                            <Form.Item
-                                label="Thời gian phỏng vấn"
-                                name="scheduledTime"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Chọn thời gian phỏng vấn.',
-                                    },
-                                ]}
-                            >
-                                <DatePicker
-                                    showTime={{ format: 'HH:mm' }}
-                                    format="DD/MM/YYYY HH:mm"
-                                    style={{ width: '100%' }}
-                                    placeholder="Chọn thời gian phỏng vấn"
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item
-                                label="Thời lượng (phút)"
-                                name="durationMinutes"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: 'Nhập thời lượng phỏng vấn.',
-                                    },
-                                ]}
-                            >
-                                <InputNumber
-                                    min={1}
-                                    max={1440}
-                                    precision={0}
-                                    style={{ width: '100%' }}
-                                />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
-                    <Row gutter={[16, 0]}>
-                        <Col xs={24} md={12}>
-                            <Form.Item
-                                label="Người phụ trách"
-                                name="contactPerson"
-                            >
-                                <Input placeholder="Nhập tên người phụ trách" />
-                            </Form.Item>
-                        </Col>
-                        <Col xs={24} md={12}>
-                            <Form.Item
-                                label="Trạng thái lịch phỏng vấn"
-                                name="status"
-                                rules={[
-                                    {
-                                        required: true,
-                                        message:
-                                            'Chọn trạng thái lịch phỏng vấn.',
-                                    },
-                                ]}
-                            >
-                                <Select options={interviewStatusOptions} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
-
-                    <Form.Item label="Địa điểm" name="location">
-                        <Input placeholder="Nhập địa điểm phỏng vấn" />
-                    </Form.Item>
-
-                    <Form.Item label="Link họp" name="meetingLink">
-                        <Input placeholder="Nhập link họp nếu phỏng vấn online" />
-                    </Form.Item>
-
-                    <Form.Item label="Ghi chú" name="note">
-                        <Input.TextArea
-                            rows={4}
-                            placeholder="Nhập ghi chú cho buổi phỏng vấn"
-                        />
-                    </Form.Item>
+                    <InterviewScheduleFormFields
+                        includeApplication
+                        applicationOptions={applicationOptions}
+                        mode={formMode}
+                    />
                 </Form>
             </Modal>
         </div>

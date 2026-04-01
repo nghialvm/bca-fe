@@ -30,9 +30,11 @@ const { Paragraph, Text, Title } = Typography
 
 type MessageTemplateType =
     | 'invitation'
+    | 'cancellation'
     | 'rejection'
     | 'acceptance'
     | 'reminder'
+    | 'blank'
 
 type MessageTemplate = {
     id: string
@@ -85,6 +87,14 @@ const messageTemplates: MessageTemplate[] = [
     },
     {
         id: '2',
+        title: 'Hủy phỏng vấn',
+        subject: 'Thông báo hủy lịch phỏng vấn - [Vị trí ứng tuyển]',
+        type: 'cancellation',
+        content:
+            'Kính gửi [Tên ứng viên],\n\nChúng tôi rất tiếc phải thông báo lịch phỏng vấn cho vị trí [Vị trí ứng tuyển] vào [Ngày giờ phỏng vấn] hiện cần hủy. Nếu có lịch thay thế, chúng tôi sẽ liên hệ lại với bạn trong thời gian sớm nhất.\n\nTrân trọng,\nBộ phận tuyển dụng',
+    },
+    {
+        id: '3',
         title: 'Thông báo từ chối',
         subject: 'Thông báo kết quả tuyển dụng - [Vị trí ứng tuyển]',
         type: 'rejection',
@@ -92,7 +102,7 @@ const messageTemplates: MessageTemplate[] = [
             'Kính gửi [Tên ứng viên],\n\nCảm ơn bạn đã tham gia ứng tuyển vị trí [Vị trí ứng tuyển] tại [Phòng ban]. Sau khi xem xét, chúng tôi xin phép chưa thể tiếp tục với hồ sơ [Mã hồ sơ] ở đợt này.\n\nTrân trọng,\nBộ phận tuyển dụng',
     },
     {
-        id: '3',
+        id: '4',
         title: 'Thư chấp nhận tuyển dụng',
         subject: 'Chúc mừng bạn đã trúng tuyển - [Vị trí ứng tuyển]',
         type: 'acceptance',
@@ -100,20 +110,29 @@ const messageTemplates: MessageTemplate[] = [
             'Kính gửi [Tên ứng viên],\n\nChúc mừng bạn đã được lựa chọn cho vị trí [Vị trí ứng tuyển] tại [Phòng ban]. Chúng tôi sẽ liên hệ tới email [Email ứng viên] để hướng dẫn các bước tiếp theo.\n\nTrân trọng,\nBộ phận tuyển dụng',
     },
     {
-        id: '4',
+        id: '5',
         title: 'Nhắc lịch phỏng vấn',
         subject: 'Nhắc lịch phỏng vấn - [Vị trí ứng tuyển]',
         type: 'reminder',
         content:
             'Kính gửi [Tên ứng viên],\n\nĐây là thư nhắc lịch phỏng vấn của bạn cho vị trí [Vị trí ứng tuyển] vào [Ngày giờ phỏng vấn]. Địa điểm: [Địa điểm phỏng vấn]. Hình thức: [Hình thức phỏng vấn]. Người phụ trách: [Người phụ trách]. Link họp: [Link họp].\n\nTrân trọng,\nBộ phận tuyển dụng',
     },
+    {
+        id: '6',
+        title: 'Mẫu trống',
+        subject: '',
+        type: 'blank',
+        content: '',
+    },
 ]
 
 const templateTypeLabel: Record<MessageTemplateType, string> = {
     invitation: 'Mời phỏng vấn',
+    cancellation: 'Hủy phỏng vấn',
     rejection: 'Từ chối',
     acceptance: 'Chấp nhận',
     reminder: 'Nhắc lịch',
+    blank: 'Trống',
 }
 
 const buildMessageHistoryKey = (scopeKey?: string) =>
@@ -399,15 +418,6 @@ const EmployerManageCommunicationPage = () => {
                                         }}
                                     >
                                         <Text strong>{template.title}</Text>
-                                        <div style={{ marginTop: 8 }}>
-                                            <Tag color="green">
-                                                {
-                                                    templateTypeLabel[
-                                                        template.type
-                                                    ]
-                                                }
-                                            </Tag>
-                                        </div>
                                     </Card>
                                 </List.Item>
                             )}

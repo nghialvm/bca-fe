@@ -46,9 +46,9 @@ const NavBar: React.FC<NavBarProps> = ({ collapsed, onNavigate }) => {
 
     const adminItems = [
         {
-            key: PATHS.ADMIN_DASHBOARD,
-            icon: <HomeOutlined />,
-            label: 'Tổng quan',
+            key: PATHS.ADMIN_REPORT,
+            icon: <BellOutlined />,
+            label: 'Thống kê báo cáo',
         },
         {
             key: PATHS.ADMIN_MANAGE_USERS,
@@ -68,7 +68,7 @@ const NavBar: React.FC<NavBarProps> = ({ collapsed, onNavigate }) => {
         {
             key: PATHS.ADMIN_MANAGE_JOBS,
             icon: <IdcardOutlined />,
-            label: 'Quản lý tuyển dụng',
+            label: 'Quản lý tin tuyển dụng',
         },
         {
             key: PATHS.ADMIN_MANAGE_JOB_POSITIONS,
@@ -84,19 +84,14 @@ const NavBar: React.FC<NavBarProps> = ({ collapsed, onNavigate }) => {
             key: PATHS.ADMIN_MANAGE_LOGS,
             icon: <AuditOutlined />,
             label: 'Nhật ký hệ thống',
-        },
-        {
-            key: PATHS.ADMIN_REPORT,
-            icon: <BellOutlined />,
-            label: 'Báo cáo & thống kê',
-        },
+        }
     ]
 
     const employerItems = [
         {
-            key: PATHS.EMPLOYER_DASHBOARD,
-            icon: <HomeOutlined />,
-            label: 'Tổng quan',
+            key: PATHS.EMPLOYER_REPORT,
+            icon: <FileTextOutlined />,
+            label: 'Thống kê báo cáo',
         },
         {
             key: PATHS.EMPLOYER_MANAGE_JOBS,
@@ -122,11 +117,6 @@ const NavBar: React.FC<NavBarProps> = ({ collapsed, onNavigate }) => {
             key: PATHS.EMPLOYER_MANAGE_COMMUNICATIONS,
             icon: <NotificationOutlined />,
             label: 'Trao đổi',
-        },
-        {
-            key: PATHS.EMPLOYER_REPORT,
-            icon: <FileTextOutlined />,
-            label: 'Báo cáo',
         },
     ]
 
