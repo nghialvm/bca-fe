@@ -50,13 +50,12 @@ const EmployerProfilePage = () => {
                     </span>
                     <Title level={2}>Thông tin đơn vị tuyển dụng</Title>
                     <Paragraph style={{ maxWidth: 760 }}>
-                        Chưa xác định được đơn vị employer mà tài khoản hiện tại
-                        đang quản lý.
+                        Tài khoản hiện tại chưa được gán đơn vị phụ trách.
                     </Paragraph>
                 </section>
 
                 <Card className="portal-section-card">
-                    <Empty description="Không tìm thấy đơn vị được phân công cho tài khoản này" />
+                    <Empty description="Chưa có đơn vị được gán cho tài khoản này" />
                 </Card>
             </div>
         )
@@ -74,9 +73,8 @@ const EmployerProfilePage = () => {
                     <div>
                         <Title level={2}>Thông tin đơn vị tuyển dụng</Title>
                         <Paragraph style={{ maxWidth: 760 }}>
-                            Trang hồ sơ employer hiện được đồng bộ từ dữ liệu
-                            đơn vị, người quản lý và các chỉ số tuyển dụng thực
-                            tế của hệ thống.
+                            Thông tin được lấy từ đơn vị đang phụ trách và
+                            người quản lý hiện tại.
                         </Paragraph>
                     </div>
                     <Button
@@ -174,7 +172,7 @@ const EmployerProfilePage = () => {
                                 }
                             />
                             <div style={{ marginTop: 16 }}>
-                                <Tag color="green">Đang hoạt động tốt</Tag>
+                                <Tag color="green">Đang hoạt động</Tag>
                             </div>
                         </Card>
                         <Card className="portal-section-card">
@@ -186,7 +184,7 @@ const EmployerProfilePage = () => {
                                 }
                             />
                             <Text className="portal-muted">
-                                Bao gồm toàn bộ hồ sơ thuộc các đợt tuyển dụng
+                                Bao gồm tất cả hồ sơ thuộc các đợt tuyển dụng
                                 của đơn vị.
                             </Text>
                         </Card>

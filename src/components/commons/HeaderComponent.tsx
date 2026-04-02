@@ -43,13 +43,13 @@ const HeaderComponent = ({
     const displayName =
         user?.full_name || user?.userName || user?.email || 'Người dùng'
     const profilePath = getProfilePathByRole(siteRole)
-    const roleLabel = getRoleDisplayName(siteRole) || 'Người dùng hệ thống'
+    const roleLabel = getRoleDisplayName(siteRole) || 'Người dùng'
 
     const handleLogout = async () => {
         await dispatch(logoutAction() as any)
         notification.success({
             message: 'Đăng xuất thành công',
-            description: 'Phiên làm việc đã được kết thúc.',
+            description: 'Bạn đã đăng xuất khỏi hệ thống.',
         })
         navigate(PATHS.LOGIN, { replace: true })
     }

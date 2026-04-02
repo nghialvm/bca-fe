@@ -126,7 +126,7 @@ const getCandidateMenuItems = (): MenuProps['items'] => [
     },
     {
         key: PATHS.CANDIDATE_JOBS,
-        label: <Link to={PATHS.CANDIDATE_JOBS}>Việc làm phù hợp</Link>,
+        label: <Link to={PATHS.CANDIDATE_JOBS}>Việc làm đang tuyển</Link>,
     },
     {
         key: PATHS.CANDIDATE_APPLICATIONS,
@@ -147,7 +147,7 @@ const useProfileMenu = (role: SiteRole) => {
         await dispatch(logoutAction() as any)
         notification.success({
             message: 'Đăng xuất thành công',
-            description: 'Phiên làm việc đã được kết thúc.',
+            description: 'Bạn đã đăng xuất khỏi hệ thống.',
         })
         navigate(PATHS.LOGIN, { replace: true })
     }
@@ -261,7 +261,7 @@ const CandidateShell = () => {
                 location.pathname.startsWith(String(item?.key || ''))
             )?.key || PATHS.CANDIDATE_DASHBOARD
     const displayName =
-        user?.full_name || user?.userName || user?.email || 'Ứng viên hệ thống'
+        user?.full_name || user?.userName || user?.email || 'Ứng viên'
     const roleLabel =
         formatRoleNames([user?.role])[0] ||
         getRoleDisplayName(SITE_ROLES.CANDIDATE) ||

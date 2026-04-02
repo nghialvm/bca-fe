@@ -30,7 +30,7 @@ const ForgotPasswordPage: FC = () => {
             notification.success({
                 message: 'Đã ghi nhận yêu cầu',
                 description:
-                    'Nếu email tồn tại trong hệ thống, chúng tôi sẽ gửi liên kết đặt lại mật khẩu.',
+                    'Nếu email hợp lệ, bạn sẽ nhận được liên kết đặt lại mật khẩu.',
             })
             navigate(PATHS.LOGIN, { replace: true })
         } catch (error: any) {
