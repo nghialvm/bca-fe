@@ -21,6 +21,64 @@ type RegisterFormValues = {
     confirmPassword: string
 }
 
+const PASSWORD_POLICY = {
+    minLength: 6,
+    minUniqueChars: 1,
+    specialCharacters: '!@#$%',
+}
+
+const hasNonWhitespaceText = (value?: string) =>
+    typeof value === 'string' && value.trim().length > 0
+
+const hasUppercaseCharacter = (value: string) => /[A-Z]/.test(value)
+
+const hasLowercaseCharacter = (value: string) => /[a-z]/.test(value)
+
+const hasDigitCharacter = (value: string) => /[0-9]/.test(value)
+
+const hasSpecialCharacter = (value: string) =>
+    /[!@#$%]/.test(value)
+
+const countUniqueCharacters = (value: string) => new Set(value).size
+
+const getPasswordPolicyError = (value?: string) => {
+    if (!value) {
+        return null
+    }
+
+    if (!hasNonWhitespaceText(value)) {
+        return 'Mật khẩu mới không được chỉ gồm khoảng trắng.'
+    }
+
+    if (value.length < PASSWORD_POLICY.minLength) {
+        return `Mật khẩu mới phải có ít nhất ${PASSWORD_POLICY.minLength} ký tự.`
+    }
+
+    if (!hasUppercaseCharacter(value)) {
+        return 'Mật khẩu mới phải có ít nhất 1 chữ hoa (A-Z).'
+    }
+
+    if (!hasLowercaseCharacter(value)) {
+        return 'Mật khẩu mới phải có ít nhất 1 chữ thường (a-z).'
+    }
+
+    if (!hasDigitCharacter(value)) {
+        return 'Mật khẩu mới phải có ít nhất 1 chữ số (0-9).'
+    }
+
+    if (!hasSpecialCharacter(value)) {
+        return `Mật khẩu mới phải có ít nhất 1 ký tự đặc biệt (${PASSWORD_POLICY.specialCharacters
+            .split('')
+            .join(' ')}).`
+    }
+
+    if (countUniqueCharacters(value) < PASSWORD_POLICY.minUniqueChars) {
+        return `Mật khẩu mới phải có ít nhất ${PASSWORD_POLICY.minUniqueChars} ký tự khác nhau.`
+    }
+
+    return null
+}
+
 const getErrorDescription = (error: unknown, fallback: string) => {
     if (typeof error !== 'object' || error === null) {
         return fallback
@@ -172,8 +230,18 @@ const RegisterPage: FC = () => {
                                     message: 'Vui lòng nhập mật khẩu',
                                 },
                                 {
-                                    min: 6,
-                                    message: 'Mật khẩu phải có ít nhất 6 ký tự',
+                                    validator(_, value) {
+                                        const errorMessage =
+                                            getPasswordPolicyError(value)
+
+                                        if (!errorMessage) {
+                                            return Promise.resolve()
+                                        }
+
+                                        return Promise.reject(
+                                            new Error(errorMessage)
+                                        )
+                                    },
                                 },
                             ]}
                         >
