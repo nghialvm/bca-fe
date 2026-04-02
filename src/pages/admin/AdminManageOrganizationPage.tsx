@@ -305,7 +305,7 @@ const AdminManageOrganizationPage = () => {
                             {formatCount(totalUsers)}
                         </div>
                         <div className={styles.metricLabel}>
-                            Đầu mối quản lý
+                            Người quản lý
                         </div>
                     </div>
                 </div>
@@ -406,7 +406,7 @@ const AdminManageOrganizationPage = () => {
                             ),
                         },
                         {
-                            title: 'Đầu mối',
+                            title: 'Người quản lý',
                             dataIndex: 'users',
                             key: 'users',
                             align: 'center',

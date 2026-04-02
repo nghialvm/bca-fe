@@ -49,9 +49,9 @@ export const formatRoleNames = (roles: Array<string | null | undefined>) => {
 export const getDefaultPathByRole = (role?: SiteRole) => {
     switch (role) {
         case SITE_ROLES.ADMIN:
-            return PATHS.ADMIN_DASHBOARD
+            return PATHS.ADMIN_REPORT
         case SITE_ROLES.EMPLOYER:
-            return PATHS.EMPLOYER_DASHBOARD
+            return PATHS.EMPLOYER_REPORT
         case SITE_ROLES.CANDIDATE:
         default:
             return PATHS.CANDIDATE_DASHBOARD

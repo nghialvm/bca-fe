@@ -59,7 +59,7 @@ const ViewAdminOrganizationModal = ({
                             {organization?.statusLabel || '-'}
                         </Tag>
                     </Descriptions.Item>
-                    <Descriptions.Item label="Đầu mối quản lý">
+                    <Descriptions.Item label="Người quản lý">
                         {organization?.users ?? 0}
                     </Descriptions.Item>
                     <Descriptions.Item label="Tin tuyển dụng hoạt động">

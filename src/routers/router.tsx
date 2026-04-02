@@ -76,7 +76,6 @@ const AppRouter = [
         }
         key="admin"
     >
-        <Route path={PATHS.ADMIN_DASHBOARD} element={<AdminDashboardPage />} />
         <Route path={PATHS.ADMIN_PROFILE} element={<AdminProfilePage />} />
         <Route
             path={PATHS.ADMIN_MANAGE_USERS}
@@ -116,10 +115,6 @@ const AppRouter = [
         }
         key="employer"
     >
-        <Route
-            path={PATHS.EMPLOYER_DASHBOARD}
-            element={<EmployerDashboardPage />}
-        />
         <Route
             path={PATHS.EMPLOYER_MANAGE_JOBS}
             element={<EmployerManageJobPage />}

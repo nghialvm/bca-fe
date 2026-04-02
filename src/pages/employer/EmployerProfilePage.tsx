@@ -108,7 +108,7 @@ const EmployerProfilePage = () => {
                                 label={
                                     <Space>
                                         <UserOutlined />
-                                        Đầu mối phụ trách
+                                        Người quản lý
                                     </Space>
                                 }
                             >
