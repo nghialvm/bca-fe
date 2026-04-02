@@ -134,7 +134,7 @@ const NavBar: React.FC<NavBarProps> = ({ collapsed, onNavigate }) => {
                 {
                     key: PATHS.CANDIDATE_JOBS,
                     icon: <FileSearchOutlined />,
-                    label: 'Việc làm phù hợp',
+                    label: 'Việc làm đang tuyển',
                 },
                 {
                     key: PATHS.CANDIDATE_APPLICATIONS,

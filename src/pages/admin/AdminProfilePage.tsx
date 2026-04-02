@@ -138,9 +138,9 @@ const AdminProfilePage = () => {
                         description: `Trạng thái hiện tại: ${getRecruitmentRequestStatusLabel(item.status)}`,
                     })),
                     ...applications.slice(0, 2).map((item) => ({
-                        title: `Hồ sơ moi ${item.applicationCode}`,
+                        title: `Hồ sơ mới ${item.applicationCode}`,
                         time: formatDisplayDateTime(item.appliedTime),
-                        description: `Ứng tuyển vào yêu cầu ${item.recruitmentRequestId}`,
+                        description: `Mã yêu cầu tuyển dụng: ${item.recruitmentRequestId}`,
                     })),
                 ])
             } finally {
@@ -201,7 +201,7 @@ const AdminProfilePage = () => {
             value: formatCount(summary?.totalPublishedRecruitmentRequests),
         },
         {
-            label: 'Hồ sơ trong hệ thống',
+            label: 'Tổng hồ sơ',
             value: formatCount(summary?.totalApplications),
         },
     ]
@@ -220,9 +220,8 @@ const AdminProfilePage = () => {
                             Tổng quan hồ sơ quản trị viên
                         </Typography.Title>
                         <Typography.Paragraph style={{ maxWidth: 720 }}>
-                            Thông tin người dùng hiện tại, quyền truy cập và một
-                            số chỉ số vận hành backend liên quan đến tài khoản
-                            admin.
+                            Thông tin tài khoản, quyền truy cập và một số số
+                            liệu liên quan đến người dùng hiện tại.
                         </Typography.Paragraph>
                     </div>
                     <Space>
@@ -270,7 +269,7 @@ const AdminProfilePage = () => {
                                     color: 'rgba(232, 240, 255, 0.76)',
                                 }}
                             >
-                                {roleLabel || 'Quản trị viên hệ thống'}
+                                {roleLabel || 'Quản trị viên'}
                             </div>
                         </div>
                         <div className={styles.profileMetaList}>
@@ -346,7 +345,7 @@ const AdminProfilePage = () => {
                                 ))}
                             </Space>
                         ) : (
-                            <Empty description="Không có permission được hiển thị" />
+                            <Empty description="Chưa có quyền nào để hiển thị" />
                         )}
 
                         <div className={styles.detailList}>
@@ -407,7 +406,7 @@ const AdminProfilePage = () => {
                                 ))}
                             </div>
                         ) : (
-                            <Empty description="Không có hoạt động để hiển thị" />
+                            <Empty description="Chưa có hoạt động gần đây" />
                         )}
                     </Card>
                 </Space>

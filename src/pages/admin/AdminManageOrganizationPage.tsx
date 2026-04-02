@@ -112,8 +112,7 @@ const AdminManageOrganizationPage = () => {
         } catch {
             notification.error({
                 message: 'Không tải được danh sách đơn vị',
-                description:
-                    'Kiểm tra quyền truy cập hoặc trạng thái API backend.',
+                description: 'Vui lòng kiểm tra quyền truy cập và thử lại.',
             })
         } finally {
             setLoading(false)
@@ -179,8 +178,7 @@ const AdminManageOrganizationPage = () => {
         } catch {
             notification.error({
                 message: 'Tạo đơn vị thất bại',
-                description:
-                    'Backend từ chối dữ liệu hoặc bạn chưa có quyền tạo đơn vị.',
+                description: 'Không thể tạo đơn vị. Vui lòng kiểm tra lại thông tin.',
             })
         } finally {
             setSubmitting(false)
@@ -207,8 +205,7 @@ const AdminManageOrganizationPage = () => {
         } catch {
             notification.error({
                 message: 'Cập nhật đơn vị thất bại',
-                description:
-                    'Backend từ chối dữ liệu hoặc bạn chưa có quyền cập nhật đơn vị.',
+                description: 'Không thể cập nhật đơn vị. Vui lòng kiểm tra lại thông tin.',
             })
         } finally {
             setSubmitting(false)
@@ -230,8 +227,7 @@ const AdminManageOrganizationPage = () => {
         } catch {
             notification.error({
                 message: 'Xóa đơn vị thất bại',
-                description:
-                    'Đơn vị có thể đang được tham chiếu bởi dữ liệu khác hoặc bạn chưa có quyền xóa.',
+                description: 'Không thể xóa vì đơn vị đang được dùng ở dữ liệu khác.',
             })
         } finally {
             setSubmitting(false)
@@ -353,7 +349,7 @@ const AdminManageOrganizationPage = () => {
                     scroll={{ x: 1100 }}
                     locale={{
                         emptyText: (
-                            <Empty description="Không có đơn vị phù hợp bộ lọc hiện tại" />
+                            <Empty description="Không có đơn vị nào khớp bộ lọc" />
                         ),
                     }}
                     columns={[

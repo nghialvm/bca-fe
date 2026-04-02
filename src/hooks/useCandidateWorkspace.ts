@@ -87,7 +87,7 @@ export const useCandidateWorkspace = () => {
                 message: 'Không tải được dữ liệu ứng viên',
                 description: getErrorDescription(
                     error,
-                    'Vui lòng kiểm tra kết nối hoặc thử lại sau ít phút.'
+                    'Vui lòng kiểm tra kết nối và thử lại.'
                 ),
             })
             setData(emptyWorkspace)
@@ -114,7 +114,7 @@ export const useCandidateWorkspace = () => {
 
             notification.success({
                 message: 'Ứng tuyển thành công',
-                description: 'Hồ sơ của bạn đã được ghi nhận thành công.',
+                description: 'Hồ sơ của bạn đã được gửi.',
             })
 
             await loadData()
@@ -125,7 +125,7 @@ export const useCandidateWorkspace = () => {
                 message: 'Không thể ứng tuyển',
                 description: getErrorDescription(
                     error,
-                    'Vui lòng thử lại sau hoặc kiểm tra hồ sơ ứng viên hiện tại.'
+                    'Vui lòng thử lại hoặc kiểm tra lại thông tin hồ sơ.'
                 ),
             })
             return false
@@ -139,7 +139,7 @@ export const useCandidateWorkspace = () => {
             notification.error({
                 message: 'Không xác định được hồ sơ ứng viên',
                 description:
-                    'Phiên đăng nhập hiện tại không có thông tin ứng viên để cập nhật hồ sơ.',
+                    'Phiên đăng nhập hiện tại không có thông tin hồ sơ để cập nhật.',
             })
             return false
         }
@@ -150,8 +150,7 @@ export const useCandidateWorkspace = () => {
 
             notification.success({
                 message: 'Đã cập nhật hồ sơ',
-                description:
-                    'Thông tin hồ sơ ứng viên của bạn đã được lưu trên hệ thống.',
+                description: 'Thông tin hồ sơ đã được lưu.',
             })
 
             await loadData()
@@ -161,7 +160,7 @@ export const useCandidateWorkspace = () => {
                 message: 'Không thể cập nhật hồ sơ',
                 description: getErrorDescription(
                     error,
-                    'Vui lòng kiểm tra lại thông tin hồ sơ và thử lại.'
+                    'Vui lòng kiểm tra lại thông tin và thử lại.'
                 ),
             })
             return false

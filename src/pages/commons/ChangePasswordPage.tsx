@@ -30,6 +30,64 @@ type ChangePasswordFormValues = {
     confirmPassword: string
 }
 
+const PASSWORD_POLICY = {
+    minLength: 6,
+    minUniqueChars: 1,
+    specialCharacters: '!@#$%',
+}
+
+const hasNonWhitespaceText = (value?: string) =>
+    typeof value === 'string' && value.trim().length > 0
+
+const hasUppercaseCharacter = (value: string) => /[A-Z]/.test(value)
+
+const hasLowercaseCharacter = (value: string) => /[a-z]/.test(value)
+
+const hasDigitCharacter = (value: string) => /[0-9]/.test(value)
+
+const hasSpecialCharacter = (value: string) =>
+    /[!@#$%]/.test(value)
+
+const countUniqueCharacters = (value: string) => new Set(value).size
+
+const getPasswordPolicyError = (value?: string) => {
+    if (!value) {
+        return null
+    }
+
+    if (!hasNonWhitespaceText(value)) {
+        return 'Mật khẩu mới không được chỉ gồm khoảng trắng.'
+    }
+
+    if (value.length < PASSWORD_POLICY.minLength) {
+        return `Mật khẩu mới phải có ít nhất ${PASSWORD_POLICY.minLength} ký tự.`
+    }
+
+    if (!hasUppercaseCharacter(value)) {
+        return 'Mật khẩu mới phải có ít nhất 1 chữ hoa (A-Z).'
+    }
+
+    if (!hasLowercaseCharacter(value)) {
+        return 'Mật khẩu mới phải có ít nhất 1 chữ thường (a-z).'
+    }
+
+    if (!hasDigitCharacter(value)) {
+        return 'Mật khẩu mới phải có ít nhất 1 chữ số (0-9).'
+    }
+
+    if (!hasSpecialCharacter(value)) {
+        return `Mật khẩu mới phải có ít nhất 1 ký tự đặc biệt (${PASSWORD_POLICY.specialCharacters
+            .split('')
+            .join(' ')}).`
+    }
+
+    if (countUniqueCharacters(value) < PASSWORD_POLICY.minUniqueChars) {
+        return `Mật khẩu mới phải có ít nhất ${PASSWORD_POLICY.minUniqueChars} ký tự khác nhau.`
+    }
+
+    return null
+}
+
 const ChangePasswordPage: FC = () => {
     const navigate = useNavigate()
     const user = useSelector((state: any) => state.auth.user)
@@ -49,7 +107,7 @@ const ChangePasswordPage: FC = () => {
 
             notification.success({
                 message: 'Đổi mật khẩu thành công',
-                description: 'Mật khẩu của bạn đã được cập nhật.',
+                description: 'Mật khẩu mới đã được lưu.',
             })
             navigate(fallbackPath || PATHS.HOME, { replace: true })
         } catch (error: any) {
@@ -70,8 +128,7 @@ const ChangePasswordPage: FC = () => {
                 <span className="portal-hero__eyebrow">Bảo mật tài khoản</span>
                 <Title level={2}>Đổi mật khẩu</Title>
                 <Paragraph style={{ maxWidth: 720 }}>
-                    Cập nhật mật khẩu định kỳ để bảo vệ tài khoản của bạn trên
-                    hệ thống tuyển dụng.
+                    Đổi mật khẩu để bảo mật tài khoản của bạn.
                 </Paragraph>
             </section>
 
@@ -84,10 +141,24 @@ const ChangePasswordPage: FC = () => {
                     <Form.Item
                         label="Mật khẩu hiện tại"
                         name="currentPassword"
+                        validateFirst
                         rules={[
                             {
                                 required: true,
                                 message: 'Vui lòng nhập mật khẩu hiện tại.',
+                            },
+                            {
+                                validator(_, value) {
+                                    if (!value || hasNonWhitespaceText(value)) {
+                                        return Promise.resolve()
+                                    }
+
+                                    return Promise.reject(
+                                        new Error(
+                                            'Mật khẩu hiện tại không được chỉ gồm khoảng trắng.'
+                                        )
+                                    )
+                                },
                             },
                         ]}
                     >
@@ -101,15 +172,44 @@ const ChangePasswordPage: FC = () => {
                     <Form.Item
                         label="Mật khẩu mới"
                         name="newPassword"
+                        dependencies={['currentPassword']}
+                        validateFirst
                         rules={[
                             {
                                 required: true,
                                 message: 'Vui lòng nhập mật khẩu mới.',
                             },
                             {
-                                min: 6,
-                                message: 'Mật khẩu cần có ít nhất 6 ký tự.',
+                                validator(_, value) {
+                                    const errorMessage =
+                                        getPasswordPolicyError(value)
+
+                                    if (!errorMessage) {
+                                        return Promise.resolve()
+                                    }
+
+                                    return Promise.reject(
+                                        new Error(errorMessage)
+                                    )
+                                },
                             },
+                            ({ getFieldValue }) => ({
+                                validator(_, value) {
+                                    if (
+                                        !value ||
+                                        !getFieldValue('currentPassword') ||
+                                        getFieldValue('currentPassword') !== value
+                                    ) {
+                                        return Promise.resolve()
+                                    }
+
+                                    return Promise.reject(
+                                        new Error(
+                                            'Mật khẩu mới không được trùng với mật khẩu hiện tại.'
+                                        )
+                                    )
+                                },
+                            }),
                         ]}
                     >
                         <Input.Password
@@ -123,6 +223,7 @@ const ChangePasswordPage: FC = () => {
                         label="Xác nhận mật khẩu mới"
                         name="confirmPassword"
                         dependencies={['newPassword']}
+                        validateFirst
                         rules={[
                             {
                                 required: true,

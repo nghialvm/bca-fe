@@ -69,7 +69,7 @@ const LoginPage: FC = () => {
                 ) {
                     notification.success({
                         message: 'Đăng nhập thành công',
-                        description: 'Chào mừng bạn quay lại hệ thống.',
+                        description: 'Bạn đã đăng nhập vào hệ thống.',
                     })
                     navigate(getDefaultPathByRole(getSiteRole(currentUser)), {
                         replace: true,
@@ -110,8 +110,7 @@ const LoginPage: FC = () => {
                         Đăng nhập
                     </Title>
                     <Paragraph style={{ marginBottom: 28, color: '#4b5563' }}>
-                        Sử dụng tài khoản của bạn để truy cập hệ thống tuyển
-                        dụng.
+                        Dùng tài khoản của bạn để đăng nhập.
                     </Paragraph>
 
                     <Form<LoginFormValues>

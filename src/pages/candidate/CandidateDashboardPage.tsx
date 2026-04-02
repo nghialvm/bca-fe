@@ -71,7 +71,7 @@ const CandidateDashboardPage = () => {
             },
             {
                 key: 'actions',
-                title: 'Cần xử lý ngay',
+                title: 'Cần xử lý',
                 value: applications.filter((item) =>
                     isCandidateActionRequired(item.status)
                 ).length,
@@ -93,7 +93,7 @@ const CandidateDashboardPage = () => {
                 id: 'interview',
                 title: 'Bạn đang có hồ sơ ở vòng phỏng vấn',
                 description:
-                    'Theo dõi lịch hẹn và chuẩn bị thông tin cần thiết trong từng hồ sơ để không bỏ lỡ tiến độ.',
+                    'Theo dõi lịch hẹn và chuẩn bị thông tin cho từng buổi phỏng vấn.',
             })
         }
 
@@ -105,16 +105,16 @@ const CandidateDashboardPage = () => {
                 id: 'action',
                 title: 'Có hồ sơ đang chờ bạn phản hồi',
                 description:
-                    'Một số hồ sơ đang cần bạn xác nhận lịch phỏng vấn hoặc phản hồi offer.',
+                    'Một số hồ sơ đang chờ bạn xác nhận lịch hoặc phản hồi offer.',
             })
         }
 
         if (!items.length) {
             items.push({
                 id: 'welcome',
-                title: 'Mọi thông tin của bạn đã sẵn sàng',
+                title: 'Bạn chưa có việc cần xử lý',
                 description:
-                    'Bạn có thể theo dõi hồ sơ cá nhân, quá trình ứng tuyển và các vị trí phù hợp ngay tại đây.',
+                    'Bạn có thể cập nhật hồ sơ hoặc xem các vị trí đang tuyển.',
             })
         }
 
@@ -135,12 +135,10 @@ const CandidateDashboardPage = () => {
     return (
         <div className="portal-page">
             <section className="portal-hero">
-                <span className="portal-hero__eyebrow">Tổng quan ứng viên</span>
+                <span className="portal-hero__eyebrow">Trang tổng quan</span>
                 <Row gutter={[24, 24]} align="middle">
                     <Col xs={24} lg={15}>
-                        <Title level={2}>
-                            Theo dõi hồ sơ và tìm cơ hội phù hợp trong một nơi
-                        </Title>
+                        <Title level={2}>Theo dõi hồ sơ và tiến độ ứng tuyển</Title>
                         <Paragraph
                             style={{
                                 maxWidth: 720,
@@ -148,13 +146,13 @@ const CandidateDashboardPage = () => {
                                 color: '#fff',
                             }}
                         >
-                            Nhanh chóng xem lại hồ sơ cá nhân, tiến độ ứng tuyển
-                            gần đây và những vị trí đang mở phù hợp với bạn.
+                            Xem nhanh hồ sơ cá nhân, các hồ sơ đã nộp và những
+                            vị trí đang tuyển.
                         </Paragraph>
                         <Space wrap size="middle">
                             <Link to={PATHS.CANDIDATE_JOBS}>
                                 <Button type="primary" size="large">
-                                    Khám phá vị trí
+                                    Xem việc làm
                                 </Button>
                             </Link>
                             <Link to={PATHS.CANDIDATE_APPLICATIONS}>
@@ -193,13 +191,13 @@ const CandidateDashboardPage = () => {
                                             ))
                                         ) : (
                                             <Text className="portal-muted">
-                                                Chưa có điểm nhấn hồ sơ.
+                                                Chưa có thông tin nổi bật.
                                             </Text>
                                         )}
                                     </div>
                                 </Space>
                             ) : (
-                                <Empty description="Chưa tìm thấy hồ sơ ứng viên" />
+                                <Empty description="Chưa có hồ sơ cá nhân" />
                             )}
                         </Card>
                     </Col>
@@ -241,7 +239,7 @@ const CandidateDashboardPage = () => {
                             loading={loading}
                             dataSource={recentApplications}
                             locale={{
-                                emptyText: 'Bạn chưa có hồ sơ ứng tuyển nào.',
+                                emptyText: 'Bạn chưa nộp hồ sơ nào.',
                             }}
                             renderItem={(item) => {
                                 const label = getApplicationStatusLabel(
@@ -334,7 +332,7 @@ const CandidateDashboardPage = () => {
                         </Card>
 
                         <Card
-                            title="Cơ hội nổi bật"
+                            title="Việc làm đang tuyển"
                             extra={
                                 <Link to={PATHS.CANDIDATE_JOBS}>
                                     Xem tất cả
@@ -346,7 +344,7 @@ const CandidateDashboardPage = () => {
                                 loading={loading}
                                 dataSource={highlightedJobs}
                                 locale={{
-                                    emptyText: 'Chưa có vị trí đang mở.',
+                                    emptyText: 'Chưa có vị trí đang tuyển.',
                                 }}
                                 renderItem={(item) => (
                                     <List.Item>

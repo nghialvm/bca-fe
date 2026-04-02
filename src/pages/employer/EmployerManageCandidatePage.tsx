@@ -410,7 +410,7 @@ const EmployerManageCandidatePage = () => {
             notification.error({
                 message: 'Không xác định được người đánh giá',
                 description:
-                    'Phiên đăng nhập hiện tại không có thông tin người dùng để ghi nhận kết quả sàng lọc.',
+                    'Phiên đăng nhập hiện tại thiếu thông tin người đánh giá.',
             })
             return
         }
@@ -434,7 +434,7 @@ const EmployerManageCandidatePage = () => {
             notification.error({
                 message: 'Không xác định được người đánh giá',
                 description:
-                    'Phiên đăng nhập hiện tại không có thông tin người dùng để ghi nhận kết quả sàng lọc.',
+                    'Phiên đăng nhập hiện tại thiếu thông tin người đánh giá.',
             })
             return
         }
@@ -485,7 +485,7 @@ const EmployerManageCandidatePage = () => {
 
             notification.success({
                 message: 'Đã lưu đánh giá ứng viên',
-                description: `${evaluationCandidate.name} đã được cập nhật kết quả sàng lọc.`,
+                description: `Đã lưu kết quả sàng lọc cho ${evaluationCandidate.name}.`,
             })
 
             closeEvaluationModal()
@@ -526,7 +526,7 @@ const EmployerManageCandidatePage = () => {
             notification.info({
                 message: 'Hồ sơ này đã có offer',
                 description:
-                    'Mỗi hồ sơ hiện chỉ hỗ trợ một offer. Vui lòng kiểm tra thông tin offer hiện có.',
+                    'Mỗi hồ sơ chỉ có một offer. Vui lòng kiểm tra offer hiện tại.',
             })
             return
         }
@@ -550,7 +550,7 @@ const EmployerManageCandidatePage = () => {
 
             notification.success({
                 message: 'Đã gửi offer',
-                description: `Offer cho ứng viên ${offerCandidate.name} đã được tạo và gửi thành công.`,
+                description: `Đã tạo offer cho ${offerCandidate.name}.`,
             })
 
             closeOfferModal()
@@ -580,7 +580,7 @@ const EmployerManageCandidatePage = () => {
             notification.error({
                 message: 'Không xác định được người thao tác',
                 description:
-                    'Phiên đăng nhập hiện tại không có thông tin người dùng để tạo lịch phỏng vấn.',
+                    'Phiên đăng nhập hiện tại thiếu thông tin người tạo lịch phỏng vấn.',
             })
             return
         }
@@ -600,7 +600,7 @@ const EmployerManageCandidatePage = () => {
 
             notification.success({
                 message: 'Đã tạo lịch hẹn phỏng vấn',
-                description: `${interviewCandidate.name} đã được lên lịch phỏng vấn.`,
+                description: `Đã tạo lịch phỏng vấn cho ${interviewCandidate.name}.`,
             })
 
             closeInterviewModal()
@@ -813,7 +813,7 @@ const EmployerManageCandidatePage = () => {
                 </Card>
             ) : (
                 <Card className="portal-section-card portal-empty">
-                    <Empty description="Không tìm thấy ứng viên phù hợp" />
+                    <Empty description="Không có ứng viên nào khớp bộ lọc" />
                 </Card>
             )}
 
@@ -1201,14 +1201,14 @@ const EmployerManageCandidatePage = () => {
                             <Form.Item label="Phúc lợi" name="benefit">
                                 <Input.TextArea
                                     rows={3}
-                                    placeholder="Mô tả ngắn các phúc lợi chính của offer."
+                                    placeholder="Tóm tắt phúc lợi chính"
                                 />
                             </Form.Item>
 
                             <Form.Item label="Ghi chú" name="note">
                                 <Input.TextArea
                                     rows={3}
-                                    placeholder="Ghi chú thêm cho ứng viên."
+                                    placeholder="Ghi chú thêm nếu cần"
                                 />
                             </Form.Item>
 
@@ -1308,14 +1308,14 @@ const EmployerManageCandidatePage = () => {
                             >
                                 <Input.TextArea
                                     rows={3}
-                                    placeholder="Tóm tắt ngắn các tiêu chí đạt hoặc chưa đạt."
+                                    placeholder="Tóm tắt tiêu chí đạt hoặc chưa đạt"
                                 />
                             </Form.Item>
 
                             <Form.Item label="Nhận xét" name="comment">
                                 <Input.TextArea
                                     rows={4}
-                                    placeholder="Nhập nhận xét chi tiết cho hồ sơ ứng viên."
+                                    placeholder="Nhận xét thêm về ứng viên"
                                 />
                             </Form.Item>
                         </Form>

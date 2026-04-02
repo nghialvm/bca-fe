@@ -33,7 +33,7 @@ const DeleteAdminOrganizationModal = ({
                 <Alert
                     type="warning"
                     showIcon
-                    message="Thao tác này sẽ xóa đơn vị khỏi hệ thống nếu backend cho phép."
+                    message="Thao tác này sẽ xóa đơn vị khỏi hệ thống."
                 />
 
                 <div>

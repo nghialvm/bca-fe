@@ -165,8 +165,7 @@ const CandidateApplicationPage = () => {
                         Mức lương: {formatSalary(application.offer.salary)}
                     </Text>
                     <Text>
-                        Hành động này sẽ ghi nhận phản hồi {actionLabel} offer
-                        của bạn trên hệ thống.
+                        Phản hồi {actionLabel} offer sẽ được lưu cho hồ sơ này.
                     </Text>
                 </Space>
             ),
@@ -179,15 +178,15 @@ const CandidateApplicationPage = () => {
                         offerId: application.offer!.id,
                         responseType,
                         responseContent: isAccepted
-                            ? 'Ứng viên đã chấp nhận offer trên hệ thống.'
-                            : 'Ứng viên đã từ chối offer trên hệ thống.',
+                            ? 'Ứng viên chấp nhận offer.'
+                            : 'Ứng viên từ chối offer.',
                     })
 
                     notification.success({
                         message: isAccepted
                             ? 'Đã chấp nhận offer'
                             : 'Đã từ chối offer',
-                        description: `Phản hồi của bạn cho hồ sơ ${application.applicationCode} đã được ghi nhận.`,
+                        description: `Đã ghi nhận phản hồi cho hồ sơ ${application.applicationCode}.`,
                     })
 
                     closeOfferModal()
@@ -209,19 +208,16 @@ const CandidateApplicationPage = () => {
         <div className="portal-page">
             <section className="portal-hero">
                 <span className="portal-hero__eyebrow">Theo dõi hồ sơ</span>
-                <Title level={2}>
-                    Theo dõi từng hồ sơ ứng tuyển theo thời gian
-                </Title>
+                <Title level={2}>Theo dõi hồ sơ đã nộp</Title>
                 <Paragraph style={{ maxWidth: 760, color: '#fff' }}>
-                    Xem lại từng hồ sơ đã nộp, theo dõi tiến độ xử lý và phản
-                    hồi offer ngay trên cùng một màn hình.
+                    Xem trạng thái từng hồ sơ và phản hồi offer tại đây.
                 </Paragraph>
             </section>
 
             <Row gutter={[24, 24]}>
                 <Col xs={24} xl={24}>
                     <Card
-                        title=" Danh sách hồ sơ đã nộp"
+                        title="Danh sách hồ sơ đã nộp"
                         className="portal-section-card"
                     >
                         {applications.length ? (
@@ -307,10 +303,7 @@ const CandidateApplicationPage = () => {
                                                             marginTop: 16,
                                                         }}
                                                     >
-                                                        <Text strong>
-                                                            Hồ sơ này đã có
-                                                            offer
-                                                        </Text>
+                                                        <Text strong>Đã có offer</Text>
                                                         {item.latestOfferResponse ? (
                                                             <Tag
                                                                 color={getOfferResponseColor(
@@ -333,7 +326,7 @@ const CandidateApplicationPage = () => {
                                                                 )
                                                             }
                                                         >
-                                                            Xem offer
+                                                            Xem chi tiết
                                                         </Button>
                                                     </Space>
                                                 ) : null}
@@ -343,14 +336,14 @@ const CandidateApplicationPage = () => {
                                 }}
                             />
                         ) : (
-                            <Empty description="Bạn chưa nộp hồ sơ ứng tuyển nào" />
+                            <Empty description="Bạn chưa nộp hồ sơ nào" />
                         )}
                     </Card>
                 </Col>
             </Row>
 
             <Modal
-                title="Thông tin offer"
+                title="Chi tiết offer"
                 open={Boolean(selectedOfferApplication)}
                 onCancel={closeOfferModal}
                 footer={null}
@@ -483,7 +476,7 @@ const CandidateApplicationPage = () => {
                                         </Text>
                                     </Space>
                                 ) : (
-                                    'Chưa phản hồi'
+                                    'Chưa có phản hồi'
                                 )}
                             </Descriptions.Item>
                         </Descriptions>

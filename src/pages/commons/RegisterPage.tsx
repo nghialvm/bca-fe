@@ -74,8 +74,7 @@ const RegisterPage: FC = () => {
 
             notification.success({
                 message: 'Đăng ký tài khoản thành công',
-                description:
-                    'Tài khoản của bạn đã được tạo. Vui lòng đăng nhập để tiếp tục.',
+                description: 'Tài khoản đã được tạo. Vui lòng đăng nhập để tiếp tục.',
             })
 
             navigate(PATHS.LOGIN, { replace: true })
@@ -104,7 +103,7 @@ const RegisterPage: FC = () => {
                         Đăng ký
                     </Title>
                     <Paragraph style={{ marginBottom: 24, color: '#4b5563' }}>
-                        Tạo tài khoản mới để sử dụng hệ thống tuyển dụng BCA.
+                        Tạo tài khoản để sử dụng cổng tuyển dụng BCA.
                     </Paragraph>
 
                     <Form

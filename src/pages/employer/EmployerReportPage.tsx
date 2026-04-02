@@ -352,7 +352,7 @@ const EmployerReportPage = () => {
                 </Col>
             </Row>
 
-            <Card title="Phễu tuyển dụng" className="portal-section-card">
+            <Card title="Tin tuyển dụng" className="portal-section-card">
                 {conversionRates.length ? (
                     <Space
                         direction="vertical"
@@ -394,7 +394,7 @@ const EmployerReportPage = () => {
                         })}
                     </Space>
                 ) : (
-                    <Empty description="Chưa có dữ liệu phễu tuyển dụng" />
+                    <Empty description="Chưa có dữ liệu tin tuyển dụng" />
                 )}
             </Card>
 

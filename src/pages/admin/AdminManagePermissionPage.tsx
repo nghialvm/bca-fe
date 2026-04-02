@@ -52,14 +52,14 @@ const ROLE_PROVIDER_NAME = 'R'
 
 const formatRoleDescription = (role: IdentityRoleDto) => {
     if (role.isStatic) {
-        return 'Vai trò hệ thống được quản lý bởi Identity module.'
+        return 'Vai trò mặc định của hệ thống.'
     }
 
     if (role.isDefault) {
-        return 'Vai trò mặc định được gán cho người dùng mới phù hợp.'
+        return 'Vai trò mặc định cho tài khoản mới.'
     }
 
-    return 'Vai trò được đồng bộ từ Identity và Permission Management.'
+    return 'Vai trò có thể cấu hình quyền truy cập.'
 }
 
 const formatPermissionLabel = (permission: PermissionGrantInfoDto) => {
@@ -195,8 +195,7 @@ const AdminManagePermissionPage = () => {
         } catch {
             notification.error({
                 message: 'Không tải được ma trận phân quyền',
-                description:
-                    'Kiểm tra identity roles và permission-management API.',
+                description: 'Không thể tải danh sách vai trò và quyền.',
             })
         } finally {
             setLoading(false)
@@ -355,8 +354,7 @@ const AdminManagePermissionPage = () => {
         } catch {
             notification.error({
                 message: 'Không lưu được phân quyền',
-                description:
-                    'Backend từ chối cập nhật hoặc role hiện tại không đủ quyền.',
+                description: 'Không thể lưu thay đổi quyền cho vai trò này.',
             })
         } finally {
             setSaving(false)
@@ -550,7 +548,7 @@ const AdminManagePermissionPage = () => {
                             ]}
                         />
                     ) : (
-                        <Empty description="Không có dữ liệu phân quyền" />
+                        <Empty description="Chưa có dữ liệu phân quyền" />
                     )}
 
                     <div style={{ marginTop: 20, textAlign: 'right' }}>
@@ -560,7 +558,7 @@ const AdminManagePermissionPage = () => {
                                 disabled={!selectedRole}
                                 onClick={() => void loadPermissionMatrix()}
                             >
-                                Làm mới giao diện
+                                Tải lại dữ liệu
                             </Button>
                             <Button
                                 type="primary"

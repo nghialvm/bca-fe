@@ -184,7 +184,7 @@ const EmployerManageJobPage = () => {
             notification.success({
                 message: 'Đã tạo tin tuyển dụng bản nháp',
                 description:
-                    'Tin tuyển dụng mới đã được lưu ở trạng thái bản nháp. Hãy dùng hành động "Gửi duyệt" khi sẵn sàng gửi admin phê duyệt.',
+                    'Tin tuyển dụng đã được lưu ở trạng thái nháp. Khi sẵn sàng, hãy gửi duyệt.',
             })
             setCreateOpen(false)
             await reload()
@@ -209,8 +209,7 @@ const EmployerManageJobPage = () => {
             )
             notification.success({
                 message: 'Cập nhật tin tuyển dụng thành công',
-                description:
-                    'Thông tin tin tuyển dụng đã được cập nhật trên hệ thống.',
+                description: 'Thông tin tin tuyển dụng đã được cập nhật.',
             })
             setEditingJob(null)
             await reload()
@@ -233,16 +232,14 @@ const EmployerManageJobPage = () => {
             await AdminService.deleteRecruitmentRequest(deletingJob.id)
             notification.success({
                 message: 'Xóa tin tuyển dụng thành công',
-                description:
-                    'Tin tuyển dụng đã được gỡ khỏi danh sách quản lý của đơn vị.',
+                description: 'Tin tuyển dụng đã được xóa khỏi danh sách quản lý.',
             })
             setDeletingJob(null)
             await reload()
         } catch {
             notification.error({
                 message: 'Không thể xóa tin tuyển dụng',
-                description:
-                    'Backend có thể đang chặn thao tác này vì dữ liệu đã phát sinh liên quan.',
+                description: 'Không thể xóa vì tin tuyển dụng đã có dữ liệu liên quan.',
             })
         } finally {
             setSubmitting(false)
@@ -372,7 +369,7 @@ const EmployerManageJobPage = () => {
                     {canSubmitRecruitment(record.status) ? (
                         <Popconfirm
                             title="Gửi duyệt tin này?"
-                            description="Tin sẽ chuyển sang trạng thái chờ admin duyệt."
+                            description="Tin sẽ chuyển sang trạng thái chờ duyệt."
                             okText="Gửi duyệt"
                             cancelText="Hủy"
                             onConfirm={() => void handleSubmitJob(record)}
@@ -454,7 +451,7 @@ const EmployerManageJobPage = () => {
                         allowClear
                         size="large"
                         prefix={<SearchOutlined />}
-                        placeholder="Tìm theo tên vị trí, mã phiếu hoặc đơn vị..."
+                        placeholder="Tìm theo vị trí, mã tin hoặc đơn vị..."
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
                         style={{ width: 320, height: 40 }}
@@ -485,8 +482,8 @@ const EmployerManageJobPage = () => {
                     pagination={{ pageSize: 8 }}
                     locale={{
                         emptyText: managedDepartments.length
-                            ? 'Chưa có tin tuyển dụng phù hợp'
-                            : 'Tài khoản này chưa được gán đơn vị để quản lý tin tuyển dụng',
+                            ? 'Không có tin tuyển dụng nào khớp bộ lọc'
+                            : 'Tài khoản này chưa được gán đơn vị quản lý',
                     }}
                 />
             </Card>

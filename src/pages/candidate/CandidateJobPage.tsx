@@ -192,12 +192,10 @@ const CandidateJobPage = () => {
     return (
         <div className="portal-page">
             <section className="portal-hero">
-                <span className="portal-hero__eyebrow">Việc làm phù hợp</span>
-                <Title level={2}>Danh sách vị trí đang mở cho ứng viên</Title>
+                <span className="portal-hero__eyebrow">Việc làm đang tuyển</span>
+                <Title level={2}>Danh sách vị trí đang tuyển</Title>
                 <Paragraph style={{ maxWidth: 720, color: '#fff' }}>
-                    Trang việc làm tự động
-                    đồng bộ danh sách đợt tuyển dụng đang mở và trạng thái ứng
-                    tuyển của bạn.
+                    Xem các vị trí đang mở và nộp hồ sơ trực tiếp tại đây.
                 </Paragraph>
             </section>
 
@@ -245,9 +243,9 @@ const CandidateJobPage = () => {
                     }}
                 >
                     <Text className="portal-muted">
-                        Tìm thấy {filteredJobs.length} vị trí tuyển dụng đang mở
+                        Có {filteredJobs.length} vị trí đang tuyển
                     </Text>
-                    <Button icon={<FilterOutlined />}>Bộ lọc nhanh</Button>
+                    <Button icon={<FilterOutlined />}>Lọc nhanh</Button>
                 </Space>
             </Card>
 
@@ -313,7 +311,7 @@ const CandidateJobPage = () => {
                                         <Paragraph className="portal-muted">
                                             {job.description ||
                                                 job.requirement ||
-                                                'Chưa có mô tả chi tiết cho vị trí này.'}
+                                                'Chưa có mô tả cho vị trí này.'}
                                         </Paragraph>
 
                                         <Space wrap>
@@ -372,7 +370,7 @@ const CandidateJobPage = () => {
                                                 }
                                             >
                                                 {daysRemaining === null
-                                                    ? 'Không giới hạn hạn nộp'
+                                                    ? 'Chưa có hạn nộp'
                                                     : daysRemaining >= 0
                                                       ? `Còn ${daysRemaining} ngày`
                                                       : 'Đã hết hạn'}
@@ -393,7 +391,7 @@ const CandidateJobPage = () => {
                                             >
                                                 {job.hasApplied
                                                     ? 'Đã ứng tuyển'
-                                                    : 'Ứng tuyển ngay'}
+                                                    : 'Nộp hồ sơ'}
                                             </Button>
                                         </Space>
                                     </Space>
@@ -408,19 +406,19 @@ const CandidateJobPage = () => {
                     loading={loading}
                 >
                     <Empty
-                        description="Không tìm thấy vị trí phù hợp với bộ lọc hiện tại"
+                        description="Không có vị trí nào khớp với bộ lọc hiện tại"
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                     />
                 </Card>
             )}
 
             <Modal
-                title="Nộp hồ sơ ứng tuyển"
+                title="Nộp hồ sơ"
                 open={Boolean(applyingJob)}
                 width="50%"
                 onCancel={resetApplyModal}
                 onOk={() => void handleSubmitApplication()}
-                okText="Gửi hồ sơ"
+                okText="Nộp hồ sơ"
                 cancelText="Hủy"
                 confirmLoading={Boolean(
                     applyingJob && applyingJobId === applyingJob.id
@@ -447,7 +445,7 @@ const CandidateJobPage = () => {
                             <Form.Item
                                 label="CV (PDF)"
                                 required
-                                extra="Chỉ chấp nhận file PDF, dung lượng tối đa 10MB."
+                                extra="Chỉ nhận file PDF, tối đa 10MB."
                             >
                                 <Upload
                                     accept=".pdf,application/pdf"
@@ -489,7 +487,7 @@ const CandidateJobPage = () => {
                                     }}
                                 >
                                     <Button icon={<UploadOutlined />}>
-                                        Chọn file CV PDF
+                                        Chọn CV (PDF)
                                     </Button>
                                 </Upload>
                             </Form.Item>
@@ -645,7 +643,7 @@ const CandidateJobPage = () => {
                                         label="Công ty hiện tại"
                                         name="currentCompany"
                                     >
-                                        <Input placeholder="Công ty hiện tại của bạn" />
+                                        <Input placeholder="Tên công ty hiện tại" />
                                     </Form.Item>
                                 </Col>
                                 <Col xs={24} md={12}>
@@ -726,7 +724,7 @@ const CandidateJobPage = () => {
                             <Form.Item label="Ghi chú" name="note">
                                 <Input.TextArea
                                     rows={4}
-                                    placeholder="Giới thiệu ngắn hoặc ghi chú thêm cho nhà tuyển dụng"
+                                    placeholder="Bổ sung thông tin nếu cần"
                                 />
                             </Form.Item>
                         </Form>

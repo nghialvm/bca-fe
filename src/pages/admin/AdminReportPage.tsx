@@ -762,7 +762,7 @@ const AdminReportPage = () => {
                     className={styles.sectionCard}
                     title={
                         <span className={styles.sectionTitle}>
-                            Phễu tuyển dụng
+                            Tin tuyển dụng
                         </span>
                     }
                 >
@@ -926,7 +926,7 @@ const AdminReportPage = () => {
                             key: 'pipeline',
                             title: 'Báo cáo pipeline',
                             description:
-                                'Xuất phễu tuyển dụng để theo dõi tỉ lệ chuyển đổi.',
+                                'Xuất tin tuyển dụng để theo dõi tỉ lệ chuyển đổi.',
                         },
                     ].map((option) => (
                         <div
