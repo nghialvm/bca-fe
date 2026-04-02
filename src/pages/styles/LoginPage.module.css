@@ -5,7 +5,7 @@
     align-items: center;
     gap: clamp(32px, 5vw, 88px);
     padding: clamp(20px, 3vw, 40px);
-    background: url('/bg_fullhd.png') center center / cover no-repeat;
+    background: url('/bg_fullhd_1.png') center center / cover no-repeat;
 }
 
 .heroSection {
