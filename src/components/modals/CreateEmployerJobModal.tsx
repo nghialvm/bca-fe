@@ -51,7 +51,7 @@ const CreateEmployerJobModal = ({
 
     return (
         <Modal
-            destroyOnClose
+            destroyOnHidden
             title="Tạo tin tuyển dụng bản nháp"
             open={open}
             width={720}

@@ -396,13 +396,6 @@ const AdminManageUserPage = () => {
                         value={statusFilter}
                         onChange={(value) => setStatusFilter(value)}
                     />
-                    <Button
-                        style={{ height: 40 }}
-                        size="large"
-                        icon={<FilterOutlined />}
-                    >
-                        Lọc nâng cao
-                    </Button>
                 </div>
             </Card>
 
@@ -456,11 +449,6 @@ const AdminManageUserPage = () => {
                                         Chưa gán vai trò
                                     </Typography.Text>
                                 ),
-                        },
-                        {
-                            title: 'Đơn vị',
-                            dataIndex: 'unit',
-                            key: 'unit',
                         },
                         {
                             title: 'Trạng thái',

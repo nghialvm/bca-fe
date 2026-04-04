@@ -146,7 +146,9 @@ const AdminManageJobPage = () => {
             )
 
             setRows(
-                recruitments.map((item) =>
+                recruitments
+                    .filter((item) => item.status !== 0)
+                    .map((item) =>
                     mapRecruitmentRequestToEmployerJobRecord(
                         item,
                         departmentsById.get(item.departmentId) ||
@@ -356,9 +358,6 @@ const AdminManageJobPage = () => {
                         ]}
                         onChange={(value) => setStatus(value)}
                     />
-                    <Button size="large" icon={<FilterOutlined />}>
-                        Lọc nâng cao
-                    </Button>
                 </div>
             </Card>
 

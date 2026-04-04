@@ -424,6 +424,10 @@ export const EmployerJobFormFields = ({
                         max: 4000,
                         message: 'Mô tả công việc tối đa 4000 ký tự',
                     },
+                    {
+                        required: true,
+                        message: 'Vui lòng nhập mô tả công việc',
+                    },
                 ]}
             >
                 <Input.TextArea
@@ -442,6 +446,10 @@ export const EmployerJobFormFields = ({
                         max: 4000,
                         message: 'Yêu cầu ứng viên tối đa 4000 ký tự',
                     },
+                    {
+                        required: true,
+                        message: 'Vui lòng nhập yêu cầu ứng viên',
+                    },
                 ]}
             >
                 <Input.TextArea
@@ -459,6 +467,10 @@ export const EmployerJobFormFields = ({
                     {
                         max: 4000,
                         message: 'Quyền lợi tối đa 4000 ký tự',
+                    },
+                    {
+                        required: true,
+                        message: 'Vui lòng nhập quyền lợi',
                     },
                 ]}
             >
